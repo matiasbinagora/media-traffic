@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.15.0/schemas/plan.schema.json",
+  "projectId": "c0d461ac-6a7e-475c-bdfd-b773ecc52513",
+  "type": "frontend",
+  "name": "Unsupported video extension is rejected before upload",
+  "planSteps": [
+    { "type": "action", "description": "On the upload page select a small file whose name ends in .avi." },
+    { "type": "assertion", "description": "Verify the page displays a specific message asking for an MP4, MOV, or WebM video." },
+    { "type": "assertion", "description": "Verify Upload video is disabled and no upload job or analysis result appears." }
+  ]
+}

@@ -2,30 +2,31 @@
 
 Linear issue IDs and URLs: see [proposal.md — Linear Traceability](proposal.md#linear-traceability); each requirement also links its own issue.
 
-All items are pending implementation. Each section names its accountable specialist; m-traffic-orchestrator coordinates dependencies and independent gates. Story links are recorded in the corresponding delta specs. Implementation branches/worktrees are assigned at handoff under `.worktrees/<task>`; no implementation has been dispatched by this planning change.
+All checkboxes remain pending until the task has its required implementation and verification evidence. Each section names its accountable specialist; m-traffic-orchestrator coordinates dependencies and independent gates. Story links are recorded in the corresponding delta specs. Implementation branches/worktrees are assigned at handoff under `.worktrees/<task>`; creating a branch does not imply task completion.
 
 ## 1. Engineering Readiness
 
-- [ ] 1.1 Owner: m-traffic-orchestrator. Resolve the proposed stack, selected model/weights licensing, media limits and validation hardware before scaffolding; verify a recorded decision and runnable setup plan tied to US-01–US-09.
-- [ ] 1.2 Owner: m-traffic-backend-developer. Define versioned source, scene configuration, run, temporal observation, event and review contracts (US-02–US-08); verify schema examples represent failed jobs, unknown signal state, missing observations and distinct machine/human verdicts.
+- [x] 1.1 Owner: m-traffic-orchestrator. Record the MVP application stack as React/Vite/TypeScript, a Node.js/TypeScript server, and FFmpeg/FFprobe for inspection and a browser-playable derivative; record MP4, MOV, and WebM inputs and a configurable 200 MB default upload cap. Verify the decision is traceable to the `../media-ads` reference and does not claim a performance target or select YOLO weights.
+- [x] 1.2 Owner: m-traffic-backend-developer. Define the versioned source, upload-job, and playback-derivative contracts for US-02 (including `schemaVersion`, source identity/hash, timestamps, and upload/preview substates); verify preview lifecycle examples cover `processing`, `completed`, and `failed` plus actionable validation/conversion failures, and keep the immutable original source as the later inference input. Reserve the separate traffic-analysis job lifecycle (`queued`, `running`, `completed`, `failed`) and its immutable run provenance for task 7.1; do not treat upload/preview completion or derivative processing as traffic analysis.
 - [ ] 1.3 Owner: m-traffic-orchestrator. Agree temporal geometry rules, confidence/gap tolerances and quality/latency thresholds with the user before corresponding final acceptance; verify a decision record distinguishes provisional tuning from agreed acceptance criteria (US-06, US-09).
+- [ ] 1.4 Owner: m-traffic-backend-developer. Before implementing US-04 or US-05, select the YOLO runtime and weights, review their licenses for intended use, and qualify the runtime on available inference hardware; verify recorded real inference evidence, model/version/checksum, hardware, configuration, and limitations. This gate does not block the upload slice. Depends on a generated candidate video (2.1).
 
 ## 2. Qualified Demonstration Asset — US-01
 
 - [ ] 2.1 Owner: m-traffic-orchestrator. Coordinate video generation through the required video workflow and independently annotate red crossing, green crossing and correct stop; verify an asset manifest labels synthetic media and records expected timestamps separately from inference inputs (`demo-video`).
-- [ ] 2.2 Owner: m-traffic-backend-developer. Qualify camera/vehicle/signal continuity and actual YOLO detectability on the generated asset; verify real inference output, timestamp inspection and a qualification report, revising unusable footage before acceptance.
+- [ ] 2.2 Owner: m-traffic-backend-developer. After the inference-readiness gate, qualify camera/vehicle/signal continuity and actual YOLO detectability on the generated asset; verify real inference output, timestamp inspection and a qualification report, revising unusable footage before acceptance. Depends on 1.4.
 
 ## 3. Upload and Configuration — US-02, US-03
 
-- [ ] 3.1 Owner: m-traffic-backend-developer. Implement bounded upload/media validation and playback delivery; verify valid uploads, corrupt/unsupported/oversized rejection and interrupted-upload handling with tests and documented limits (`video-upload`). Depends on 1.1–1.2.
-- [ ] 3.2 Owner: m-traffic-frontend-developer. Implement upload feedback, preview and error recovery; verify browser behavior distinguishes upload from analysis success and document the local run command (`video-upload`). Depends on 3.1.
+- [x] 3.1 Owner: m-traffic-backend-developer. Implement bounded upload/media validation and playback delivery; verify valid MP4/MOV/WebM uploads, corrupt/unsupported/empty/oversized rejection at the configurable 200 MB default, and interrupted-upload handling with tests and documented limits (`video-upload`). Preserve the uploaded source for inference and keep a playable derivative separate. No performance target is asserted. Depends on 1.1–1.2.
+- [x] 3.2 Owner: m-traffic-frontend-developer. Implement upload feedback, preview and error recovery; verify in Chromium that browser behavior distinguishes upload from analysis success, covers successful playback and failure recovery, and document the local run command (`video-upload`). Depends on 3.1.
 - [ ] 3.3 Owner: m-traffic-frontend-developer. Implement editable line, movement and associated signal-region configuration; verify normalized overlays remain aligned on resize and incomplete configuration blocks analysis (`scene-configuration`). Depends on 3.2.
 - [ ] 3.4 Owner: m-traffic-backend-developer. Validate and snapshot configuration per run; verify invalid geometry is rejected and later edits leave previous run evidence intact, with contract tests and configuration documentation (`scene-configuration`). Depends on 1.2, 3.3.
 
 ## 4. Car Tracking and Signal State — US-04, US-05
 
-- [ ] 4.1 Owner: m-traffic-backend-developer. Implement actual YOLO car tracking with retained timestamped observations; verify simultaneous cars, synchronized IDs and documented gaps using recorded outputs and regression tests (`traffic-analysis`). Depends on 1.1–1.2, 2.2, 3.4.
-- [ ] 4.2 Owner: m-traffic-backend-developer. Infer the associated red/yellow/green/unknown signal from pixels and expose its timeline; verify readable states, occlusion and transition ambiguity with independent reference observations and tests (`traffic-analysis`). Depends on 3.4.
+- [ ] 4.1 Owner: m-traffic-backend-developer. Implement actual YOLO car tracking with retained timestamped observations; verify simultaneous cars, synchronized IDs and documented gaps using recorded outputs and regression tests (`traffic-analysis`). Depends on 1.1–1.2, 1.4, 2.2, 3.4.
+- [ ] 4.2 Owner: m-traffic-backend-developer. Infer the associated red/yellow/green/unknown signal from pixels and expose its timeline; verify readable states, occlusion and transition ambiguity with independent reference observations and tests (`traffic-analysis`). Depends on 1.4, 3.4.
 - [ ] 4.3 Owner: m-traffic-frontend-developer. Render synchronized boxes, IDs, trajectories and signal timeline; verify seek/replay alignment and uncertainty visibility against actual temporal outputs (`traffic-analysis`). Depends on 4.1–4.2.
 
 ## 5. Crossing Rules — US-06

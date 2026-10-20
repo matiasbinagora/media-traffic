@@ -1,0 +1,301 @@
+{
+  "config": {
+    "argv": [
+      "/Users/matiasbinagora/.nvm/versions/node/v22.23.2/bin/node",
+      "/Users/matiasbinagora/Projects/media-traffic/.worktrees/upload-replay-traffic-video/node_modules/.bin/playwright",
+      "test"
+    ],
+    "configFile": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/upload-replay-traffic-video/playwright.config.ts",
+    "rootDir": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/upload-replay-traffic-video/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/upload-replay-traffic-video/reports/per87/test-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/upload-replay-traffic-video/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/upload-replay-traffic-video/reports/per87/test-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chromium",
+        "testDir": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/upload-replay-traffic-video/e2e",
+        "snapshotDir": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/upload-replay-traffic-video/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5173",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "video": "retain-on-failure"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "reports/per87/playwright-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "video-upload.spec.ts",
+      "file": "video-upload.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "shows limits, uploads a supported clip, and replays preview without claiming analysis",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1976,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T18:54:16.046Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "upload-observations.json",
+                      "contentType": "application/json",
+                      "body": "ewogICJjbGFzc2lmaWNhdGlvbiI6ICJvYnNlcnZlZCwgbm8gYWdyZWVkIHBlcmZvcm1hbmNlIHRocmVzaG9sZCIsCiAgInJ1bnRpbWUiOiB7CiAgICAibm9kZSI6ICJ2MjIuMjMuMiIsCiAgICAicGxhdGZvcm0iOiAiZGFyd2luIiwKICAgICJhcmNoaXRlY3R1cmUiOiAiYXJtNjQiLAogICAgImJyb3dzZXIiOiB7CiAgICAgICJuYW1lIjogIkNocm9taXVtIiwKICAgICAgInZlcnNpb24iOiAiMTU2LjAuODA3OC40IgogICAgfQogIH0sCiAgImlucHV0IjogewogICAgInBhdGgiOiAiZTJlL2ZpeHR1cmVzL3JpZ2h0cy1jbGVhcmVkLWJsdWUubXA0IiwKICAgICJwcm92ZW5hbmNlIjogInN5bnRoZXRpYyBGRm1wZWcgbGF2ZmkgYmx1ZSBmcmFtZTsgbm8gdHJhZmZpYyBpbWFnZXJ5IG9yIGdyb3VuZCB0cnV0aCIsCiAgICAiZm9ybWF0IjogIk1QNC9ILjI2NCIsCiAgICAiZHVyYXRpb25TZWNvbmRzIjogMC42LAogICAgImJ5dGVzIjogMjEzNAogIH0sCiAgInJlc3BvbnNlIjogewogICAgInVwbG9hZEh0dHBTdGF0dXMiOiAyMDEsCiAgICAicHJldmlld0h0dHBTdGF0dXMiOiAyMDAsCiAgICAicHJldmlld0NvbnRlbnRUeXBlIjogInZpZGVvL21wNCIsCiAgICAib3V0cHV0Qnl0ZXMiOiAxODQ1CiAgfSwKICAiZWxhcHNlZE1zIjogewogICAgInVwbG9hZEFjY2VwdGVkIjogOTIsCiAgICAicHJldmlld1JlYWR5IjogMTM4NAogIH0sCiAgImFuYWx5c2lzIjogIm5vdCBzdGFydGVkOyBubyBhbmFseXNpcyByZXN1bHQgd2FzIHJldHVybmVkIgp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c1650ff7bc8a42f593cd-57be7bdf1a1fa31f1616",
+          "file": "video-upload.spec.ts",
+          "line": 24,
+          "column": 1
+        },
+        {
+          "title": "shows a real preview-transcode failure and recovers on the next upload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3036,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T18:54:18.241Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c1650ff7bc8a42f593cd-3b524370b7132c40fe9a",
+          "file": "video-upload.spec.ts",
+          "line": 80,
+          "column": 1
+        },
+        {
+          "title": "rejects an unsupported extension before sending an upload request",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 622,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T18:54:21.284Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c1650ff7bc8a42f593cd-9e78b6b95af72e2cb369",
+          "file": "video-upload.spec.ts",
+          "line": 95,
+          "column": 1
+        },
+        {
+          "title": "rejects corrupt media with retry guidance and recovers with a valid upload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1782,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T18:54:21.909Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c1650ff7bc8a42f593cd-21b543b4a980d59725f4",
+          "file": "video-upload.spec.ts",
+          "line": 112,
+          "column": 1
+        },
+        {
+          "title": "rejects a file larger than the server-provided limit without uploading it",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 577,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T18:54:23.696Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c1650ff7bc8a42f593cd-4c6986435ef6c524a298",
+          "file": "video-upload.spec.ts",
+          "line": 130,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-20T18:54:15.857Z",
+    "duration": 8447.361,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

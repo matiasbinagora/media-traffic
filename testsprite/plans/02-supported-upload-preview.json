@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.15.0/schemas/plan.schema.json",
+  "projectId": "c0d461ac-6a7e-475c-bdfd-b773ecc52513",
+  "type": "frontend",
+  "name": "Supported video upload becomes a playable preview only",
+  "planSteps": [
+    { "type": "action", "description": "Open the upload page, select an available small valid MP4 video, and upload it." },
+    { "type": "assertion", "description": "Verify the upload request is accepted and the page shows preview preparation followed by Preview ready." },
+    { "type": "assertion", "description": "Verify a video player is visible and the preview loads as video/mp4." },
+    { "type": "assertion", "description": "Verify the page explicitly says ANALYSIS NOT STARTED and shows no traffic-analysis results." }
+  ]
+}

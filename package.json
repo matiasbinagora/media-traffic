@@ -23,6 +23,7 @@
     "dev": "vite",
     "build": "npm run typecheck:frontend && vite build",
     "test:frontend": "vitest run",
+    "test:playwright": "playwright test",
     "typecheck:frontend": "tsc --noEmit -p tsconfig.frontend.json",
     "server": "tsx server/index.ts",
     "test:backend": "node --import tsx --test server/*.test.ts",
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@fission-ai/openspec": "1.13.2",
     "@matiasnjacob/agents-cli": "0.4.2",
+    "@playwright/test": "^1.64.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.8",

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.15.0/schemas/plan.schema.json",
+  "projectId": "c0d461ac-6a7e-475c-bdfd-b773ecc52513",
+  "type": "frontend",
+  "name": "Corrupt video rejection offers a retry path",
+  "planSteps": [
+    { "type": "action", "description": "Choose a small corrupt file named invalid.mp4 and submit it." },
+    { "type": "assertion", "description": "Verify the response explains that the video is unreadable and gives export/retry guidance." },
+    { "type": "assertion", "description": "Verify a Retry upload action is available and no preview or analysis result is shown." },
+    { "type": "action", "description": "Replace the corrupt selection with a valid small MP4 and submit it." },
+    { "type": "assertion", "description": "Verify the replacement upload reaches Preview ready and still states that analysis has not started." }
+  ]
+}

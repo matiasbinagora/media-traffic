@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.15.0/schemas/plan.schema.json",
+  "projectId": "c0d461ac-6a7e-475c-bdfd-b773ecc52513",
+  "type": "frontend",
+  "name": "Preview conversion failure is visible and recoverable",
+  "planSteps": [
+    { "type": "action", "description": "In an isolated run where preview conversion is configured to fail once, upload a valid small MP4 video." },
+    { "type": "assertion", "description": "Verify the page shows Preview could not be prepared, explains the source is preserved, and exposes Choose another video." },
+    { "type": "assertion", "description": "Verify no playable preview or traffic-analysis result is shown for the failed conversion." },
+    { "type": "action", "description": "Choose the same valid MP4 again and upload it after conversion is available." },
+    { "type": "assertion", "description": "Verify the new upload reaches Preview ready and says analysis has not started." }
+  ]
+}
