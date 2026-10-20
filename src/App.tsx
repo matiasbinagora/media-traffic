@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { SceneConfigurationEditor, type AnalysisRunSnapshot, type SceneConfigurationSnapshot } from './SceneConfigurationEditor';
 
 type UploadLimits = {
   supportedFormats: string[];
@@ -14,12 +15,17 @@ type UploadJob = {
   status: 'processing' | 'completed' | 'failed';
   upload: { status: 'completed'; sizeBytes: number; sha256: string };
   preview: { status: 'processing' | 'completed' | 'failed'; contentType: string; url: string };
+  source?: { sizeBytes: number; sha256: string; media: { width: number; height: number } };
+  derivative?: { media: { width: number; height: number } };
   error?: { code: string; message: string };
   createdAt: string;
   updatedAt: string;
 };
 
-type ApiError = { error?: { code?: string; message?: string } };
+type ApiError = { error?: { code?: string; message?: string; details?: { invalidFields?: string[] } } };
+
+const lastVideoStorageKey = 'media-traffic.last-video-id';
+const runIdsStoragePrefix = 'media-traffic.analysis-run-ids:';
 
 const pollingIntervalMs = 1000;
 
@@ -34,7 +40,14 @@ function fileExtension(filename: string): string {
 }
 
 function errorMessage(payload: ApiError, fallback: string): string {
-  return payload.error?.message?.trim() || fallback;
+  const message = payload.error?.message?.trim() || fallback;
+  if (payload.error?.code !== 'SCENE_CONFIGURATION_INVALID' || !payload.error.details?.invalidFields?.length) return message;
+  const labels: Record<string, string> = {
+    vehicleRegion: 'vehicle region', stopLine: 'stop line', crossingDirection: 'crossing direction',
+    signalRegion: 'signal region', signalAssociation: 'signal association',
+  };
+  const fields = payload.error.details.invalidFields.map(field => labels[field] || field);
+  return `${message} Check: ${fields.join(', ')}.`;
 }
 
 async function readApiError(response: Response, fallback: string): Promise<Error> {
@@ -53,7 +66,9 @@ export function App() {
   const [job, setJob] = useState<UploadJob | null>(null);
   const [statusError, setStatusError] = useState('');
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
+  const [analysisRuns, setAnalysisRuns] = useState<AnalysisRunSnapshot[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const restoredRunVideoRef = useRef('');
 
   const loadLimits = useCallback(async (signal?: AbortSignal) => {
     setLimitsLoading(true);
@@ -120,6 +135,9 @@ export function App() {
       if (!response.ok) throw await readApiError(response, 'The video could not be uploaded. Check your connection and retry.');
       const accepted = await response.json() as UploadJob;
       setJob(accepted);
+      setAnalysisRuns([]);
+      restoredRunVideoRef.current = '';
+      window.localStorage.setItem(lastVideoStorageKey, accepted.id);
       setFileError('');
     } catch (error) {
       setUploadError(error instanceof Error ? error.message : 'The upload was interrupted. Check your connection and retry.');
@@ -133,6 +151,47 @@ export function App() {
     if (!response.ok) throw await readApiError(response, 'The upload status could not be checked. Try again.');
     return await response.json() as UploadJob;
   }, []);
+
+  const saveSceneConfiguration = async (snapshot: SceneConfigurationSnapshot) => {
+    const response = await fetch(`/api/videos/${encodeURIComponent(snapshot.source.videoId)}/configurations`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(snapshot),
+    });
+    if (!response.ok) throw await readApiError(response, 'The scene configuration could not be saved. Try again.');
+    return await response.json() as SceneConfigurationSnapshot;
+  };
+
+  const createAnalysisRun = async (snapshot: SceneConfigurationSnapshot) => {
+    const videoId = snapshot.source.videoId;
+    const response = await fetch(`/api/videos/${encodeURIComponent(videoId)}/analysis-runs`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ configurationId: snapshot.id }),
+    });
+    if (!response.ok) throw await readApiError(response, 'The analysis run record could not be saved. Try again.');
+    const created = await response.json() as AnalysisRunSnapshot;
+    if (created.status !== 'not_started' || created.analysisStarted !== false || created.videoId !== videoId
+      || created.configurationSnapshot?.id !== snapshot.id) {
+      throw new Error('The server returned an invalid analysis run record.');
+    }
+
+    // The API has a detail read route but no collection route. Keep the IDs locally
+    // and read each record back so a reload can restore the immutable evidence.
+    const readBackResponse = await fetch(`/api/videos/${encodeURIComponent(videoId)}/analysis-runs/${encodeURIComponent(created.id)}`);
+    if (!readBackResponse.ok) throw await readApiError(readBackResponse, 'The saved run record could not be reloaded.');
+    const readBack = await readBackResponse.json() as AnalysisRunSnapshot;
+    if (readBack.status !== 'not_started' || readBack.analysisStarted !== false || readBack.videoId !== videoId
+      || readBack.configurationSnapshot?.id !== snapshot.id) {
+      throw new Error('The reloaded run record does not match the saved configuration.');
+    }
+    const idsKey = `${runIdsStoragePrefix}${videoId}`;
+    const previousIds = JSON.parse(window.localStorage.getItem(idsKey) || '[]') as unknown;
+    const runIds = Array.isArray(previousIds) ? previousIds.filter((id): id is string => typeof id === 'string') : [];
+    window.localStorage.setItem(idsKey, JSON.stringify([created.id, ...runIds.filter(id => id !== created.id)]));
+    setAnalysisRuns(current => current.some(run => run.id === readBack.id) ? current : [readBack, ...current]);
+    return readBack;
+  };
 
   useEffect(() => {
     if (!job || job.status !== 'processing' || statusError) return;
@@ -150,6 +209,39 @@ export function App() {
       controller.abort();
     };
   }, [job, refreshJob, statusError]);
+
+  useEffect(() => {
+    if (!job || job.status !== 'completed' || restoredRunVideoRef.current === job.id) return;
+    restoredRunVideoRef.current = job.id;
+    let cancelled = false;
+    const idsKey = `${runIdsStoragePrefix}${job.id}`;
+    let storedIds: unknown;
+    try { storedIds = JSON.parse(window.localStorage.getItem(idsKey) || '[]'); } catch { storedIds = []; }
+    const runIds = Array.isArray(storedIds) ? storedIds.filter((id): id is string => typeof id === 'string') : [];
+    void Promise.all(runIds.map(async runId => {
+      const response = await fetch(`/api/videos/${encodeURIComponent(job.id)}/analysis-runs/${encodeURIComponent(runId)}`);
+      if (!response.ok) return null;
+      const run = await response.json() as AnalysisRunSnapshot;
+      return run.videoId === job.id && run.status === 'not_started' && run.analysisStarted === false ? run : null;
+    })).then(records => {
+      if (!cancelled) setAnalysisRuns(records.filter((run): run is AnalysisRunSnapshot => run !== null));
+    }).catch(() => {
+      // The run history remains available through its persisted IDs on a later reload.
+    });
+    return () => { cancelled = true; };
+  }, [job]);
+
+  useEffect(() => {
+    const rememberedVideoId = window.localStorage.getItem(lastVideoStorageKey);
+    if (!rememberedVideoId) return;
+    let cancelled = false;
+    void refreshJob(rememberedVideoId).then(restoredJob => {
+      if (!cancelled) setJob(restoredJob);
+    }).catch(() => {
+      if (!cancelled) window.localStorage.removeItem(lastVideoStorageKey);
+    });
+    return () => { cancelled = true; };
+  }, [refreshJob]);
 
   const retryStatusCheck = async () => {
     if (!job || isCheckingStatus) return;
@@ -272,14 +364,26 @@ export function App() {
                 </div>
               )}
               {job.status === 'completed' && (
-                <div className="preview-wrap">
-                  <video controls preload="metadata" src={job.preview.url} aria-label={`Preview of ${job.originalName}`}>
-                    Your browser cannot play this video preview.
-                  </video>
-                  <div className="preview-caption"><span>UPLOAD COMPLETE</span><span>ANALYSIS NOT STARTED</span></div>
+                <div className="preview-ready-note" role="status">
+                  <span>UPLOAD COMPLETE · PREVIEW READY</span><strong>Analysis has not started.</strong>
                 </div>
               )}
             </div>
+          )}
+
+          {job?.status === 'completed' && job.source && job.derivative && (
+            <SceneConfigurationEditor
+              videoId={job.id}
+              videoUrl={job.preview.url}
+              sourceSha256={job.source.sha256}
+              sourceWidth={job.source.media.width}
+              sourceHeight={job.source.media.height}
+              previewWidth={job.derivative.media.width}
+              previewHeight={job.derivative.media.height}
+              initialRuns={analysisRuns}
+              onSave={saveSceneConfiguration}
+              onCreateAnalysisRun={createAnalysisRun}
+            />
           )}
 
           <div className="panel-footer">

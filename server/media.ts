@@ -46,7 +46,7 @@ export type UploadJob = {
 };
 
 export class MediaError extends Error {
-  constructor(readonly code: string, message: string, readonly status: number) {
+  constructor(readonly code: string, message: string, readonly status: number, readonly details?: unknown) {
     super(message);
     this.name = 'MediaError';
   }

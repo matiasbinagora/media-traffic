@@ -20,6 +20,7 @@ import {
   validateExtension,
   SUPPORTED_EXTENSIONS,
 } from './media.js';
+import { createAnalysisRunSnapshot, readAnalysisRunSnapshot, saveSceneConfiguration } from './scene-configuration.js';
 
 type ServerOptions = {
   dataDirectory?: string;
@@ -55,7 +56,32 @@ function sendJson(response: ServerResponse, status: number, payload: unknown): v
 
 function sendError(response: ServerResponse, error: unknown): void {
   const normalized = apiError(error);
-  sendJson(response, normalized.status, { error: { code: normalized.code, message: normalized.message } });
+  sendJson(response, normalized.status, {
+    error: {
+      code: normalized.code,
+      message: normalized.message,
+      ...(normalized.details === undefined ? {} : { details: normalized.details }),
+    },
+  });
+}
+
+async function readJsonBody(request: IncomingMessage, maxBytes = 128 * 1024): Promise<unknown> {
+  if (!(request.headers['content-type'] || '').toLowerCase().startsWith('application/json')) {
+    throw new MediaError('JSON_REQUIRED', 'Send the request body as application/json.', 415);
+  }
+  const chunks: Buffer[] = [];
+  let size = 0;
+  for await (const chunk of request) {
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    size += buffer.length;
+    if (size > maxBytes) throw new MediaError('REQUEST_TOO_LARGE', 'The scene configuration request exceeds the 128 KB limit.', 413);
+    chunks.push(buffer);
+  }
+  try {
+    return JSON.parse(Buffer.concat(chunks).toString('utf8')) as unknown;
+  } catch {
+    throw new MediaError('INVALID_JSON', 'The request body must contain valid JSON.', 400);
+  }
 }
 
 function contentTypeFor(pathname: string): string {
@@ -253,6 +279,38 @@ export function createMediaServer(options: ServerOptions = {}): http.Server {
         if (!response.destroyed && !request.aborted) sendError(response, error);
         await rm(directory, { recursive: true, force: true }).catch(() => undefined);
         return;
+      }
+    }
+
+    const sceneRoute = /^\/api\/videos\/([0-9a-f-]{36})\/(configurations|analysis-runs)(?:\/([0-9a-f-]{36}))?$/i.exec(url.pathname);
+    if (sceneRoute) {
+      const videoId = sceneRoute[1];
+      const collection = sceneRoute[2];
+      const itemId = sceneRoute[3];
+      const job = await readJob(dataDirectory, videoId);
+      if (!job) return sendJson(response, 404, { error: { code: 'VIDEO_NOT_FOUND', message: 'Upload not found.' } });
+
+      try {
+        if (collection === 'configurations' && request.method === 'POST' && !itemId) {
+          const input = await readJsonBody(request);
+          const snapshot = await saveSceneConfiguration(dataDirectory, videoId, job, input);
+          return sendJson(response, 201, snapshot);
+        }
+        if (collection === 'analysis-runs' && request.method === 'POST' && !itemId) {
+          const input = await readJsonBody(request);
+          const configurationId = input !== null && typeof input === 'object' && !Array.isArray(input)
+            ? (input as Record<string, unknown>).configurationId
+            : undefined;
+          const run = await createAnalysisRunSnapshot(dataDirectory, videoId, configurationId);
+          return sendJson(response, 201, run);
+        }
+        if (collection === 'analysis-runs' && request.method === 'GET' && itemId) {
+          const run = await readAnalysisRunSnapshot(dataDirectory, videoId, itemId);
+          if (!run) return sendJson(response, 404, { error: { code: 'ANALYSIS_RUN_NOT_FOUND', message: 'Analysis run record not found.' } });
+          return sendJson(response, 200, run);
+        }
+      } catch (error) {
+        return sendError(response, error);
       }
     }
 
