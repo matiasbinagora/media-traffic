@@ -18,6 +18,7 @@ export type VideoMetadata = {
 };
 
 export type UploadJob = {
+  schemaVersion: 1;
   id: string;
   originalName: string;
   status: 'processing' | 'completed' | 'failed';

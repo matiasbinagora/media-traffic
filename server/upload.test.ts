@@ -9,6 +9,8 @@ import { createMediaServer } from './index.js';
 
 const fixtureRoot = await mkdtemp(path.join(os.tmpdir(), 'media-traffic-upload-test-'));
 const fixturePath = path.join(fixtureRoot, 'rights-cleared-bars.mp4');
+const movFixturePath = path.join(fixtureRoot, 'rights-cleared-bars.mov');
+const webmFixturePath = path.join(fixtureRoot, 'rights-cleared-bars.webm');
 let server: http.Server;
 let baseUrl: string;
 let dataDirectory: string;
@@ -18,6 +20,16 @@ before(async () => {
     '-nostdin', '-hide_banner', '-loglevel', 'error', '-y',
     '-f', 'lavfi', '-i', 'color=c=blue:s=319x239:r=12:d=1',
     '-output_ts_offset', '2', '-c:v', 'mpeg4', '-pix_fmt', 'yuv420p', fixturePath,
+  ]);
+  execFileSync('ffmpeg', [
+    '-nostdin', '-hide_banner', '-loglevel', 'error', '-y',
+    '-f', 'lavfi', '-i', 'color=c=green:s=320x240:r=10:d=0.5',
+    '-c:v', 'mpeg4', '-q:v', '5', '-an', '-f', 'mov', movFixturePath,
+  ]);
+  execFileSync('ffmpeg', [
+    '-nostdin', '-hide_banner', '-loglevel', 'error', '-y',
+    '-f', 'lavfi', '-i', 'color=c=red:s=320x240:r=10:d=0.5',
+    '-c:v', 'libvpx-vp9', '-deadline', 'realtime', '-cpu-used', '8', '-an', '-f', 'webm', webmFixturePath,
   ]);
   dataDirectory = await mkdtemp(path.join(os.tmpdir(), 'media-traffic-api-data-'));
   server = createMediaServer({ dataDirectory, maxUploadBytes: 1024 * 1024 });
@@ -112,6 +124,7 @@ test('valid upload stores an immutable source and generates a separately playabl
   const response = await upload('../../unsafe-name.mp4', sourceBytes);
   assert.equal(response.status, 201, JSON.stringify(await response.clone().json()));
   const accepted = await response.json() as Record<string, any>;
+  assert.equal(accepted.schemaVersion, 1);
   assert.equal(accepted.originalName, 'unsafe-name.mp4');
   assert.equal(accepted.upload.status, 'completed');
   assert.equal(accepted.preview.status, 'processing');
@@ -143,6 +156,24 @@ test('valid upload stores an immutable source and generates a separately playabl
   const unsatisfiable = await fetch(`${baseUrl}${completed.derivative.url}`, { headers: { range: 'bytes=999999999-' } });
   assert.equal(unsatisfiable.status, 416);
   assert.match(unsatisfiable.headers.get('content-range') || '', /^bytes \*\//);
+});
+
+test('accepts and creates MP4 previews from valid MOV and WebM source containers', async () => {
+  for (const fixture of [
+    { path: movFixturePath, extension: '.mov', expectedFormat: 'mov' },
+    { path: webmFixturePath, extension: '.webm', expectedFormat: 'webm' },
+  ]) {
+    const response = await upload(`camera-test${fixture.extension}`, await readFile(fixture.path));
+    assert.equal(response.status, 201, `${fixture.extension} should upload: ${JSON.stringify(await response.clone().json())}`);
+    const accepted = await response.json() as Record<string, any>;
+    assert.equal(accepted.schemaVersion, 1);
+    const completed = await waitForJob(accepted.id, 'completed');
+    assert.match(completed.source.media.formatName, new RegExp(fixture.expectedFormat));
+    assert.equal(completed.upload.status, 'completed');
+    assert.equal(completed.preview.status, 'completed');
+    assert.match(completed.derivative.media.formatName, /mp4/);
+    assert.ok(completed.derivative.sizeBytes > 0);
+  }
 });
 
 test('preview-generation failure stays visible and retains the uploaded source for retry', async () => {

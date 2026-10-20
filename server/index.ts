@@ -226,6 +226,7 @@ export function createMediaServer(options: ServerOptions = {}): http.Server {
         await import('node:fs/promises').then(({ rename }) => rename(tempPath, sourcePath!));
         const now = new Date().toISOString();
         const job: UploadJob = {
+          schemaVersion: 1,
           id,
           originalName: uploaded.filename,
           status: 'processing',
