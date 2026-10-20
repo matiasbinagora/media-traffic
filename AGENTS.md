@@ -2,21 +2,21 @@
 
 ## Project Structure & Module Organization
 
-Media Traffic is a Git-initialized planning/tooling scaffold; application source and runtime tests do not exist yet. `openspec/` holds requirements and change proposals, `docs/` holds contributor references, and `.codex/agents/` plus `.codex/skills/` configure the local agent suite. `package.json` and `package-lock.json` pin repository-local tools. Document the application layout in `README.md` when introducing it.
+The app uses `server/` for the Node/TypeScript upload API and media pipeline, `src/` for the React/Vite interface, and `docs/` for contributor and API references. `openspec/` holds requirements and change proposals; `.codex/agents/` and `.codex/skills/` configure local agents. Runtime uploads and generated previews live in ignored `.local-data/`; never add them to Git. `package.json` and `package-lock.json` pin repository-local tools and app dependencies.
 
 ## Build, Test, and Development Commands
 
-Use Node 22.23.2 (`.nvmrc`) and `npm ci`. Run `npm run agents:doctor` for agent diagnostics, `npm run spec -- status --change traffic-red-light-demo` for proposal progress, and `npm run spec:validate` for strict validation. `npm run test:auth` checks TestSprite access. `npm run testsprite -- <arguments>` invokes its local CLI. `npm run test:e2e` requires `TESTSPRITE_PROJECT_ID` and an accessible deployed default environment; local runs need `--local <port>`. No application build, lint, or development server exists yet.
+Use Node 22.23.2 (`.nvmrc`), install FFmpeg/FFprobe, then run `npm ci`. Start `npm run server` and `npm run dev` in separate terminals. `npm run build` type-checks and builds the frontend; `npm run typecheck:server` and `npm run typecheck:frontend` check each TypeScript side. `npm run test:backend` exercises the API and real FFmpeg preview; `npm run test:frontend` runs Vitest; `npm test` runs both. Run `npm run agents:doctor` for agent diagnostics, `npm run spec -- status --change traffic-red-light-demo` for proposal progress, and `npm run spec:validate` for strict validation. `npm run test:auth` checks TestSprite access. `npm run testsprite -- <arguments>` invokes its local CLI. `npm run test:e2e` requires `TESTSPRITE_PROJECT_ID` and an accessible deployed default environment; local runs need `--local <port>` and an already running app.
 
 ## Requirements & Coding Conventions
 
-Write new stories, project documentation, specs, and acceptance criteria in English. Keep OpenSpec requirements and Linear issues mutually linked; update specs before implementation. Use kebab-case change names, SHALL/MUST requirements and WHEN/THEN scenarios. Treat `../media-ads` as a reference, not an approved application stack. Configure formatting and linting with the first implementation.
+Write new stories, project documentation, specs, and acceptance criteria in English. Keep OpenSpec requirements and Linear issues mutually linked; update specs before implementation. Use kebab-case change names, SHALL/MUST requirements and WHEN/THEN scenarios. Treat `../media-ads` as a reference, not a source of imported behavior. Use strict TypeScript, React function components, two-space indentation, and descriptive camelCase identifiers; keep server code under `server/` and UI code under `src/`. Configure formatting and linting when the team selects those tools.
 
 ## Traffic Analysis & Testing Guidelines
 
 The MVP analyzes uploaded fixed-camera video for one configured movement and visible signal. Retain temporal car tracks; infer signal state from video; preserve uncertainty and evidence. Report candidate red-light crossings separately from human review decisions. Never substitute fixtures after inference failure. Keep synthetic-video ground truth independent of inference.
 
-Use TestSprite for broad web journeys, deterministic tests for crossing rules, and real inference evaluated against annotations for detection quality. No accuracy or coverage threshold is agreed yet. Record run evidence and failures; do not claim runtime verification before an application exists.
+Use TestSprite for broad web journeys, deterministic tests for crossing rules, and real inference evaluated against annotations for detection quality. No accuracy or coverage threshold is agreed yet. Record run evidence and failures. Upload and preview tests do not certify traffic detection; do not report analysis as complete when only upload/transcoding ran.
 
 ## Agent, Commit & Pull Request Guidelines
 

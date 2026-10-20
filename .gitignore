@@ -1,4 +1,6 @@
 node_modules/
+/dist/
+/.local-data/
 .direnv/
 .env
 .env.*

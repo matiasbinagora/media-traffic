@@ -63,8 +63,27 @@ the design; the tooling manifest is not an implemented application.
 | `npm run test:auth` | Verify TestSprite authentication |
 | `npm run test:e2e` | Run tests for the exported `TESTSPRITE_PROJECT_ID` |
 
-There are no application build or development-server commands yet. OpenSpec
-validation verifies planning structure, not the traffic detection algorithm.
+The initial local application scaffold implements the video upload API and
+playback derivative. Start `npm run server` and `npm run dev` in separate
+terminals for local development. FFmpeg and FFprobe must be installed. See
+[`docs/video-upload-api.md`](docs/video-upload-api.md) for API states, limits,
+failure behavior, and timestamp/coordinate mappings. OpenSpec validation checks
+specification structure; it does not evaluate traffic detection quality.
+
+| Command | Purpose |
+| --- | --- |
+| `npm run server` | Start the local Node API on `127.0.0.1:8787` |
+| `npm run dev` | Start Vite; `/api` requests proxy to the local API |
+| `npm run build` | Type-check the frontend and build production assets |
+| `npm run typecheck:server` | Strictly type-check backend TypeScript |
+| `npm run typecheck:frontend` | Strictly type-check frontend TypeScript |
+| `npm run test:backend` | Test upload validation, FFmpeg derivative, and HTTP playback behavior |
+| `npm run test:frontend` | Run frontend component tests with Vitest |
+| `npm test` | Run backend and frontend suites |
+
+Uploads are stored under the ignored `.local-data/` directory by default. The
+configured size cap defaults to 200 MiB; there is no duration limit. Upload
+success and preview readiness remain separate from any future traffic analysis.
 
 ## Repository-local GitHub authentication
 
