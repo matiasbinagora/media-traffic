@@ -1,0 +1,28 @@
+{
+  "name": "media-traffic",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Project tooling for Media Traffic",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/matiasbinagora/media-traffic.git"
+  },
+  "engines": {
+    "node": ">=22.23.2"
+  },
+  "scripts": {
+    "agents": "agents-cli",
+    "agents:doctor": "agents-cli doctor",
+    "agents:mcp": "agents-cli decision mcp",
+    "spec": "openspec",
+    "spec:validate": "openspec validate --all --strict",
+    "testsprite": "testsprite",
+    "test:auth": "testsprite auth status",
+    "test:e2e": "testsprite test run --all --project \"${TESTSPRITE_PROJECT_ID:?Set TESTSPRITE_PROJECT_ID}\" --wait --output json"
+  },
+  "devDependencies": {
+    "@fission-ai/openspec": "1.13.2",
+    "@matiasnjacob/agents-cli": "0.4.2",
+    "@testsprite/testsprite-cli": "0.15.0"
+  }
+}

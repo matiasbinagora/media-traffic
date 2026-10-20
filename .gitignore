@@ -1,0 +1,12 @@
+node_modules/
+.direnv/
+.env
+.env.*
+!.env.example
+.DS_Store
+.claude/settings.local.json
+.agents/mcp-state-codex.json
+.worktrees/
+.testsprite/runs/
+.testsprite/tmp/
+*.log

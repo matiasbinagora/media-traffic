@@ -1,0 +1,37 @@
+schema: spec-driven
+
+context: |
+  Project: Media Traffic.
+  Repository: https://github.com/matiasbinagora/media-traffic
+  Linear: https://linear.app/matias-personal/project/media-traffic-c8f955049a38/overview
+  Approved MVP: upload a generated fixed-camera traffic video, configure one stop line,
+  movement and associated visible signal, track cars with YOLO, infer signal state,
+  identify candidate red-light crossings, and review time-linked evidence.
+  Preserve uncertainty, full temporal observations and separate human decisions.
+  Synthetic ground truth must never become inferred detection output.
+  This repository currently has local tooling, not an implemented application.
+  ../media-ads is a reference; its React/Vite/TypeScript, Node, FFmpeg and Python YOLO
+  stack is a proposed reuse direction, not a user-confirmed architecture decision.
+  OpenSpec owns requirements; Linear owns backlog status. New artifacts are English.
+  TestSprite verifies functional web journeys; rule tests and annotated inference
+  evaluation separately verify crossing behavior and analysis quality.
+  Use pinned repository-local CLIs through npm scripts. Read README.md first.
+
+rules:
+  proposal:
+    - State the problem, users, scope, non-goals and dependencies.
+    - Separate user-approved requirements from proposed engineering decisions.
+  specs:
+    - Write in English with an As/I want/so that user story and observable criteria.
+    - Use SHALL or MUST and Scenario headings containing WHEN/THEN clauses.
+    - Cover happy paths, invalid inputs, uncertainty and relevant failures.
+    - Link actual Linear identifiers and URLs; never invent issue identifiers.
+  design:
+    - Justify proposed technical choices against confirmed requirements.
+    - Preserve trajectories and timestamps; do not copy representative-only tracking or unvalidated 1fps sampling.
+    - Record licensing, model selection, signal ambiguity and evidence limitations.
+  tasks:
+    - Link tasks to stories and specs, with one accountable specialist owner.
+    - Include verification in each task and leave incomplete tasks unchecked.
+    - Include TestSprite journey coverage and independent analysis-quality validation.
+    - Require independent review and acceptance evidence before closure.

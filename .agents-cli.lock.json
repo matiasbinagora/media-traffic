@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "0.3.0",
+  "files": {
+    ".codex/agents/m-traffic-backend-developer.toml": "1ba60e91324d9a512dc04b62f3bbe5c1737c1d67cc9fe033b02558e453153411",
+    ".codex/agents/m-traffic-frontend-developer.toml": "5983ad770965b26b041517a2fbea6323683fd545d42f055a58bd26b4a6cf4f30",
+    ".codex/agents/m-traffic-orchestrator.toml": "ca9eead930ee25632ec77f494ed2127ae9be79ba65b749ec97ed6fc547df5a66",
+    ".codex/agents/m-traffic-qa-automator.toml": "9e7376060c78527feab4987c23de008f0c5127820a3d31dfd5f471484bd23e44",
+    ".codex/agents/m-traffic-qa-manual.toml": "20039c67bc84191d57d80056b26cca02ad103ca0a0345cf2a02af0157580a664",
+    ".codex/AGENTS.md": "ee2f1d4bb85d2220bc6b076a8656d1170a82994fd1dedb270a4b8def97206748",
+    ".codex/agents/manifest.json": "0b354f87d03fd0807f45c65010c522d6780d47716ada72f85bb5182254b1ba4c",
+    ".codex/skills/orchestrator-governance/SKILL.md": "859abf152d7bc3a76092d37c88413794e7302366ed8a029c6ba7ca9954fc94a5",
+    ".codex/skills/worktree-task-isolation/SKILL.md": "8da930a4e9459317b5726a5bfe16efbae9352b8b97aa7a2fd2f20e457c776298",
+    ".codex/skills/developer-task-execution/SKILL.md": "c45a45a1ddd72e2a9afe524d2d9affa8cf8aeaeed2eba9335eb54deeaebae082",
+    ".codex/skills/git-feature-workflow/SKILL.md": "05987b376b428057fe1870fafc0fd2af1a720bab2fd5f9ea96daf874c29e3114",
+    ".codex/skills/functional-review/SKILL.md": "9ba3f7e9a3913d2c161acd12eec2c122d882550c18901ce16f6fbd815c04e68a",
+    "agents-cli.config.json": "1aefffb936bf6ff4a24492b3612421fae33e2b1a54839ab88ae15c9cbda0ca92",
+    ".codex/config.toml": "d35e10c3d769f8262a0dee6ab51a1561fa57c65508541ae7af8e748e2ac9c676",
+    ".agents/mcp-state-codex.json": "46a870437bd86d59fe83f88e4e0ab712731ab725f46546890e52069ce7edb882",
+    ".agents/workflows/linear-story.md": "885455f2285d920e380403d70adb272657b584d0e5b2105f69a6187ac7366525"
+  }
+}

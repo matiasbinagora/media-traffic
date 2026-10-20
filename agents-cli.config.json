@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "platform": "codex",
+  "suite": "complete",
+  "agents": [
+    "orchestrator",
+    "backend-developer",
+    "frontend-developer",
+    "qa-automator",
+    "qa-manual"
+  ],
+  "agentPrefix": "m-traffic",
+  "tracker": "linear",
+  "skills": [
+    "orchestrator-governance",
+    "worktree-task-isolation",
+    "developer-task-execution",
+    "git-feature-workflow",
+    "functional-review"
+  ],
+  "mcps": [
+    "linear",
+    "github",
+    "jev"
+  ],
+  "decisionSupport": {
+    "provider": "typesafe",
+    "mode": "assist",
+    "model": "jev-1.13.0",
+    "apiKeyEnv": "TYPESAFE_API_KEY",
+    "endpoint": "https://api.typesafe.ai/v1/systemone",
+    "timeoutMs": 10000,
+    "maxCalls": 100,
+    "maxInputBytes": 32768,
+    "tools": [
+      "route-task",
+      "suggest-skills",
+      "classify-failure",
+      "rank-test-scenarios"
+    ],
+    "thresholds": {
+      "route-task": 0.8,
+      "suggest-skills": 0.8,
+      "classify-failure": 0.8,
+      "rank-test-scenarios": 0.8
+    },
+    "audit": false
+  }
+}
