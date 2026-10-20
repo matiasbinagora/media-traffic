@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { SceneConfigurationEditor } from './SceneConfigurationEditor';
 
 type UploadLimits = {
   supportedFormats: string[];
@@ -14,6 +15,8 @@ type UploadJob = {
   status: 'processing' | 'completed' | 'failed';
   upload: { status: 'completed'; sizeBytes: number; sha256: string };
   preview: { status: 'processing' | 'completed' | 'failed'; contentType: string; url: string };
+  source?: { sizeBytes: number; sha256: string; media: { width: number; height: number } };
+  derivative?: { media: { width: number; height: number } };
   error?: { code: string; message: string };
   createdAt: string;
   updatedAt: string;
@@ -272,14 +275,23 @@ export function App() {
                 </div>
               )}
               {job.status === 'completed' && (
-                <div className="preview-wrap">
-                  <video controls preload="metadata" src={job.preview.url} aria-label={`Preview of ${job.originalName}`}>
-                    Your browser cannot play this video preview.
-                  </video>
-                  <div className="preview-caption"><span>UPLOAD COMPLETE</span><span>ANALYSIS NOT STARTED</span></div>
+                <div className="preview-ready-note" role="status">
+                  <span>UPLOAD COMPLETE · PREVIEW READY</span><strong>Analysis has not started.</strong>
                 </div>
               )}
             </div>
+          )}
+
+          {job?.status === 'completed' && job.source && job.derivative && (
+            <SceneConfigurationEditor
+              videoId={job.id}
+              videoUrl={job.preview.url}
+              sourceSha256={job.source.sha256}
+              sourceWidth={job.source.media.width}
+              sourceHeight={job.source.media.height}
+              previewWidth={job.derivative.media.width}
+              previewHeight={job.derivative.media.height}
+            />
           )}
 
           <div className="panel-footer">

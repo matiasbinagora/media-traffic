@@ -18,6 +18,8 @@ const job = {
   status: 'completed',
   upload: { status: 'completed', sizeBytes: 256, sha256: 'abc' },
   preview: { status: 'completed', contentType: 'video/mp4', url: '/api/videos/4b5f34a5-0c0a-4ef8-a811-66a28d650012/preview' },
+  source: { sizeBytes: 256, sha256: 'abc', media: { width: 640, height: 360 } },
+  derivative: { media: { width: 640, height: 360 } },
   createdAt: '2026-10-20T12:00:00.000Z',
   updatedAt: '2026-10-20T12:00:01.000Z',
 };
@@ -70,7 +72,7 @@ describe('video upload experience', () => {
     expect(await screen.findByText('Preparing your preview')).toBeInTheDocument();
     expect(await screen.findByText('Preview ready', {}, { timeout: 3000 })).toBeInTheDocument();
     expect(screen.getByText('ANALYSIS NOT STARTED')).toBeInTheDocument();
-    expect(screen.getByLabelText('Preview of intersection.mp4')).toHaveAttribute('src', job.preview.url);
+    expect(screen.getByLabelText('Video for scene configuration')).toHaveAttribute('src', job.preview.url);
     expect(fetchMock).toHaveBeenCalledWith('/api/videos', expect.objectContaining({ method: 'POST' }));
     expect(fetchMock).toHaveBeenCalledWith(`/api/videos/${job.id}`, expect.anything());
   });
