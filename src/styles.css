@@ -104,6 +104,16 @@ h2 { margin: 0; font: 600 23px 'Space Grotesk', sans-serif; letter-spacing: -.02
 .scene-error { margin: 12px 0; color: #a3332d; font-size: 11px; }
 .scene-service-note, .scene-saved { margin: 12px 0; color: #68766d; font-size: 10px; line-height: 1.5; }
 .scene-saved { color: #087c58; }
+.scene-run-history { margin-top: 15px; padding: 12px; border-radius: 6px; background: #f4f7f4; }
+.scene-run-history h3 { margin: 0 0 8px; color: #38463d; font-size: 11px; }
+.scene-run-history ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.scene-run-history li { display: grid; gap: 3px; color: #68766d; font-size: 10px; overflow-wrap: anywhere; }
+.scene-run-history li strong { color: #38463d; }
+.scene-run-history details { margin-top: 4px; }
+.scene-run-history summary { width: fit-content; color: #087c58; cursor: pointer; font-weight: 600; }
+.scene-run-history dl { display: grid; grid-template-columns: minmax(100px, auto) minmax(0, 1fr); gap: 4px 10px; margin: 8px 0 2px; }
+.scene-run-history dt { color: #38463d; font-weight: 600; }
+.scene-run-history dd { margin: 0; }
 .scene-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 18px; padding-top: 15px; border-top: 1px solid #edf0ec; }
 .scene-actions .secondary-button { min-height: 39px; margin: 0; padding: 0 12px; cursor: pointer; }
 .scene-actions .secondary-button:disabled { color: #98a19a; cursor: not-allowed; }

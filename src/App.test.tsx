@@ -30,6 +30,7 @@ function jsonResponse(body: unknown, status = 200) {
 
 describe('video upload experience', () => {
   beforeEach(() => {
+    window.localStorage.clear();
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(limits)));
   });
 

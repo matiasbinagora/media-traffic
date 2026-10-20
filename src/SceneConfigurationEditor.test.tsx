@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom/vitest';
-import { SceneConfigurationEditor } from './SceneConfigurationEditor';
+import { SceneConfigurationEditor, type SceneConfigurationSnapshot } from './SceneConfigurationEditor';
 
 const props = {
   videoId: 'video-1',
@@ -21,9 +21,9 @@ afterEach(() => {
 });
 
 describe('scene configuration editor', () => {
-  it('identifies missing geometry and keeps analysis disabled', () => {
+  it('identifies missing geometry and keeps run-record creation disabled', () => {
     render(<SceneConfigurationEditor {...props} />);
-    expect(screen.getByRole('button', { name: 'Start analysis' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Create analysis run record' })).toBeDisabled();
     expect(screen.getByRole('alert')).toHaveTextContent('Vehicle region');
     expect(screen.getByRole('alert')).toHaveTextContent('Stop line');
     expect(screen.getByRole('alert')).toHaveTextContent('Crossing direction');
@@ -44,9 +44,18 @@ describe('scene configuration editor', () => {
     expect(screen.getByRole('alert')).not.toHaveTextContent('Stop line');
   });
 
-  it('saves a versioned immutable snapshot after all geometry is configured', async () => {
+  it('saves a versioned immutable snapshot and records analysis provenance without starting analysis', async () => {
     const user = userEvent.setup();
-    render(<SceneConfigurationEditor {...props} />);
+    const onCreateAnalysisRun = vi.fn(async (snapshot: SceneConfigurationSnapshot) => ({
+      schemaVersion: 1 as const,
+      id: `run-${snapshot.id}`,
+      videoId: props.videoId,
+      status: 'not_started' as const,
+      analysisStarted: false as const,
+      configurationSnapshot: snapshot,
+      createdAt: '2026-10-20T12:01:00.000Z',
+    }));
+    render(<SceneConfigurationEditor {...props} onCreateAnalysisRun={onCreateAnalysisRun} />);
     const surface = screen.getByRole('application', { name: 'Scene geometry editor' });
     vi.spyOn(surface, 'getBoundingClientRect').mockReturnValue({
       x: 0, y: 0, left: 0, top: 0, right: 800, bottom: 450, width: 800, height: 450,
@@ -73,5 +82,11 @@ describe('scene configuration editor', () => {
     expect(snapshot.source.sha256).toBe(props.sourceSha256);
     expect(Object.isFrozen(snapshot)).toBe(true);
     expect(snapshot.geometry.stopLine.start).toEqual({ x: 0.2, y: 0.6 });
+    const createRunButton = screen.getByRole('button', { name: 'Create analysis run record' });
+    await waitFor(() => expect(createRunButton).toBeEnabled());
+    await user.click(createRunButton);
+    await waitFor(() => expect(onCreateAnalysisRun).toHaveBeenCalledWith(snapshot));
+    expect(screen.getByRole('region', { name: 'Analysis run records' })).toHaveTextContent('not started · analysis not started');
+    expect(screen.queryByRole('button', { name: 'Start analysis' })).not.toBeInTheDocument();
   });
 });

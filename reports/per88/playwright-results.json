@@ -23,7 +23,7 @@
     "preserveOutput": "always",
     "projects": [
       {
-        "outputDir": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/configure-intersection-analysis/reports/per88/test-artifacts",
+        "outputDir": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/configure-intersection-analysis/reports/per88/revalidation-artifacts",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -43,7 +43,7 @@
       {
         "grep": {},
         "grepInvert": null,
-        "outputDir": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/configure-intersection-analysis/reports/per88/test-artifacts",
+        "outputDir": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/configure-intersection-analysis/reports/per88/revalidation-artifacts",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -102,12 +102,7 @@
     "updateSourceMethod": "patch",
     "version": "1.64.1",
     "workers": 1,
-    "webServer": {
-      "command": "npm run dev -- --host 127.0.0.1 --port 5188 --strictPort",
-      "url": "http://127.0.0.1:5188",
-      "reuseExistingServer": false,
-      "timeout": 30000
-    }
+    "webServer": null
   },
   "suites": [
     {
@@ -117,7 +112,7 @@
       "line": 0,
       "specs": [
         {
-          "title": "keeps drawn normalized geometry aligned through letterboxing and player resizing",
+          "title": "persists scene configuration and immutable run records through real API routes",
           "ok": true,
           "tags": [],
           "tests": [
@@ -132,12 +127,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 851,
+                  "duration": 2673,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-20T21:52:24.386Z",
+                  "startTime": "2026-10-20T22:04:18.172Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -145,9 +140,43 @@
               "status": "expected"
             }
           ],
-          "id": "d147e3b62ccbae5e9337-8028369b292004ffe76b",
+          "id": "d147e3b62ccbae5e9337-d5afe881bf57274698ed",
           "file": "scene-configuration.spec.ts",
-          "line": 82,
+          "line": 100,
+          "column": 1
+        },
+        {
+          "title": "keeps normalized geometry aligned when the playback derivative is half-size",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 979,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T22:04:20.919Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d147e3b62ccbae5e9337-f9727abc6ca55f8f8a1e",
+          "file": "scene-configuration.spec.ts",
+          "line": 214,
           "column": 1
         }
       ]
@@ -155,9 +184,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-20T21:52:23.831Z",
-    "duration": 1501.9370000000001,
-    "expected": 1,
+    "startTime": "2026-10-20T22:04:17.212Z",
+    "duration": 4719.633000000001,
+    "expected": 2,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

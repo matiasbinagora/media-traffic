@@ -18,6 +18,16 @@ export type SceneConfigurationSnapshot = Readonly<{
   createdAt: string;
 }>;
 
+export type AnalysisRunSnapshot = Readonly<{
+  schemaVersion: 1;
+  id: string;
+  videoId: string;
+  status: 'not_started';
+  analysisStarted: false;
+  configurationSnapshot: SceneConfigurationSnapshot;
+  createdAt: string;
+}>;
+
 type DrawMode = 'vehicleRegion' | 'stopLine' | 'signalRegion';
 type Props = {
   videoId: string;
@@ -28,7 +38,8 @@ type Props = {
   previewWidth: number;
   previewHeight: number;
   onSave?: (snapshot: SceneConfigurationSnapshot) => Promise<SceneConfigurationSnapshot>;
-  onStartAnalysis?: (snapshot: SceneConfigurationSnapshot) => Promise<void>;
+  initialRuns?: AnalysisRunSnapshot[];
+  onCreateAnalysisRun?: (snapshot: SceneConfigurationSnapshot) => Promise<AnalysisRunSnapshot>;
 };
 
 const emptyGeometry: SceneGeometry = {
@@ -76,7 +87,8 @@ export function SceneConfigurationEditor({
   previewWidth,
   previewHeight,
   onSave,
-  onStartAnalysis,
+  initialRuns = [],
+  onCreateAnalysisRun,
 }: Props) {
   const [geometry, setGeometry] = useState<SceneGeometry>(emptyGeometry);
   const [drawMode, setDrawMode] = useState<DrawMode | null>(null);
@@ -87,6 +99,7 @@ export function SceneConfigurationEditor({
   const [saveError, setSaveError] = useState('');
   const [startingAnalysis, setStartingAnalysis] = useState(false);
   const [analysisError, setAnalysisError] = useState('');
+  const [analysisRuns, setAnalysisRuns] = useState<AnalysisRunSnapshot[]>(initialRuns);
   const canvasRef = useRef<HTMLDivElement>(null);
   const dimensionsRef = useRef({ width: 0, height: 0 });
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
@@ -114,6 +127,15 @@ export function SceneConfigurationEditor({
       window.removeEventListener('resize', measure);
     };
   }, []);
+
+  useEffect(() => {
+    if (initialRuns.length) {
+      setAnalysisRuns(current => {
+        const byId = new Map([...initialRuns, ...current].map(run => [run.id, run]));
+        return [...byId.values()];
+      });
+    }
+  }, [initialRuns]);
 
   const updateRegion = (mode: 'vehicleRegion' | 'signalRegion', region: NormalizedRegion) => {
     setGeometry(current => ({ ...current, [mode]: region }));
@@ -202,11 +224,12 @@ export function SceneConfigurationEditor({
   };
 
   const handleStartAnalysis = async () => {
-    if (!snapshot || !onStartAnalysis || invalidFields.length || startingAnalysis) return;
+    if (!snapshot || !onCreateAnalysisRun || invalidFields.length || startingAnalysis) return;
     setStartingAnalysis(true);
     setAnalysisError('');
     try {
-      await onStartAnalysis(snapshot);
+      const run = await onCreateAnalysisRun(snapshot);
+      setAnalysisRuns(current => current.some(existing => existing.id === run.id) ? current : [run, ...current]);
     } catch (error) {
       setAnalysisError(error instanceof Error ? error.message : 'Analysis could not be started. Try again.');
     } finally {
@@ -290,12 +313,30 @@ export function SceneConfigurationEditor({
       {analysisError && <p className="scene-error" role="alert">{analysisError}</p>}
       {!onSave && <p className="scene-service-note" role="status">Scene saving is unavailable until the configuration service is connected.</p>}
       {snapshot && <p className="scene-saved" role="status">Configuration snapshot {snapshot.id} saved · version {snapshot.schemaVersion}. Later edits will create a separate snapshot.</p>}
+      {analysisRuns.length > 0 && <section className="scene-run-history" aria-label="Analysis run records">
+        <h3>Saved run records</h3>
+        <ul>{analysisRuns.map(run => <li key={run.id}>
+          <strong>Run {run.id}</strong>
+          <span>{run.status.replace('_', ' ')} · analysis not started</span>
+          <span>Configuration {run.configurationSnapshot.id}</span>
+          <details>
+            <summary>Inspect saved configuration</summary>
+            <dl>
+              <dt>Vehicle region</dt><dd>{JSON.stringify(run.configurationSnapshot.geometry.vehicleRegion)}</dd>
+              <dt>Stop line</dt><dd>{JSON.stringify(run.configurationSnapshot.geometry.stopLine)}</dd>
+              <dt>Crossing direction</dt><dd>{run.configurationSnapshot.geometry.crossingDirection}</dd>
+              <dt>Signal region</dt><dd>{JSON.stringify(run.configurationSnapshot.geometry.signalRegion)}</dd>
+              <dt>Governing signal</dt><dd>{run.configurationSnapshot.geometry.signalAssociation}</dd>
+            </dl>
+          </details>
+        </li>)}</ul>
+      </section>}
 
       <div className="scene-actions">
         <button className="secondary-button" type="button" onClick={() => void handleSave()} disabled={!readyToSave}>{saving ? 'Saving…' : 'Save scene configuration'}</button>
-        <button className="primary-button" type="button" onClick={() => void handleStartAnalysis()} disabled={!snapshot || invalidFields.length > 0 || !onStartAnalysis || startingAnalysis} aria-describedby="analysis-disabled-reason">{startingAnalysis ? 'Starting analysis…' : 'Start analysis'} <span aria-hidden="true">→</span></button>
+        <button className="primary-button" type="button" onClick={() => void handleStartAnalysis()} disabled={!snapshot || invalidFields.length > 0 || !onCreateAnalysisRun || startingAnalysis} aria-describedby="analysis-disabled-reason">{startingAnalysis ? 'Saving run record…' : 'Create analysis run record'} <span aria-hidden="true">→</span></button>
       </div>
-      {!onStartAnalysis && <p id="analysis-disabled-reason" className="scene-service-note">Analysis will be available when the analysis service is implemented. Saving a scene does not start analysis.</p>}
+      <p id="analysis-disabled-reason" className="scene-service-note">Creating a run record saves configuration provenance only. It does not queue or start traffic analysis.</p>
     </section>
   );
 }
