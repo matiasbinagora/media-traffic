@@ -2,6 +2,7 @@
   "name": "media-traffic",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "description": "Project tooling for Media Traffic",
   "repository": {
     "type": "git",
@@ -18,11 +19,39 @@
     "spec:validate": "openspec validate --all --strict",
     "testsprite": "testsprite",
     "test:auth": "testsprite auth status",
-    "test:e2e": "testsprite test run --all --project \"${TESTSPRITE_PROJECT_ID:?Set TESTSPRITE_PROJECT_ID}\" --wait --output json"
+    "test:e2e": "testsprite test run --all --project \"${TESTSPRITE_PROJECT_ID:?Set TESTSPRITE_PROJECT_ID}\" --wait --output json",
+    "dev": "vite",
+    "build": "npm run typecheck:frontend && vite build",
+    "test:frontend": "vitest run",
+    "test:playwright": "playwright test",
+    "typecheck:frontend": "tsc --noEmit -p tsconfig.frontend.json",
+    "server": "tsx server/index.ts",
+    "test:backend": "node --import tsx --test server/*.test.ts",
+    "test": "npm run test:backend && npm run test:frontend",
+    "typecheck:server": "tsc --noEmit --target ES2022 --module NodeNext --moduleResolution NodeNext --strict --skipLibCheck --types node server/index.ts server/media.ts"
   },
   "devDependencies": {
     "@fission-ai/openspec": "1.13.2",
     "@matiasnjacob/agents-cli": "0.4.2",
-    "@testsprite/testsprite-cli": "0.15.0"
+    "@playwright/test": "^1.64.1",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
+    "@testsprite/testsprite-cli": "0.15.0",
+    "@types/busboy": "^1.5.5",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "jsdom": "^30.1.3",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
+  },
+  "dependencies": {
+    "busboy": "^1.6.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   }
 }

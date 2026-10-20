@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.15.0/schemas/plan.schema.json",
+  "projectId": "c0d461ac-6a7e-475c-bdfd-b773ecc52513",
+  "type": "frontend",
+  "name": "Upload page explains supported formats and limits",
+  "planSteps": [
+    { "type": "action", "description": "Open the Media Traffic upload page and wait for upload requirements to finish loading." },
+    { "type": "assertion", "description": "Verify the page visibly lists MP4, MOV, and WebM as supported formats." },
+    { "type": "assertion", "description": "Verify the page visibly states a maximum upload size of 200 MB and that no video duration limit is configured." },
+    { "type": "assertion", "description": "Verify the upload button is unavailable before a valid video file is selected." }
+  ]
+}
