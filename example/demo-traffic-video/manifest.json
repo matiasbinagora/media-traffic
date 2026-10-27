@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "synthetic": true,
+  "qualificationStatus": "unqualified",
+  "video": {
+    "path": "source.mp4",
+    "sha256": "17813154948efcc3e95dba0e7889a467c7bbb32bf8d79f7cac3d3c87dd4e7ef1",
+    "mimeType": "video/mp4",
+    "codec": "h264",
+    "width": 1920,
+    "height": 1080,
+    "durationSeconds": 10,
+    "frameRate": 30
+  },
+  "groundTruth": {
+    "path": "ground-truth.json",
+    "sha256": "ed0afd27d6ed567b2ad1f0a93867d093ec3a0daa10d6ec896e91b395a30f3fcf"
+  }
+}

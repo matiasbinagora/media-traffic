@@ -1,0 +1,9 @@
+# PER-86 Synthetic Candidate Visual Review
+
+Status: **VISUAL CANDIDATE REVIEWED; YOLO NOT QUALIFIED**. Reviewed `example/demo-traffic-video/source.mp4`, rendered from the HyperFrames project at `video/demo-traffic/`. `ffprobe` reports H.264, 1920×1080, 30/1 fps, 10.000 seconds. Source SHA-256: `17813154948efcc3e95dba0e7889a467c7bbb32bf8d79f7cac3d3c87dd4e7ef1`.
+
+The rendered clip has a stationary camera and stable intersection geometry. The signal is clearly legible at the reviewed frame samples. The gold car's nose crosses the stop line between 0.367 and 0.400 seconds during green; the red car crosses between 4.467 and 4.500 seconds during red. The blue car remains stopped about 21 px behind the stop line across the full red phase [3, 7] seconds, then proceeds after green returns. These intervals are recorded as independent ground truth in `example/demo-traffic-video/ground-truth.json`; the source, annotations, and any future inference outputs must remain separate.
+
+Frame-by-frame review used decoded 30 fps frames around both crossing boundaries and samples throughout the red stop interval. The full-clip 4 fps contact sheet is `reports/per86/evidence/rendered-source-4fps.jpg` (SHA-256 `cd43ddafcd26cae382be5acfe57ba00b8021c2bdcd0e669aa545d862cfee1ae7`). No discontinuity or ambiguous event attribution was observed in the reviewed clip. The scene is stylized vector artwork rather than photoreal traffic; its visual review does not establish detector performance or generalization.
+
+The manifest validator passes for the rendered asset and checks both file hashes, event classes, and timestamp bounds. This validates artifact integrity, not detection accuracy. No YOLO inference was run: model/runtime selection and pretrained-weight license review remain open as documented in `reports/per86/inference-readiness.md`. PER-86 therefore remains unqualified.
