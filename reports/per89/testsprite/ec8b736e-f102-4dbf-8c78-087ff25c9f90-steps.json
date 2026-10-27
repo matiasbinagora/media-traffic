@@ -1,0 +1,24 @@
+{
+  "testId": "868a5cb5-89b9-40e7-9206-f20e87761450",
+  "runId": "ec8b736e-f102-4dbf-8c78-087ff25c9f90",
+  "items": [
+    {
+      "stepIndex": 1,
+      "action": "navigate",
+      "description": "Navigate to http://127.0.0.1:5188",
+      "status": "passed",
+      "outcomeContributesToFailure": false,
+      "error": null,
+      "stepType": "action"
+    },
+    {
+      "stepIndex": 2,
+      "action": "visible",
+      "description": "The saved run records should show multiple vehicle tracks for the uploaded source.",
+      "status": "failed",
+      "outcomeContributesToFailure": true,
+      "error": null,
+      "stepType": "assertion"
+    }
+  ]
+}

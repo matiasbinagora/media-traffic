@@ -3,8 +3,9 @@ import { stat, writeFile, mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 
 const fixturePath = path.join(process.cwd(), 'e2e/fixtures/rights-cleared-blue.mp4');
-const metricsPath = path.join(process.cwd(), 'reports/per87/upload-observations.json');
-const ffmpegFailureMarker = path.join(process.cwd(), '.local-data/per87-ffmpeg-failed-once');
+const reportDirectory = process.env.PLAYWRIGHT_REPORT_DIR || 'reports/per87';
+const metricsPath = path.join(process.cwd(), reportDirectory, 'upload-observations.json');
+const ffmpegFailureMarker = path.join(process.cwd(), '.local-data/per89-ffmpeg-failed-once');
 
 test.beforeEach(async ({}, testInfo) => {
   if (testInfo.title.includes('real preview-transcode failure')) {
@@ -38,10 +39,10 @@ test('shows limits, uploads a supported clip, and replays preview without claimi
   expect(accepted.status).toBe('processing');
   expect(accepted.analysis).toBeUndefined();
 
-  await expect(page.getByText('Preview ready')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText('Preview ready', { exact: true })).toBeVisible({ timeout: 15_000 });
   const previewReadyAt = performance.now();
   await expect(page.getByText('ANALYSIS NOT STARTED')).toBeVisible();
-  const video = page.getByLabel('Preview of rights-cleared-blue.mp4');
+  const video = page.getByLabel('Video for scene configuration');
   await expect(video).toBeVisible();
   await video.evaluate(element => {
     const player = element as HTMLVideoElement;
@@ -63,7 +64,7 @@ test('shows limits, uploads a supported clip, and replays preview without claimi
 
   const fixture = await stat(fixturePath);
   const outputBytes = Buffer.from(await previewResponse.body()).byteLength;
-  await page.screenshot({ path: path.join(process.cwd(), 'reports/per87/preview-ready.png'), fullPage: true });
+  await page.screenshot({ path: path.join(process.cwd(), reportDirectory, 'preview-ready.png'), fullPage: true });
   const observation = {
     classification: 'observed, no agreed performance threshold',
     runtime: { node: process.version, platform: process.platform, architecture: process.arch, browser: { name: 'Chromium', version: page.context().browser()?.version() || 'unknown' } },
@@ -88,7 +89,7 @@ test('shows a real preview-transcode failure and recovers on the next upload', a
   await page.getByRole('button', { name: 'Choose another video' }).click();
   await input.setInputFiles(fixturePath);
   await page.getByRole('button', { name: 'Upload video' }).click();
-  await expect(page.getByText('Preview ready')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText('Preview ready', { exact: true })).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText('ANALYSIS NOT STARTED')).toBeVisible();
 });
 
@@ -119,11 +120,11 @@ test('rejects corrupt media with retry guidance and recovers with a valid upload
   await page.getByRole('button', { name: 'Upload video' }).click();
   await expect(page.getByRole('alert')).toContainText('not a readable video', { timeout: 10_000 });
   await expect(page.getByRole('button', { name: 'Retry upload' })).toBeEnabled();
-  await expect(page.getByText('Preview ready')).toHaveCount(0);
+  await expect(page.getByText('Preview ready', { exact: true })).toHaveCount(0);
 
   await page.locator('#video-file').setInputFiles(fixturePath);
   await page.getByRole('button', { name: 'Upload video' }).click();
-  await expect(page.getByText('Preview ready')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText('Preview ready', { exact: true })).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText('ANALYSIS NOT STARTED')).toBeVisible();
 });
 

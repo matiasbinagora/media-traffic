@@ -20,7 +20,8 @@ import {
   validateExtension,
   SUPPORTED_EXTENSIONS,
 } from './media.js';
-import { createAnalysisRunSnapshot, readAnalysisRunSnapshot, saveSceneConfiguration } from './scene-configuration.js';
+import { saveSceneConfiguration } from './scene-configuration.js';
+import { createAndQueueAnalysisRun, readAnalysisRun, recoverInterruptedAnalysisRuns, type TrackingOutput } from './analysis-run.js';
 
 type ServerOptions = {
   dataDirectory?: string;
@@ -29,6 +30,8 @@ type ServerOptions = {
   ffprobePath?: string;
   processingTimeoutMs?: number;
   host?: string;
+  analysisRunner?: (sourcePath: string, outputPath: string) => Promise<TrackingOutput>;
+  analysisTimeoutMs?: number;
 };
 
 type StoredUpload = { fieldName: string; filename: string; path: string; sizeBytes: number };
@@ -223,7 +226,9 @@ export function createMediaServer(options: ServerOptions = {}): http.Server {
   const maxUploadBytes = options.maxUploadBytes ?? (Number(process.env.MAX_UPLOAD_BYTES) || DEFAULT_MAX_UPLOAD_BYTES);
   if (!Number.isSafeInteger(maxUploadBytes) || maxUploadBytes < 1) throw new Error('MAX_UPLOAD_BYTES must be a positive integer.');
 
+  let startupRecovery = Promise.resolve(0);
   const server = http.createServer(async (request, response) => {
+    await startupRecovery;
     const url = new URL(request.url || '/', 'http://localhost');
     if (request.method === 'GET' && url.pathname === '/api/uploads/limits') {
       return sendJson(response, 200, {
@@ -301,11 +306,24 @@ export function createMediaServer(options: ServerOptions = {}): http.Server {
           const configurationId = input !== null && typeof input === 'object' && !Array.isArray(input)
             ? (input as Record<string, unknown>).configurationId
             : undefined;
-          const run = await createAnalysisRunSnapshot(dataDirectory, videoId, configurationId);
-          return sendJson(response, 201, run);
+          const extension = path.extname(job.originalName).toLowerCase();
+          const sourcePath = safeSourcePath(dataDirectory, videoId, extension);
+          if (!sourcePath || !(await stat(sourcePath).catch(() => undefined))?.isFile()) {
+            return sendJson(response, 404, { error: { code: 'VIDEO_SOURCE_NOT_FOUND', message: 'The uploaded original source is no longer available for analysis.' } });
+          }
+          const run = await createAndQueueAnalysisRun({
+            dataDirectory,
+            videoId,
+            upload: job,
+            configurationId,
+            sourcePath,
+            inferenceTimeoutMs: options.analysisTimeoutMs,
+            ...(options.analysisRunner ? { runTracking: options.analysisRunner } : {}),
+          });
+          return sendJson(response, 202, run);
         }
         if (collection === 'analysis-runs' && request.method === 'GET' && itemId) {
-          const run = await readAnalysisRunSnapshot(dataDirectory, videoId, itemId);
+          const run = await readAnalysisRun(dataDirectory, videoId, itemId);
           if (!run) return sendJson(response, 404, { error: { code: 'ANALYSIS_RUN_NOT_FOUND', message: 'Analysis run record not found.' } });
           return sendJson(response, 200, run);
         }
@@ -325,7 +343,13 @@ export function createMediaServer(options: ServerOptions = {}): http.Server {
   });
 
   server.on('clientError', (_error, socket) => socket.destroy());
-  server.on('listening', () => { void prepareStorage(dataDirectory); });
+  server.on('listening', () => {
+    startupRecovery = recoverInterruptedAnalysisRuns(dataDirectory).catch(error => {
+      console.error('Could not recover interrupted traffic-analysis runs:', error);
+      return 0;
+    });
+    void prepareStorage(dataDirectory);
+  });
   return server;
 }
 

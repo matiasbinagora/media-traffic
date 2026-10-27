@@ -20,3 +20,7 @@ Linear: [PER-93](https://linear.app/matias-personal/issue/PER-93/show-truthful-a
 #### Scenario: Trace separate runs
 - **WHEN** the same video is analyzed using different configuration or models
 - **THEN** each run retains a distinct identity and provenance so displayed evidence can be matched to the originating run
+
+#### Scenario: End stalled or interrupted runs
+- **WHEN** inference exceeds its configured timeout or the server restarts with a queued/running persisted run
+- **THEN** the system terminates timed-out inference, records a terminal failed status with an actionable code, and does not leave the run polling indefinitely

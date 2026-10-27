@@ -97,6 +97,16 @@ function expectLineInContainedFrame(line: Bounds, canvas: Bounds, mediaAspect: n
   expect(line.height).toBeLessThan(8);
 }
 
+async function waitForRunStatus(page: Page, videoId: string, runId: string, status: 'completed' | 'failed') {
+  await expect.poll(async () => {
+    const response = await page.request.get(`/api/videos/${videoId}/analysis-runs/${runId}`);
+    if (!response.ok()) return 'unavailable';
+    return (await response.json()).status;
+  }, { timeout: 10_000 }).toBe(status);
+  const response = await page.request.get(`/api/videos/${videoId}/analysis-runs/${runId}`);
+  return await response.json();
+}
+
 test('persists scene configuration and immutable run records through real API routes', async ({ page }) => {
   await page.setViewportSize({ width: 1024, height: 900 });
   await openConfiguredUpload(page);
@@ -162,12 +172,16 @@ test('persists scene configuration and immutable run records through real API ro
   expect(duplicateResponse.status()).toBe(409);
 
   const createFirstRunResponsePromise = page.waitForResponse(response => response.url().endsWith('/analysis-runs') && response.request().method() === 'POST');
-  await page.getByRole('button', { name: 'Create analysis run record' }).click();
+  await page.getByRole('button', { name: 'Start traffic analysis' }).click();
   const firstRunResponse = await createFirstRunResponsePromise;
-  expect(firstRunResponse.status()).toBe(201);
+  expect(firstRunResponse.status()).toBe(202);
   const firstRun = await firstRunResponse.json();
-  expect(firstRun).toMatchObject({ status: 'not_started', analysisStarted: false, configurationSnapshot: firstConfiguration });
+  expect(firstRun).toMatchObject({ status: 'queued', analysisStarted: true, configurationSnapshot: firstConfiguration });
+  const firstTerminalRun = await waitForRunStatus(page, firstRun.videoId, firstRun.id, 'failed');
+  expect(firstTerminalRun).not.toHaveProperty('result');
   await expect(page.getByRole('region', { name: 'Analysis run records' })).toContainText(firstConfiguration.id);
+  await expect(page.getByRole('region', { name: 'Analysis run records' })).toContainText('Analysis failed');
+  await expect(page.getByRole('region', { name: 'Analysis run records' })).toContainText('Set YOLO_MODEL_PATH');
 
   await page.getByLabel('Crossing direction').selectOption('bottom-to-top');
   const secondSavePromise = page.waitForResponse(response => response.url().includes('/configurations') && response.request().method() === 'POST');
@@ -177,16 +191,17 @@ test('persists scene configuration and immutable run records through real API ro
   const secondConfiguration = await secondSaveResponse.json();
   expect(secondConfiguration.id).not.toBe(firstConfiguration.id);
   const createSecondRunResponsePromise = page.waitForResponse(response => response.url().endsWith('/analysis-runs') && response.request().method() === 'POST');
-  await page.getByRole('button', { name: 'Create analysis run record' }).click();
+  await page.getByRole('button', { name: 'Start traffic analysis' }).click();
   const secondRunResponse = await createSecondRunResponsePromise;
-  expect(secondRunResponse.status()).toBe(201);
+  expect(secondRunResponse.status()).toBe(202);
   const secondRun = await secondRunResponse.json();
   expect(secondRun.configurationSnapshot.id).toBe(secondConfiguration.id);
+  const secondTerminalRun = await waitForRunStatus(page, secondRun.videoId, secondRun.id, 'failed');
+  expect(secondTerminalRun).not.toHaveProperty('result');
   await expect(page.getByRole('region', { name: 'Analysis run records' }).getByRole('listitem')).toHaveCount(2);
   await expect(page.getByRole('region', { name: 'Analysis run records' })).toContainText(firstConfiguration.id);
   await expect(page.getByRole('region', { name: 'Analysis run records' })).toContainText(secondConfiguration.id);
-  await expect(page.getByRole('button', { name: 'Start analysis' })).toHaveCount(0);
-  await expect(page.getByText('Creating a run record saves configuration provenance only. It does not queue or start traffic analysis.')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Analysis run records' })).toContainText('Set YOLO_MODEL_PATH');
 
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Mark the movement' })).toBeVisible();
@@ -195,18 +210,23 @@ test('persists scene configuration and immutable run records through real API ro
   await expect(restoredRuns).toContainText(firstConfiguration.id);
   await expect(restoredRuns).toContainText(secondConfiguration.id);
   const restoredItems = restoredRuns.getByRole('listitem');
-  await restoredItems.nth(1).getByText('Inspect saved configuration').click();
+  await restoredItems.nth(1).getByText('Inspect run evidence and provenance').click();
   await expect(restoredItems.nth(1)).toContainText('top-to-bottom');
-  await restoredItems.nth(0).getByText('Inspect saved configuration').click();
+  await restoredItems.nth(0).getByText('Inspect run evidence and provenance').click();
   await expect(restoredItems.nth(0)).toContainText('bottom-to-top');
   const firstRunReadBack = await page.request.get(`/api/videos/${firstRun.videoId}/analysis-runs/${firstRun.id}`);
   expect(firstRunReadBack.status()).toBe(200);
-  expect(await firstRunReadBack.json()).toEqual(firstRun);
+  const firstRunReadBackBody = await firstRunReadBack.json();
+  expect(firstRunReadBackBody.status).toBe('failed');
+  expect(firstRunReadBackBody.configurationSnapshot).toEqual(firstConfiguration);
   const secondRunReadBack = await page.request.get(`/api/videos/${secondRun.videoId}/analysis-runs/${secondRun.id}`);
   expect(secondRunReadBack.status()).toBe(200);
-  expect(await secondRunReadBack.json()).toEqual(secondRun);
+  const secondRunReadBackBody = await secondRunReadBack.json();
+  expect(secondRunReadBackBody.status).toBe('failed');
+  expect(secondRunReadBackBody.configurationSnapshot).toEqual(secondConfiguration);
 
-  const evidencePath = path.join(process.cwd(), 'reports/per88/revalidation-mobile.png');
+  const reportDirectory = process.env.PLAYWRIGHT_REPORT_DIR || 'reports/per88';
+  const evidencePath = path.join(process.cwd(), reportDirectory, 'revalidation-mobile.png');
   await mkdir(path.dirname(evidencePath), { recursive: true });
   await page.screenshot({ path: evidencePath, fullPage: true });
 });
