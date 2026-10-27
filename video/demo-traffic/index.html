@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      :root { color-scheme: dark; font-family: Arial, sans-serif; }
+      * { box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; margin: 0; overflow: hidden; background: #182024; }
+      #root { width: 1920px; height: 1080px; overflow: hidden; position: relative; }
+      .label { position: absolute; z-index: 10; color: #e7ece9; font: 600 28px/1.1 Arial, sans-serif; letter-spacing: .12em; text-shadow: 0 1px 4px #101719; }
+      #camera-label { top: 38px; left: 48px; }
+      #timestamp { top: 38px; right: 48px; font-variant-numeric: tabular-nums; }
+      .road-mark { fill: none; stroke: #e4e2cf; stroke-width: 8; opacity: .76; }
+      .lane-mark { fill: none; stroke: #e8e4ce; stroke-width: 7; stroke-dasharray: 48 42; opacity: .55; }
+      .car-shadow { fill: #12191b; opacity: .58; }
+      .car-body { stroke: #151b1d; stroke-width: 5; }
+      .car-glass { fill: #202b30; stroke: #0e1518; stroke-width: 4; }
+      .car-detail { fill: none; stroke: #e9e7dd; stroke-width: 4; opacity: .78; }
+      .wheel { fill: #111517; }
+      .lamp { opacity: .14; }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-199x" id="root" data-composition-id="main" data-start="0" data-duration="10" data-width="1920" data-height="1080">
+      <svg data-hf-id="hf-4mxt" width="1920" height="1080" viewBox="0 0 1920 1080" data-layout-allow-overflow role="img" aria-label="Synthetic fixed-camera intersection with a three-light traffic signal and three cars">
+        <defs data-hf-id="hf-mh0t">
+          <linearGradient data-hf-id="hf-x6s6" id="roadTexture" x1="0" x2="1" y1="0" y2="1">
+            <stop data-hf-id="hf-u1wn" offset="0" stop-color="#333d40" />
+            <stop data-hf-id="hf-vttb" offset=".52" stop-color="#414a4b" />
+            <stop data-hf-id="hf-kknw" offset="1" stop-color="#30393c" />
+          </linearGradient>
+          <linearGradient data-hf-id="hf-b8cu" id="carBlue" x2="1" y2="1"><stop data-hf-id="hf-4nlb" stop-color="#4d93ad" /><stop data-hf-id="hf-n7lc" offset="1" stop-color="#24586d" /></linearGradient>
+          <linearGradient data-hf-id="hf-xlgh" id="carRed" x2="1" y2="1"><stop data-hf-id="hf-od4y" stop-color="#df735e" /><stop data-hf-id="hf-rpgw" offset="1" stop-color="#9b382e" /></linearGradient>
+          <linearGradient data-hf-id="hf-6udo" id="carGold" x2="1" y2="1"><stop data-hf-id="hf-ymra" stop-color="#f1c85c" /><stop data-hf-id="hf-uicu" offset="1" stop-color="#b78628" /></linearGradient>
+          <filter data-hf-id="hf-6mye" id="softShadow" x="-.25" y="-.15" width="1.5" height="1.4"><feGaussianBlur data-hf-id="hf-sfiv" stdDeviation="9" /></filter>
+        </defs>
+
+        <rect data-hf-id="hf-yuub" width="1920" height="1080" fill="#273033" />
+        <rect data-hf-id="hf-of62" x="525" y="0" width="870" height="1080" fill="url(#roadTexture)" />
+        <rect data-hf-id="hf-wmas" x="0" y="430" width="1920" height="340" fill="url(#roadTexture)" />
+
+        <!-- Curbs and concrete verges frame one fixed, controlled movement. -->
+        <path data-hf-id="hf-hemf" d="M500 0V1080 M1420 0V1080" stroke="#c7c2ad" stroke-width="18" />
+        <path data-hf-id="hf-ky7b" d="M0 405H1920 M0 795H1920" stroke="#c7c2ad" stroke-width="18" />
+        <path data-hf-id="hf-oyw0" d="M535 0V1080 M1385 0V1080 M0 440H1920 M0 785H1920" stroke="#858778" stroke-width="4" opacity=".7" />
+
+        <!-- Lane separators and a broad, clearly visible stop line. -->
+        <path data-hf-id="hf-ph8x" d="M960 0V408 M960 810V1080" class="lane-mark" />
+        <path data-hf-id="hf-g31k" d="M545 486H1375" class="road-mark" stroke-width="13" />
+        <g data-hf-id="hf-zzhq" opacity=".9" fill="#eee9d5">
+          <path data-hf-id="hf-ygs3" d="M565 414h24v66h-24z M605 414h24v66h-24z M645 414h24v66h-24z M685 414h24v66h-24z M725 414h24v66h-24z M765 414h24v66h-24z M805 414h24v66h-24z M845 414h24v66h-24z M885 414h24v66h-24z M925 414h24v66h-24z M965 414h24v66h-24z M1005 414h24v66h-24z M1045 414h24v66h-24z M1085 414h24v66h-24z M1125 414h24v66h-24z M1165 414h24v66h-24z M1205 414h24v66h-24z M1245 414h24v66h-24z M1285 414h24v66h-24z M1325 414h24v66h-24z" />
+        </g>
+        <path data-hf-id="hf-bwfm" d="M570 845v-68l-23 25m23-25 23 25 M1140 845v-68l-23 25m23-25 23 25" fill="none" stroke="#e4e2cf" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity=".7" />
+
+        <!-- Signal is large, legible, and assigned to the two northbound lanes. -->
+        <g data-hf-id="hf-mgyv" id="signal" aria-label="Traffic signal">
+          <path data-hf-id="hf-8r19" d="M1370 105V345" stroke="#171c1d" stroke-width="22" />
+          <path data-hf-id="hf-coxw" d="M1370 345h-67" stroke="#171c1d" stroke-width="18" />
+          <rect data-hf-id="hf-71qw" x="1286" y="238" width="116" height="236" rx="24" fill="#161b1d" stroke="#070a0b" stroke-width="8" />
+          <circle data-hf-id="hf-gmkt" cx="1344" cy="294" r="34" fill="#ef4b42" class="lamp" id="red-lamp" />
+          <circle data-hf-id="hf-6e4o" cx="1344" cy="356" r="34" fill="#f4bf3d" class="lamp" id="amber-lamp" />
+          <circle data-hf-id="hf-uqm1" cx="1344" cy="418" r="34" fill="#52d17b" class="lamp" id="green-lamp" />
+          <circle data-hf-id="hf-vp2w" cx="1344" cy="294" r="24" fill="#d8322b" opacity=".36" id="red-lens" />
+          <circle data-hf-id="hf-ku28" cx="1344" cy="356" r="24" fill="#d69a20" opacity=".32" id="amber-lens" />
+          <circle data-hf-id="hf-u8y6" cx="1344" cy="418" r="24" fill="#25984a" opacity=".34" id="green-lens" />
+        </g>
+
+        <!-- Stop vehicle: approaches, waits behind the line for the full red phase, then proceeds. -->
+        <g data-hf-id="hf-t3zw" id="stop-car" class="clip" data-start="0.5" data-duration="9.5" data-track-index="0" transform="translate(805 1000)">
+          <ellipse data-hf-id="hf-rd57" cx="0" cy="14" rx="76" ry="148" class="car-shadow" filter="url(#softShadow)" />
+          <rect data-hf-id="hf-6f53" x="-60" y="-102" width="15" height="44" rx="7" class="wheel" />
+          <rect data-hf-id="hf-wnzp" x="45" y="-102" width="15" height="44" rx="7" class="wheel" />
+          <rect data-hf-id="hf-avs4" x="-60" y="58" width="15" height="44" rx="7" class="wheel" />
+          <rect data-hf-id="hf-4lni" x="45" y="58" width="15" height="44" rx="7" class="wheel" />
+          <path data-hf-id="hf-8xvf" d="M-42 -126 Q-55 -112 -57 -82 L-62 61 Q-61 104 -43 119 Q0 137 43 119 Q61 104 62 61 L57 -82 Q55 -112 42 -126 Q0 -143 -42 -126Z" class="car-body" fill="url(#carBlue)" />
+          <path data-hf-id="hf-agem" d="M-40 -73 Q0 -88 40 -73 L34 -13 Q0 -3 -34 -13Z" class="car-glass" />
+          <path data-hf-id="hf-kwf0" d="M-34 19 Q0 10 34 19 L39 65 Q0 80 -39 65Z" class="car-glass" />
+          <path data-hf-id="hf-x8n8" d="M-38 -87h76 M-38 92h76" class="car-detail" />
+          <rect data-hf-id="hf-9ty2" x="-43" y="-122" width="24" height="8" rx="4" fill="#fff1b5" />
+          <rect data-hf-id="hf-juoa" x="19" y="-122" width="24" height="8" rx="4" fill="#fff1b5" />
+          <rect data-hf-id="hf-v3bx" x="-42" y="112" width="22" height="8" rx="4" fill="#e95850" />
+          <rect data-hf-id="hf-uh5c" x="20" y="112" width="22" height="8" rx="4" fill="#e95850" />
+        </g>
+
+        <!-- Green-phase vehicle. It clears the stop line while the signal is green. -->
+        <g data-hf-id="hf-tegc" id="green-car" class="clip" data-start="0" data-duration="2.8" data-track-index="1" transform="translate(805 820)">
+          <ellipse data-hf-id="hf-hrcb" cx="0" cy="14" rx="76" ry="148" class="car-shadow" filter="url(#softShadow)" />
+          <rect data-hf-id="hf-w24n" x="-60" y="-102" width="15" height="44" rx="7" class="wheel" /><rect data-hf-id="hf-ezs9" x="45" y="-102" width="15" height="44" rx="7" class="wheel" />
+          <rect data-hf-id="hf-mo0s" x="-60" y="58" width="15" height="44" rx="7" class="wheel" /><rect data-hf-id="hf-69oi" x="45" y="58" width="15" height="44" rx="7" class="wheel" />
+          <path data-hf-id="hf-qxxd" d="M-42 -126 Q-55 -112 -57 -82 L-62 61 Q-61 104 -43 119 Q0 137 43 119 Q61 104 62 61 L57 -82 Q55 -112 42 -126 Q0 -143 -42 -126Z" class="car-body" fill="url(#carGold)" />
+          <path data-hf-id="hf-bwk2" d="M-40 -73 Q0 -88 40 -73 L34 -13 Q0 -3 -34 -13Z" class="car-glass" /><path data-hf-id="hf-rlec" d="M-34 19 Q0 10 34 19 L39 65 Q0 80 -39 65Z" class="car-glass" />
+          <path data-hf-id="hf-rsqk" d="M-38 -87h76 M-38 92h76" class="car-detail" />
+          <rect data-hf-id="hf-j5ry" x="-43" y="-122" width="24" height="8" rx="4" fill="#fff1b5" /><rect data-hf-id="hf-9l8u" x="19" y="-122" width="24" height="8" rx="4" fill="#fff1b5" />
+          <rect data-hf-id="hf-q8c1" x="-42" y="112" width="22" height="8" rx="4" fill="#e95850" /><rect data-hf-id="hf-oai0" x="20" y="112" width="22" height="8" rx="4" fill="#e95850" />
+        </g>
+
+        <!-- Red-phase vehicle in the adjacent lane crosses the same stop line during red. -->
+        <g data-hf-id="hf-5p45" id="red-car" class="clip" data-start="3.55" data-duration="3.75" data-track-index="2" transform="translate(1085 960)">
+          <ellipse data-hf-id="hf-hd1a" cx="0" cy="14" rx="76" ry="148" class="car-shadow" filter="url(#softShadow)" />
+          <rect data-hf-id="hf-vntm" x="-60" y="-102" width="15" height="44" rx="7" class="wheel" /><rect data-hf-id="hf-g6pc" x="45" y="-102" width="15" height="44" rx="7" class="wheel" />
+          <rect data-hf-id="hf-lh3p" x="-60" y="58" width="15" height="44" rx="7" class="wheel" /><rect data-hf-id="hf-6nzj" x="45" y="58" width="15" height="44" rx="7" class="wheel" />
+          <path data-hf-id="hf-5u3k" d="M-42 -126 Q-55 -112 -57 -82 L-62 61 Q-61 104 -43 119 Q0 137 43 119 Q61 104 62 61 L57 -82 Q55 -112 42 -126 Q0 -143 -42 -126Z" class="car-body" fill="url(#carRed)" />
+          <path data-hf-id="hf-cav3" d="M-40 -73 Q0 -88 40 -73 L34 -13 Q0 -3 -34 -13Z" class="car-glass" /><path data-hf-id="hf-qeh9" d="M-34 19 Q0 10 34 19 L39 65 Q0 80 -39 65Z" class="car-glass" />
+          <path data-hf-id="hf-qlth" d="M-38 -87h76 M-38 92h76" class="car-detail" />
+          <rect data-hf-id="hf-jk2z" x="-43" y="-122" width="24" height="8" rx="4" fill="#fff1b5" /><rect data-hf-id="hf-9zjv" x="19" y="-122" width="24" height="8" rx="4" fill="#fff1b5" />
+          <rect data-hf-id="hf-rf94" x="-42" y="112" width="22" height="8" rx="4" fill="#e95850" /><rect data-hf-id="hf-n3kx" x="20" y="112" width="22" height="8" rx="4" fill="#e95850" />
+        </g>
+      </svg>
+      <div data-hf-id="hf-3wwl" id="camera-label" class="label">SYNTHETIC TEST SCENE · FIXED CAMERA</div>
+      <div data-hf-id="hf-kgtx" class="label" style="top:72px;right:48px">CAM 04 · ANALYSIS TEST</div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines.main = tl;
+
+      // Signal phases: green [0, 2), amber [2, 3), red [3, 7), green [7, 10).
+      tl.set("#green-lamp, #green-lens", { opacity: 1 }, 0);
+      tl.set("#amber-lamp, #amber-lens, #red-lamp, #red-lens", { opacity: 0.14 }, 0);
+      tl.set("#green-lamp, #green-lens", { opacity: 0.14 }, 2);
+      tl.set("#amber-lamp, #amber-lens", { opacity: 1 }, 2);
+      tl.set("#amber-lamp, #amber-lens", { opacity: 0.14 }, 3);
+      tl.set("#red-lamp, #red-lens", { opacity: 1 }, 3);
+      tl.set("#red-lamp, #red-lens", { opacity: 0.14 }, 7);
+      tl.set("#green-lamp, #green-lens", { opacity: 1 }, 7);
+
+      // Vehicle nose crosses the stop line at y=486 while the corresponding phase is visible.
+      tl.to("#green-car", { y: -470, duration: 2.6, ease: "none" }, 0);
+      tl.to("#stop-car", { y: 650, duration: 2.1, ease: "power2.out" }, 0.5);
+      tl.to("#stop-car", { y: -370, duration: 2.5, ease: "power2.in" }, 7.05);
+      tl.to("#red-car", { y: -390, duration: 3.75, ease: "none" }, 3.55);
+
+      tl.seek(0);
+    </script>
+  </body>
+</html>

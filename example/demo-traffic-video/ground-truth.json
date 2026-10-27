@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "events": [
+    {
+      "eventId": "green-crossing-gold-1",
+      "type": "green_crossing",
+      "startSeconds": 0.367,
+      "endSeconds": 0.4,
+      "vehicleId": "gold-car",
+      "notes": "The vehicle nose is before the stop line at 0.367 s and has crossed it by 0.400 s while the signal is green."
+    },
+    {
+      "eventId": "red-crossing-red-1",
+      "type": "red_crossing",
+      "startSeconds": 4.467,
+      "endSeconds": 4.5,
+      "vehicleId": "red-car",
+      "notes": "The vehicle nose is before the stop line at 4.467 s and has crossed it by 4.500 s while the signal is red."
+    },
+    {
+      "eventId": "correct-stop-blue-1",
+      "type": "correct_stop",
+      "startSeconds": 3,
+      "endSeconds": 7,
+      "vehicleId": "blue-car",
+      "notes": "The vehicle remains stationary with its nose approximately 21 px behind the stop line for the entire visible red phase [3, 7] s. It proceeds after green returns."
+    }
+  ]
+}
