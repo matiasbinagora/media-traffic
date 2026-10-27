@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -36,6 +37,34 @@ async function resolveAssetFile(assetDirectory, relativePath, fieldName) {
 
 function sha256(bytes) {
   return createHash('sha256').update(bytes).digest('hex');
+}
+
+function probeVideo(filename) {
+  let output;
+  try {
+    output = execFileSync(process.env.FFPROBE_PATH || 'ffprobe', [
+      '-v', 'error',
+      '-select_streams', 'v:0',
+      '-show_entries', 'stream=codec_name,width,height,avg_frame_rate,r_frame_rate,duration:format=duration,format_name',
+      '-of', 'json',
+      filename,
+    ], { encoding: 'utf8' });
+  } catch (error) {
+    throw new Error(`unable to probe source video with ffprobe: ${error.message}`, { cause: error });
+  }
+
+  let metadata;
+  try {
+    metadata = JSON.parse(output);
+  } catch (error) {
+    throw new Error('ffprobe returned invalid JSON for source video', { cause: error });
+  }
+  const stream = metadata.streams?.[0];
+  requireCondition(stream, 'ffprobe did not find a video stream');
+  const [rateNumerator, rateDenominator] = (stream.avg_frame_rate || stream.r_frame_rate || '').split('/').map(Number);
+  const frameRate = rateDenominator ? rateNumerator / rateDenominator : rateNumerator;
+  const durationSeconds = Number(stream.duration ?? metadata.format?.duration);
+  return { stream, format: metadata.format, frameRate, durationSeconds };
 }
 
 async function readJson(filename, fieldName) {
@@ -82,6 +111,14 @@ export async function validateDemoManifest(manifestPath) {
   ]);
   requireCondition(sha256(videoBytes) === manifest.video.sha256.toLowerCase(), 'video SHA-256 does not match the source file');
   requireCondition(sha256(annotationBytes) === manifest.groundTruth.sha256.toLowerCase(), 'groundTruth SHA-256 does not match the annotation file');
+
+  const probedVideo = probeVideo(videoPath);
+  requireCondition(probedVideo.format?.format_name?.split(',').includes('mp4'), 'source video container is not MP4');
+  requireCondition(manifest.video.codec === probedVideo.stream.codec_name, 'video codec does not match the probed stream');
+  requireCondition(manifest.video.width === probedVideo.stream.width, 'video width does not match the probed stream');
+  requireCondition(manifest.video.height === probedVideo.stream.height, 'video height does not match the probed stream');
+  requireCondition(Math.abs(manifest.video.durationSeconds - probedVideo.durationSeconds) <= 0.001, 'video duration does not match the probed stream');
+  requireCondition(Math.abs(manifest.video.frameRate - probedVideo.frameRate) <= 0.001, 'video frameRate does not match the probed stream');
 
   const annotations = await readJson(groundTruthPath, 'groundTruth');
   requireCondition(annotations?.schemaVersion === 1, 'groundTruth schemaVersion must be 1');

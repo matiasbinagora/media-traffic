@@ -8,7 +8,7 @@ import test from 'node:test';
 
 import { validateDemoManifest } from '../scripts/demo-manifest.mjs';
 
-const videoBytes = Buffer.from('synthetic video placeholder');
+const videoBytes = await readFile(new URL('../example/demo-traffic-video/source.mp4', import.meta.url));
 const videoHash = createHash('sha256').update(videoBytes).digest('hex');
 
 async function createAsset(t, { annotations, manifestOverrides = {} } = {}) {
@@ -35,8 +35,9 @@ async function createAsset(t, { annotations, manifestOverrides = {} } = {}) {
       path: 'source.mp4',
       sha256: videoHash,
       mimeType: 'video/mp4',
-      width: 1280,
-      height: 720,
+      codec: 'h264',
+      width: 1920,
+      height: 1080,
       durationSeconds: 10,
       frameRate: 30,
     },
@@ -53,6 +54,16 @@ test('validates the independent ground-truth file and verifies both asset hashes
 
   assert.deepEqual(result.eventTypes, ['correct_stop', 'green_crossing', 'red_crossing']);
   assert.equal(result.synthetic, true);
+});
+
+test('records crossing windows at the decoded frames where the rendered car noses cross the stop line', async () => {
+  const groundTruthPath = new URL('../example/demo-traffic-video/ground-truth.json', import.meta.url);
+  const groundTruth = JSON.parse(await readFile(groundTruthPath, 'utf8'));
+  const greenCrossing = groundTruth.events.find((event) => event.type === 'green_crossing');
+  const redCrossing = groundTruth.events.find((event) => event.type === 'red_crossing');
+
+  assert.deepEqual([greenCrossing.startSeconds, greenCrossing.endSeconds], [0.367, 0.4]);
+  assert.deepEqual([redCrossing.startSeconds, redCrossing.endSeconds], [4.467, 4.5]);
 });
 
 test('CLI reports a verified manifest as JSON', async (t) => {
@@ -148,6 +159,47 @@ test('rejects a video hash that does not match the referenced source file', asyn
   await assert.rejects(
     validateDemoManifest(path.join(root, 'manifest.json')),
     /video SHA-256 does not match/,
+  );
+});
+
+test('rejects manifest metadata that does not match the probed video stream', async (t) => {
+  const root = await createAsset(t, {
+    manifestOverrides: {
+      video: {
+        path: 'source.mp4',
+        sha256: videoHash,
+        mimeType: 'video/mp4',
+        codec: 'h264',
+        width: 1280,
+        height: 720,
+        durationSeconds: 10,
+        frameRate: 30,
+      },
+    },
+  });
+
+  await assert.rejects(
+    validateDemoManifest(path.join(root, 'manifest.json')),
+    /video width does not match the probed stream/,
+  );
+
+  const codecRoot = await createAsset(t, {
+    manifestOverrides: {
+      video: {
+        path: 'source.mp4',
+        sha256: videoHash,
+        mimeType: 'video/mp4',
+        codec: 'mpeg4',
+        width: 1920,
+        height: 1080,
+        durationSeconds: 10,
+        frameRate: 30,
+      },
+    },
+  });
+  await assert.rejects(
+    validateDemoManifest(path.join(codecRoot, 'manifest.json')),
+    /video codec does not match the probed stream/,
   );
 });
 

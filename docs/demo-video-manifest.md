@@ -34,4 +34,6 @@ node scripts/demo-manifest.mjs example/demo-traffic-video/manifest.json
 node --test tests/demo-manifest.test.mjs
 ```
 
+The validator requires `ffprobe` (or `FFPROBE_PATH`) and compares the manifest codec, dimensions, duration, and frame rate with the source stream.
+
 A valid manifest establishes metadata and annotation integrity only. It does not qualify visual continuity, car detectability, signal readability, or YOLO inference.
