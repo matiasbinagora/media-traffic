@@ -4,18 +4,18 @@
     {
       "eventId": "green-crossing-gold-1",
       "type": "green_crossing",
-      "startSeconds": 0.367,
-      "endSeconds": 0.4,
+      "startSeconds": 1.1,
+      "endSeconds": 1.2,
       "vehicleId": "gold-car",
-      "notes": "The vehicle nose is before the stop line at 0.367 s and has crossed it by 0.400 s while the signal is green."
+      "notes": "At decoded frame 33 (1.100 s) the gold car nose remains before the stop line; by decoded frame 36 (1.200 s) it has crossed. Both boundary frames show green."
     },
     {
       "eventId": "red-crossing-red-1",
       "type": "red_crossing",
-      "startSeconds": 4.467,
-      "endSeconds": 4.5,
+      "startSeconds": 5.933,
+      "endSeconds": 5.967,
       "vehicleId": "red-car",
-      "notes": "The vehicle nose is before the stop line at 4.467 s and has crossed it by 4.500 s while the signal is red."
+      "notes": "Use the leading front-bumper/headlight tip as the nose reference against the diagonal stop-stripe centerline. At decoded frame 178 (5.933 s) the tip reaches the stripe; by frame 179 (5.967 s) it is approximately 2 px beyond it. Both boundary frames show red. Earlier proposed brackets 167/168 and 174/175 were before the crossing and are invalid."
     },
     {
       "eventId": "correct-stop-blue-1",
@@ -23,7 +23,7 @@
       "startSeconds": 3,
       "endSeconds": 7,
       "vehicleId": "blue-car",
-      "notes": "The vehicle remains stationary with its nose approximately 21 px behind the stop line for the entire visible red phase [3, 7] s. It proceeds after green returns."
+      "notes": "The blue car is stationary and visibly behind the stop line throughout the red phase [3, 7] s, then proceeds after green returns."
     }
   ]
 }
