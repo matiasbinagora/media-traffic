@@ -1,0 +1,23 @@
+{
+  "$schema": "../../../node_modules/@testsprite/testsprite-cli/schemas/plan.schema.json",
+  "projectId": "c0d461ac-6a7e-475c-bdfd-b773ecc52513",
+  "type": "frontend",
+  "name": "Unavailable YOLO model produces an honest failed analysis run",
+  "description": "When the model checkpoint is not configured, the run reaches a visible failed state with an actionable error and no fabricated detection output.",
+  "priority": "p1",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the Media Traffic application running without a configured YOLO model checkpoint." },
+    { "type": "action", "description": "Upload the synthetic demo video at example/demo-traffic-video/source.mp4." },
+    { "type": "action", "description": "Open the scene configuration for the uploaded video." },
+    { "type": "action", "description": "Draw the vehicle region." },
+    { "type": "action", "description": "Draw the stop-line segment." },
+    { "type": "action", "description": "Draw the associated signal region." },
+    { "type": "action", "description": "Select the crossing direction." },
+    { "type": "action", "description": "Select the associated signal." },
+    { "type": "action", "description": "Save the scene configuration." },
+    { "type": "action", "description": "Start traffic analysis." },
+    { "type": "action", "description": "Wait until the analysis run reaches a terminal state." },
+    { "type": "assertion", "description": "In the saved run records panel, verify the run is labeled failed and shows the actionable missing YOLO model configuration message." },
+    { "type": "assertion", "description": "Verify no completed vehicle-track count, detection boxes, or fabricated analysis result appears for the failed run." }
+  ]
+}

@@ -16,7 +16,10 @@ type UploadJob = {
   upload: { status: 'completed'; sizeBytes: number; sha256: string };
   preview: { status: 'processing' | 'completed' | 'failed'; contentType: string; url: string };
   source?: { sizeBytes: number; sha256: string; media: { width: number; height: number } };
-  derivative?: { media: { width: number; height: number } };
+  derivative?: {
+    media: { width: number; height: number };
+    timestampMapping: { sourceSeconds: string; previewSeconds: string; offsetSeconds: number };
+  };
   error?: { code: string; message: string };
   createdAt: string;
   updatedAt: string;
@@ -169,29 +172,37 @@ export function App() {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ configurationId: snapshot.id }),
     });
-    if (!response.ok) throw await readApiError(response, 'The analysis run record could not be saved. Try again.');
+    if (response.status !== 202) throw await readApiError(response, 'Traffic analysis could not be queued. Try again.');
     const created = await response.json() as AnalysisRunSnapshot;
-    if (created.status !== 'not_started' || created.analysisStarted !== false || created.videoId !== videoId
+    if (created.schemaVersion !== 2 || !['queued', 'running'].includes(created.status) || created.analysisStarted !== true || created.videoId !== videoId
       || created.configurationSnapshot?.id !== snapshot.id) {
-      throw new Error('The server returned an invalid analysis run record.');
+      throw new Error('The server returned an invalid traffic analysis run.');
     }
 
-    // The API has a detail read route but no collection route. Keep the IDs locally
-    // and read each record back so a reload can restore the immutable evidence.
-    const readBackResponse = await fetch(`/api/videos/${encodeURIComponent(videoId)}/analysis-runs/${encodeURIComponent(created.id)}`);
-    if (!readBackResponse.ok) throw await readApiError(readBackResponse, 'The saved run record could not be reloaded.');
-    const readBack = await readBackResponse.json() as AnalysisRunSnapshot;
-    if (readBack.status !== 'not_started' || readBack.analysisStarted !== false || readBack.videoId !== videoId
-      || readBack.configurationSnapshot?.id !== snapshot.id) {
-      throw new Error('The reloaded run record does not match the saved configuration.');
+    setAnalysisRuns(current => current.some(run => run.id === created.id) ? current : [created, ...current]);
+    // Persistence is best-effort: the accepted run must stay visible even when
+    // browser storage is malformed, disabled, or out of quota.
+    try {
+      const idsKey = `${runIdsStoragePrefix}${videoId}`;
+      const previousIds = JSON.parse(window.localStorage.getItem(idsKey) || '[]') as unknown;
+      const runIds = Array.isArray(previousIds) ? previousIds.filter((id): id is string => typeof id === 'string') : [];
+      window.localStorage.setItem(idsKey, JSON.stringify([created.id, ...runIds.filter(id => id !== created.id)]));
+    } catch {
+      // The run remains available in application state for this session.
     }
-    const idsKey = `${runIdsStoragePrefix}${videoId}`;
-    const previousIds = JSON.parse(window.localStorage.getItem(idsKey) || '[]') as unknown;
-    const runIds = Array.isArray(previousIds) ? previousIds.filter((id): id is string => typeof id === 'string') : [];
-    window.localStorage.setItem(idsKey, JSON.stringify([created.id, ...runIds.filter(id => id !== created.id)]));
-    setAnalysisRuns(current => current.some(run => run.id === readBack.id) ? current : [readBack, ...current]);
-    return readBack;
+    return created;
   };
+
+  const refreshAnalysisRun = useCallback(async (runId: string) => {
+    if (!job) throw new Error('The video is not available to refresh its analysis.');
+    const response = await fetch(`/api/videos/${encodeURIComponent(job.id)}/analysis-runs/${encodeURIComponent(runId)}`);
+    if (!response.ok) throw await readApiError(response, 'Analysis status could not be checked. Try again.');
+    const run = await response.json() as AnalysisRunSnapshot;
+    if (run.schemaVersion !== 2 || run.videoId !== job.id || !['queued', 'running', 'completed', 'failed'].includes(run.status)) {
+      throw new Error('The server returned an invalid traffic analysis status.');
+    }
+    return run;
+  }, [job]);
 
   useEffect(() => {
     if (!job || job.status !== 'processing' || statusError) return;
@@ -222,7 +233,7 @@ export function App() {
       const response = await fetch(`/api/videos/${encodeURIComponent(job.id)}/analysis-runs/${encodeURIComponent(runId)}`);
       if (!response.ok) return null;
       const run = await response.json() as AnalysisRunSnapshot;
-      return run.videoId === job.id && run.status === 'not_started' && run.analysisStarted === false ? run : null;
+      return run.videoId === job.id && run.schemaVersion === 2 ? run : null;
     })).then(records => {
       if (!cancelled) setAnalysisRuns(records.filter((run): run is AnalysisRunSnapshot => run !== null));
     }).catch(() => {
@@ -365,7 +376,7 @@ export function App() {
               )}
               {job.status === 'completed' && (
                 <div className="preview-ready-note" role="status">
-                  <span>UPLOAD COMPLETE · PREVIEW READY</span><strong>Analysis has not started.</strong>
+                  <span>UPLOAD COMPLETE · PREVIEW READY</span><strong>Traffic analysis is a separate step below.</strong>
                 </div>
               )}
             </div>
@@ -380,9 +391,11 @@ export function App() {
               sourceHeight={job.source.media.height}
               previewWidth={job.derivative.media.width}
               previewHeight={job.derivative.media.height}
+              sourceTimeOffsetSeconds={job.derivative.timestampMapping?.offsetSeconds || 0}
               initialRuns={analysisRuns}
               onSave={saveSceneConfiguration}
               onCreateAnalysisRun={createAnalysisRun}
+              onRefreshAnalysisRun={refreshAnalysisRun}
             />
           )}
 

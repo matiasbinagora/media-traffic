@@ -17,6 +17,10 @@ Linear: [PER-89](https://linear.app/matias-personal/issue/PER-89/detect-cars-and
 - **WHEN** a car is occluded or tracking loses or changes identity
 - **THEN** the run records the gap or uncertainty and does not invent confident continuous observations
 
+#### Scenario: Flag possible identity fragmentation
+- **WHEN** distinct track IDs have spatially overlapping or nearby endpoint observations within a few decoded frames
+- **THEN** the result records a possible identity switch with unverified continuity while retaining separate IDs and observed boxes
+
 ### Requirement: Infer the associated signal state
 
 <a id="us-05"></a>

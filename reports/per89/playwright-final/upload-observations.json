@@ -1,0 +1,30 @@
+{
+  "classification": "observed, no agreed performance threshold",
+  "runtime": {
+    "node": "v26.8.2",
+    "platform": "darwin",
+    "architecture": "arm64",
+    "browser": {
+      "name": "Chromium",
+      "version": "156.0.8078.4"
+    }
+  },
+  "input": {
+    "path": "e2e/fixtures/rights-cleared-blue.mp4",
+    "provenance": "synthetic FFmpeg lavfi blue frame; no traffic imagery or ground truth",
+    "format": "MP4/H.264",
+    "durationSeconds": 0.6,
+    "bytes": 2134
+  },
+  "response": {
+    "uploadHttpStatus": 201,
+    "previewHttpStatus": 200,
+    "previewContentType": "video/mp4",
+    "outputBytes": 1845
+  },
+  "elapsedMs": {
+    "uploadAccepted": 72,
+    "previewReady": 1368
+  },
+  "analysis": "not started; no analysis result was returned"
+}
