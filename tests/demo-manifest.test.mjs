@@ -62,8 +62,8 @@ test('records crossing windows at the decoded frames where the rendered car nose
   const greenCrossing = groundTruth.events.find((event) => event.type === 'green_crossing');
   const redCrossing = groundTruth.events.find((event) => event.type === 'red_crossing');
 
-  assert.deepEqual([greenCrossing.startSeconds, greenCrossing.endSeconds], [0.367, 0.4]);
-  assert.deepEqual([redCrossing.startSeconds, redCrossing.endSeconds], [4.467, 4.5]);
+  assert.deepEqual([greenCrossing.startSeconds, greenCrossing.endSeconds], [1.1, 1.2]);
+  assert.deepEqual([redCrossing.startSeconds, redCrossing.endSeconds], [5.933, 5.967]);
 });
 
 test('CLI reports a verified manifest as JSON', async (t) => {
