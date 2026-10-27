@@ -5,6 +5,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const EXPECTED_EVENT_TYPES = ['red_crossing', 'green_crossing', 'correct_stop'];
+const INFERENCE_DATA_KEYS = new Set(['inference', 'detections', 'predictions', 'modeloutput', 'inferenceresults']);
 const SHA256_PATTERN = /^[a-f0-9]{64}$/i;
 
 function requireCondition(condition, message) {
@@ -37,6 +38,13 @@ async function resolveAssetFile(assetDirectory, relativePath, fieldName) {
 
 function sha256(bytes) {
   return createHash('sha256').update(bytes).digest('hex');
+}
+
+function containsInferenceData(value) {
+  if (Array.isArray(value)) return value.some(containsInferenceData);
+  if (!value || typeof value !== 'object') return false;
+  return Object.entries(value).some(([key, nestedValue]) =>
+    INFERENCE_DATA_KEYS.has(key.toLowerCase()) || containsInferenceData(nestedValue));
 }
 
 function probeVideo(filename) {
@@ -122,6 +130,7 @@ export async function validateDemoManifest(manifestPath) {
 
   const annotations = await readJson(groundTruthPath, 'groundTruth');
   requireCondition(annotations?.schemaVersion === 1, 'groundTruth schemaVersion must be 1');
+  requireCondition(!containsInferenceData(annotations), 'inference output must remain separate from groundTruth');
   requireCondition(Array.isArray(annotations.events), 'groundTruth events must be an array');
   const eventCounts = Object.fromEntries(EXPECTED_EVENT_TYPES.map((type) => [type, 0]));
   const eventIds = new Set();

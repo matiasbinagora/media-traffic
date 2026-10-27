@@ -211,3 +211,40 @@ test('rejects inference data embedded in the synthetic asset manifest', async (t
     /inference outputs must not be stored in the asset manifest/,
   );
 });
+
+test('rejects inference data embedded in the ground-truth document', async (t) => {
+  const root = await createAsset(t, {
+    annotations: {
+      schemaVersion: 1,
+      inference: { detections: [] },
+      events: [
+        { eventId: 'red-1', type: 'red_crossing', startSeconds: 2.1, endSeconds: 2.8 },
+        { eventId: 'green-1', type: 'green_crossing', startSeconds: 4.2, endSeconds: 4.9 },
+        { eventId: 'stop-1', type: 'correct_stop', startSeconds: 6.1, endSeconds: 7.4 },
+      ],
+    },
+  });
+
+  await assert.rejects(
+    validateDemoManifest(path.join(root, 'manifest.json')),
+    /inference output must remain separate from groundTruth/,
+  );
+});
+
+test('rejects detection fields embedded in ground-truth event annotations', async (t) => {
+  const root = await createAsset(t, {
+    annotations: {
+      schemaVersion: 1,
+      events: [
+        { eventId: 'red-1', type: 'red_crossing', startSeconds: 2.1, endSeconds: 2.8, detections: [] },
+        { eventId: 'green-1', type: 'green_crossing', startSeconds: 4.2, endSeconds: 4.9 },
+        { eventId: 'stop-1', type: 'correct_stop', startSeconds: 6.1, endSeconds: 7.4 },
+      ],
+    },
+  });
+
+  await assert.rejects(
+    validateDemoManifest(path.join(root, 'manifest.json')),
+    /inference output must remain separate from groundTruth/,
+  );
+});
