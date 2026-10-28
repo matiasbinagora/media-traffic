@@ -6,6 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { after, before, test } from 'node:test';
 import { createMediaServer } from './index.js';
+import type { TrackingOutput } from './analysis-run.js';
 
 const fixtureRoot = await mkdtemp(path.join(os.tmpdir(), 'media-traffic-scene-test-'));
 const fixturePath = path.join(fixtureRoot, 'scene-source.mp4');
@@ -14,6 +15,46 @@ let baseUrl: string;
 let dataDirectory: string;
 let videoId: string;
 let sourceSha256: string;
+let simulateInferenceFailure = false;
+let simulateInvalidCheckpoint = false;
+
+const deterministicTrackingOutput: TrackingOutput = {
+  width: 320,
+  height: 240,
+  frames: [
+    { frameIndex: 0, timeSeconds: 0, detections: [
+      { trackId: 1, box: [30, 40, 80, 100], confidence: 0.91 },
+      { trackId: 2, box: [150, 40, 210, 110], confidence: 0.86 },
+    ] },
+    { frameIndex: 1, timeSeconds: 0.1, detections: [
+      { trackId: 1, box: [31, 41, 81, 101], confidence: 0.9 },
+      { trackId: 2, box: [151, 41, 211, 111], confidence: 0.85 },
+    ] },
+    { frameIndex: 2, timeSeconds: 0.2, detections: [
+      { trackId: 1, box: [32, 42, 82, 102], confidence: 0.89 },
+    ] },
+  ],
+  provenance: {
+    checkpoint: 'yolo26n.pt',
+    checkpointSha256: '9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef',
+    runtime: 'Ultralytics',
+    runtimeVersion: 'test-version',
+    pythonVersion: 'test-python',
+    pytorchVersion: 'test-pytorch',
+    platform: 'test-platform',
+    device: 'cpu',
+    tracker: 'ByteTrack',
+    trackerConfigSha256: 'a'.repeat(64),
+    trackerConfig: { tracker_type: 'bytetrack', track_buffer: 30 },
+    sampling: 'every decoded frame',
+    timestampSource: 'ffprobe.best_effort_timestamp_time',
+    confidenceThreshold: 0.25,
+    imageSize: 640,
+    classFilter: { id: 2, name: 'car' },
+    decodedFrameCount: 3,
+    inferenceSeconds: 0.12,
+  },
+};
 
 before(async () => {
   execFileSync('ffmpeg', [
@@ -22,7 +63,16 @@ before(async () => {
     '-c:v', 'mpeg4', '-pix_fmt', 'yuv420p', fixturePath,
   ]);
   dataDirectory = await mkdtemp(path.join(os.tmpdir(), 'media-traffic-scene-data-'));
-  server = createMediaServer({ dataDirectory, maxUploadBytes: 1024 * 1024 });
+  server = createMediaServer({
+    dataDirectory,
+    maxUploadBytes: 1024 * 1024,
+    analysisRunner: async () => {
+      if (simulateInferenceFailure) throw new Error('test inference failure');
+      const output = structuredClone(deterministicTrackingOutput);
+      if (simulateInvalidCheckpoint) output.provenance.checkpointSha256 = '0'.repeat(64);
+      return output;
+    },
+  });
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
   const address = server.address();
   assert.ok(address && typeof address === 'object');
@@ -113,11 +163,21 @@ test('captures immutable configuration snapshots per run when later scene edits 
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ configurationId: first.id }),
   });
-  assert.equal(firstRunResponse.status, 201, JSON.stringify(await firstRunResponse.clone().json()));
+  assert.equal(firstRunResponse.status, 202, JSON.stringify(await firstRunResponse.clone().json()));
   const firstRun = await firstRunResponse.json() as Record<string, any>;
-  assert.equal(firstRun.status, 'not_started');
-  assert.equal(firstRun.analysisStarted, false);
+  assert.equal(firstRun.status, 'queued');
+  assert.equal(firstRun.analysisStarted, true);
   assert.deepEqual(firstRun.configurationSnapshot, first);
+  const completedFirstRun = await waitForAnalysisRun(firstRun.id);
+  assert.equal(completedFirstRun.status, 'completed');
+  assert.deepEqual(completedFirstRun.result.tracks.map((track: any) => track.trackId), ['1', '2']);
+  assert.equal(completedFirstRun.result.tracks[0].observations.length, 3);
+  assert.equal(completedFirstRun.result.tracks[1].observations.length, 2);
+  assert.equal(completedFirstRun.provenance.sampling.framesPerSample, 1);
+  assert.equal(completedFirstRun.provenance.detector.sha256, deterministicTrackingOutput.provenance.checkpointSha256);
+  assert.equal(completedFirstRun.provenance.detector.platform, deterministicTrackingOutput.provenance.platform);
+  assert.equal(completedFirstRun.provenance.detector.inferenceSeconds, deterministicTrackingOutput.provenance.inferenceSeconds);
+  assert.equal(completedFirstRun.provenance.sampling.decodedFrameCount, deterministicTrackingOutput.provenance.decodedFrameCount);
 
   const second = configuration('10000000-0000-4000-8000-000000000003', 0.9);
   const saveSecond = await saveConfiguration(second);
@@ -127,6 +187,8 @@ test('captures immutable configuration snapshots per run when later scene edits 
   assert.equal(firstEvidenceResponse.status, 200);
   const firstEvidence = await firstEvidenceResponse.json() as Record<string, any>;
   assert.deepEqual(firstEvidence.configurationSnapshot, first);
+  assert.equal(firstEvidence.status, 'completed');
+  assert.equal(firstEvidence.result.tracks.length, 2);
   assert.equal(firstEvidence.configurationSnapshot.geometry.stopLine.end.x, 0.8);
 
   const secondRunResponse = await fetch(`${baseUrl}/api/videos/${videoId}/analysis-runs`, {
@@ -134,15 +196,27 @@ test('captures immutable configuration snapshots per run when later scene edits 
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ configurationId: second.id }),
   });
-  assert.equal(secondRunResponse.status, 201, JSON.stringify(await secondRunResponse.clone().json()));
+  assert.equal(secondRunResponse.status, 202, JSON.stringify(await secondRunResponse.clone().json()));
   const secondRun = await secondRunResponse.json() as Record<string, any>;
   assert.notEqual(secondRun.id, firstRun.id);
   assert.deepEqual(secondRun.configurationSnapshot, second);
+  assert.equal((await waitForAnalysisRun(secondRun.id)).status, 'completed');
 
   const duplicate = await saveConfiguration(first);
   assert.equal(duplicate.status, 409);
   assert.equal((await duplicate.json() as any).error.code, 'SCENE_CONFIGURATION_IMMUTABLE');
 });
+
+async function waitForAnalysisRun(runId: string) {
+  const deadline = Date.now() + 5_000;
+  while (Date.now() < deadline) {
+    const response = await fetch(`${baseUrl}/api/videos/${videoId}/analysis-runs/${runId}`);
+    const run = await response.json() as Record<string, any>;
+    if (run.status === 'completed' || run.status === 'failed') return run;
+    await new Promise(resolve => setTimeout(resolve, 10));
+  }
+  assert.fail('The analysis run did not reach a terminal state in time.');
+}
 
 test('cannot create an analysis run without an explicitly saved configuration', async () => {
   const response = await fetch(`${baseUrl}/api/videos/${videoId}/analysis-runs`, {
@@ -152,4 +226,40 @@ test('cannot create an analysis run without an explicitly saved configuration', 
   });
   assert.equal(response.status, 422);
   assert.equal((await response.json() as any).error.code, 'SCENE_CONFIGURATION_REQUIRED');
+});
+
+test('persists a failed inference state without substituting fixture detections', async () => {
+  const snapshot = configuration('10000000-0000-4000-8000-000000000005');
+  assert.equal((await saveConfiguration(snapshot)).status, 201);
+  simulateInferenceFailure = true;
+  const response = await fetch(`${baseUrl}/api/videos/${videoId}/analysis-runs`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ configurationId: snapshot.id }),
+  });
+  assert.equal(response.status, 202);
+  const queued = await response.json() as Record<string, any>;
+  const failed = await waitForAnalysisRun(queued.id);
+  simulateInferenceFailure = false;
+  assert.equal(failed.status, 'failed');
+  assert.equal(failed.error.stage, 'inference');
+  assert.equal(failed.error.message, 'test inference failure');
+  assert.equal('result' in failed, false);
+});
+
+test('rejects tracker output with checkpoint provenance that differs from the qualified model', async () => {
+  const snapshot = configuration('10000000-0000-4000-8000-000000000006');
+  assert.equal((await saveConfiguration(snapshot)).status, 201);
+  simulateInvalidCheckpoint = true;
+  const response = await fetch(`${baseUrl}/api/videos/${videoId}/analysis-runs`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ configurationId: snapshot.id }),
+  });
+  const queued = await response.json() as Record<string, any>;
+  const failed = await waitForAnalysisRun(queued.id);
+  simulateInvalidCheckpoint = false;
+  assert.equal(failed.status, 'failed');
+  assert.match(failed.error.message, /provenance does not match/);
+  assert.equal('result' in failed, false);
 });

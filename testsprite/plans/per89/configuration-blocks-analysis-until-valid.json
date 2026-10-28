@@ -1,0 +1,21 @@
+{
+  "$schema": "../../../node_modules/@testsprite/testsprite-cli/schemas/plan.schema.json",
+  "projectId": "c0d461ac-6a7e-475c-bdfd-b773ecc52513",
+  "type": "frontend",
+  "name": "Incomplete scene configuration prevents car tracking",
+  "description": "The analysis action stays unavailable until the video movement, stop line, direction, and associated signal are configured and saved.",
+  "priority": "p1",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the Media Traffic application." },
+    { "type": "action", "description": "Upload the synthetic demo video at example/demo-traffic-video/source.mp4." },
+    { "type": "action", "description": "Open the scene configuration for the uploaded video." },
+    { "type": "assertion", "description": "In the scene configuration actions, verify that Start traffic analysis is disabled while required movement and signal fields are incomplete." },
+    { "type": "action", "description": "Draw the vehicle region." },
+    { "type": "action", "description": "Draw the stop-line segment." },
+    { "type": "action", "description": "Draw the associated signal region." },
+    { "type": "action", "description": "Select the crossing direction." },
+    { "type": "action", "description": "Select the associated signal." },
+    { "type": "action", "description": "Save the scene configuration." },
+    { "type": "assertion", "description": "Verify the saved configuration is identified in the scene configuration panel and Start traffic analysis is enabled." }
+  ]
+}

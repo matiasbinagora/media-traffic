@@ -1,5 +1,4 @@
-import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { UploadJob } from './media.js';
 import { MediaError } from './media.js';
@@ -20,16 +19,6 @@ export type SceneConfigurationSnapshot = {
   geometry: SceneGeometry;
   createdAt: string;
 };
-export type AnalysisRunSnapshot = {
-  schemaVersion: 1;
-  id: string;
-  videoId: string;
-  status: 'not_started';
-  analysisStarted: false;
-  configurationSnapshot: SceneConfigurationSnapshot;
-  createdAt: string;
-};
-
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const directions = ['top-to-bottom', 'bottom-to-top', 'left-to-right', 'right-to-left'] as const;
 
@@ -109,10 +98,6 @@ function configurationDirectory(dataDirectory: string, videoId: string): string 
   return path.join(dataDirectory, 'videos', videoId, 'configurations');
 }
 
-function analysisRunDirectory(dataDirectory: string, videoId: string): string {
-  return path.join(dataDirectory, 'videos', videoId, 'analysis-runs');
-}
-
 export async function saveSceneConfiguration(
   dataDirectory: string,
   videoId: string,
@@ -131,50 +116,4 @@ export async function saveSceneConfiguration(
     throw error;
   }
   return snapshot;
-}
-
-export async function createAnalysisRunSnapshot(
-  dataDirectory: string,
-  videoId: string,
-  configurationId: unknown,
-): Promise<AnalysisRunSnapshot> {
-  if (typeof configurationId !== 'string' || !uuidPattern.test(configurationId)) {
-    throw new MediaError('SCENE_CONFIGURATION_REQUIRED', 'Save a valid scene configuration before creating an analysis run record.', 422);
-  }
-  const filename = path.join(configurationDirectory(dataDirectory, videoId), `${configurationId}.json`);
-  let configuration: SceneConfigurationSnapshot;
-  try {
-    configuration = JSON.parse(await readFile(filename, 'utf8')) as SceneConfigurationSnapshot;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      throw new MediaError('SCENE_CONFIGURATION_REQUIRED', 'Save a valid scene configuration before creating an analysis run record.', 422);
-    }
-    throw error;
-  }
-  const invalidFields = invalidGeometryFields(configuration.geometry);
-  if (configuration.schemaVersion !== 1 || configuration.id !== configurationId || configuration.source.videoId !== videoId || invalidFields.length) {
-    throw new MediaError('SCENE_CONFIGURATION_INVALID', 'The saved scene configuration is invalid and cannot be used for a run record.', 422, { invalidFields });
-  }
-  const run: AnalysisRunSnapshot = {
-    schemaVersion: 1,
-    id: randomUUID(),
-    videoId,
-    status: 'not_started',
-    analysisStarted: false,
-    configurationSnapshot: structuredClone(configuration),
-    createdAt: new Date().toISOString(),
-  };
-  const directory = analysisRunDirectory(dataDirectory, videoId);
-  await mkdir(directory, { recursive: true, mode: 0o700 });
-  await writeFile(path.join(directory, `${run.id}.json`), `${JSON.stringify(run, null, 2)}\n`, { flag: 'wx', mode: 0o600 });
-  return run;
-}
-
-export async function readAnalysisRunSnapshot(dataDirectory: string, videoId: string, runId: string): Promise<AnalysisRunSnapshot | undefined> {
-  try {
-    return JSON.parse(await readFile(path.join(analysisRunDirectory(dataDirectory, videoId), `${runId}.json`), 'utf8')) as AnalysisRunSnapshot;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
-    throw error;
-  }
 }

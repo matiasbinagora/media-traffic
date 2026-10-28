@@ -1,0 +1,71 @@
+import type { SceneConfigurationSnapshot } from './SceneConfigurationEditor';
+
+export type TrackObservation = {
+  frameIndex: number;
+  timeSeconds: number;
+  frameWidth: number;
+  frameHeight: number;
+  box: { x: number; y: number; width: number; height: number };
+  normalizedBox: { x: number; y: number; width: number; height: number };
+  confidence: number;
+  state: 'observed';
+};
+
+export type TrackGap = {
+  afterFrameIndex: number;
+  beforeFrameIndex: number;
+  missingFrameCount: number;
+  startSeconds: number;
+  endSeconds: number;
+  reason: 'not_observed';
+  identityContinuity: 'unverified';
+};
+
+export type CarTrajectory = {
+  trackId: string;
+  firstSeenSeconds: number;
+  lastSeenSeconds: number;
+  observations: TrackObservation[];
+  gaps: TrackGap[];
+};
+
+export type PossibleIdentitySwitch = {
+  fromTrackId: string;
+  toTrackId: string;
+  fromFrameIndex: number;
+  toFrameIndex: number;
+  fromTimeSeconds: number;
+  toTimeSeconds: number;
+  spatialEvidence: 'overlap' | 'nearby';
+  identityContinuity: 'unverified';
+};
+
+export type TrafficAnalysisResult = {
+  frameWidth: number;
+  frameHeight: number;
+  sampledFrameCount: number;
+  tracks: CarTrajectory[];
+  possibleIdentitySwitches: PossibleIdentitySwitch[];
+};
+
+export type AnalysisProvenance = {
+  source: { videoId: string; sha256: string; path: 'uploaded-original'; durationSeconds: number; width: number; height: number };
+  detector: { family: 'YOLO26'; weights: string; sha256?: string; runtime: 'Ultralytics'; runtimeVersion?: string; pythonVersion?: string; pytorchVersion?: string; platform?: string; inferenceSeconds?: number; device: 'cpu' };
+  tracker: { name: 'ByteTrack'; configFile: 'server/inference/bytetrack.yaml'; configSha256?: string; config?: Record<string, unknown> };
+  sampling: { strategy: 'every-decoded-frame'; framesPerSample: 1; timestampSource: 'ffprobe.best_effort_timestamp_time'; decodedFrameCount?: number };
+  thresholds: { confidence: number; imageSize: number; classFilter: { id: number; name: 'car' } };
+};
+
+export type AnalysisRunSnapshot = {
+  schemaVersion: 2;
+  id: string;
+  videoId: string;
+  status: 'queued' | 'running' | 'completed' | 'failed';
+  analysisStarted: boolean;
+  configurationSnapshot: SceneConfigurationSnapshot;
+  createdAt: string;
+  updatedAt: string;
+  provenance: AnalysisProvenance;
+  result?: TrafficAnalysisResult;
+  error?: { code: string; message: string; stage: 'inference' };
+};

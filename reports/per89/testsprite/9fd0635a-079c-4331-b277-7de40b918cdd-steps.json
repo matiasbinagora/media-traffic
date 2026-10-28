@@ -1,0 +1,24 @@
+{
+  "testId": "106ef885-9060-47d3-8d22-fe723f5ad006",
+  "runId": "9fd0635a-079c-4331-b277-7de40b918cdd",
+  "items": [
+    {
+      "stepIndex": 1,
+      "action": "navigate",
+      "description": "Navigate to http://127.0.0.1:5188",
+      "status": "passed",
+      "outcomeContributesToFailure": false,
+      "error": null,
+      "stepType": "action"
+    },
+    {
+      "stepIndex": 2,
+      "action": "visible",
+      "description": "The saved run records panel should label the run failed and show an actionable missing YOLO model configuration message.",
+      "status": "failed",
+      "outcomeContributesToFailure": true,
+      "error": null,
+      "stepType": "assertion"
+    }
+  ]
+}

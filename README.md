@@ -2,8 +2,10 @@
 
 A web demonstration for uploading a fixed-camera traffic video, following cars
 with YOLO, and reviewing candidate red-light crossings with synchronized evidence.
-The initial product scope is approved for specification and backlog preparation.
-Application code, video generation, and functional tests have not been implemented.
+The repository currently implements video upload/playback, immutable scene
+configuration, an optional backend YOLO/ByteTrack tracking adapter, and playback-
+synchronized car overlays. Signal inference and crossing decisions remain
+separate implementation/acceptance tasks.
 
 ## Product workflow
 
@@ -49,8 +51,8 @@ npm run spec:validate
 Node is pinned in `.nvmrc`. The repository pins agents-cli 0.4.2, OpenSpec 1.13.2,
 and TestSprite 0.15.0 through `devDependencies` and `package-lock.json`. Use npm
 scripts or the direnv-provided PATH to select local tools instead of global CLIs.
-The application stack and its runtime dependencies are described as proposals in
-the design; the tooling manifest is not an implemented application.
+The tooling manifest pins repository utilities; optional model runtime and
+weights are not bundled with the application.
 
 | Command | Purpose |
 | --- | --- |
@@ -63,12 +65,16 @@ the design; the tooling manifest is not an implemented application.
 | `npm run test:auth` | Verify TestSprite authentication |
 | `npm run test:e2e` | Run tests for the exported `TESTSPRITE_PROJECT_ID` |
 
-The initial local application scaffold implements the video upload API and
-playback derivative. Start `npm run server` and `npm run dev` in separate
-terminals for local development. FFmpeg and FFprobe must be installed. See
+The local application implements video upload, playback derivative, immutable
+scene configuration, and a real YOLO/ByteTrack backend adapter. Start
+`npm run server` and `npm run dev` in separate terminals for local development.
+FFmpeg and FFprobe must be installed. See
 [`docs/video-upload-api.md`](docs/video-upload-api.md) for API states, limits,
 failure behavior, and timestamp/coordinate mappings. OpenSpec validation checks
 specification structure; it does not evaluate traffic detection quality.
+See [`docs/scene-configuration-api.md`](docs/scene-configuration-api.md) for the
+analysis-run contract, observation and gap schema, inference setup, and licensing
+gate.
 
 | Command | Purpose |
 | --- | --- |
@@ -77,13 +83,24 @@ specification structure; it does not evaluate traffic detection quality.
 | `npm run build` | Type-check the frontend and build production assets |
 | `npm run typecheck:server` | Strictly type-check backend TypeScript |
 | `npm run typecheck:frontend` | Strictly type-check frontend TypeScript |
-| `npm run test:backend` | Test upload validation, FFmpeg derivative, and HTTP playback behavior |
+| `npm run test:backend` | Test upload, analysis-run API, retained tracks/gaps, FFmpeg derivative, and playback |
 | `npm run test:frontend` | Run frontend component tests with Vitest |
 | `npm test` | Run backend and frontend suites |
 
-Uploads are stored under the ignored `.local-data/` directory by default. The
-configured size cap defaults to 200 MiB; there is no duration limit. Upload
-success and preview readiness remain separate from any future traffic analysis.
+Uploads and analysis-run JSON are stored under the ignored `.local-data/`
+directory by default. The configured size cap defaults to 200 MiB; there is no
+duration limit. Upload and preview success are separate from traffic analysis.
+
+The optional tracker requires operator-supplied Python with OpenCV, PyTorch,
+PyYAML, and Ultralytics plus the qualified `yolo26n.pt` checkpoint. Configure
+`YOLO_PYTHON_PATH` and `YOLO_MODEL_PATH`; the adapter verifies the checkpoint
+hash and records runtime/tracker/sampling provenance. The user selected GNU
+AGPL-3.0 for this public prototype; see [`LICENSE`](LICENSE). That scope does not
+clear broader commercial or production use. Ultralytics weights and Python
+runtime dependencies are not bundled; review
+[`docs/scene-configuration-api.md`](docs/scene-configuration-api.md) for the
+third-party runtime and model license scope. No weights or Python runtime
+dependencies are committed.
 
 ## Repository-local GitHub authentication
 

@@ -29,28 +29,20 @@ This API implements the backend configuration contract for [PER-88](https://line
 
 Successful saves return `201` and the normalized snapshot. Each snapshot ID is create-only; saving edits requires a new ID. A repeated ID returns `409 SCENE_CONFIGURATION_IMMUTABLE`. Incomplete or out-of-frame geometry returns `422 SCENE_CONFIGURATION_INVALID` with `error.details.invalidFields`; possible fields are `vehicleRegion`, `stopLine`, `crossingDirection`, `signalRegion`, and `signalAssociation`. The stop line must have distinct endpoints, directions must use one of the four supported values, and signal association must be an explicit non-empty value.
 
-## Capture configuration for a run
+## Start car tracking
 
-`POST /api/videos/:videoId/analysis-runs` accepts `{ "configurationId": "<saved-configuration-id>" }`. It returns `201` with a unique immutable run record containing a deep copy of that configuration:
+`POST /api/videos/:videoId/analysis-runs` accepts `{ "configurationId": "<saved-configuration-id>" }`. It returns `202` with a unique run in `queued` state and a deep copy of the immutable scene configuration. The backend reads the uploaded original source, decodes every frame and persists timestamped YOLO/ByteTrack observations. Poll `GET /api/videos/:videoId/analysis-runs/:runId` until the status is `completed` or `failed`.
 
-The response example abbreviates the full `configurationSnapshot` object; its value is the complete snapshot returned by the save route.
+A completed run includes `result.tracks[]`. Each track contains its `trackId`, first/last source presentation time, all observed boxes with confidence, decoded frame index, pixel and normalized coordinates, plus explicit gaps for missing observations. `result.possibleIdentitySwitches[]` conservatively links distinct IDs whose observed track endpoints are 1–3 decoded frames apart and spatially overlap or are close; links are marked `identityContinuity: "unverified"` and never merge IDs or add boxes. No boxes are interpolated over a gap. `result.sampledFrameCount` reports all decoded frames. Source timestamps come from FFprobe `best_effort_timestamp_time`; for synchronized preview overlays convert preview time to source time using the upload derivative's `timestampMapping.offsetSeconds` (`sourceSeconds = previewSeconds + offsetSeconds`).
 
-```json
-{
-  "schemaVersion": 1,
-  "id": "<analysis-run-id>",
-  "videoId": "<uploaded-video-id>",
-  "status": "not_started",
-  "analysisStarted": false,
-  "configurationSnapshot": { "schemaVersion": 1, "id": "<saved-configuration-id>" },
-  "createdAt": "2026-10-20T12:00:00.000Z"
-}
-```
+The run also records source hash, model/version/checkpoint hash, runtime/platform/device, tracker config/hash, frame sampling and thresholds. Runs progress `queued` → `running` → `completed` or `failed`; failures have an actionable error and never substitute fixtures. Inference defaults to a 15-minute timeout; set `YOLO_INFERENCE_TIMEOUT_MS` to a positive integer to change it. A timed-out inference process is terminated and persisted as `ANALYSIS_INFERENCE_TIMEOUT`. If saving the `running` transition fails, the server attempts to persist `ANALYSIS_RUN_STATE_PERSIST_FAILED` and does not start inference; repeated storage failure is logged, and startup recovery later fails the still-queued record. On startup, persisted `queued` or `running` runs are marked failed with `ANALYSIS_WORKER_INTERRUPTED` so clients do not poll indefinitely. A missing or unsaved configuration returns `422 SCENE_CONFIGURATION_REQUIRED`; the original source missing from storage returns `404 VIDEO_SOURCE_NOT_FOUND`. Later scene edits use a new configuration ID and cannot change prior run evidence.
 
-This route captures run provenance only. It does not queue work, start inference, or report analysis completion. A missing or unsaved configuration returns `422 SCENE_CONFIGURATION_REQUIRED`; analysis remains unavailable until a processing service is implemented. Later scene edits use a new configuration ID and cannot change the saved configuration or any earlier run record. Retrieve a record with `GET /api/videos/:videoId/analysis-runs/:runId`.
+The optional inference adapter requires an operator-provided Python runtime and `YOLO_MODEL_PATH` pointing to the qualified `yolo26n.pt` checkpoint. Set `YOLO_PYTHON_PATH` when Python with OpenCV, PyTorch, PyYAML and Ultralytics is not available as `python3`. The adapter verifies checkpoint SHA-256 `9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef` and uses the repository's pinned ByteTrack YAML. No model weights or Python dependency are bundled.
+
+**Prototype license decision:** the user selected GNU AGPL-3.0 for this public prototype; the canonical text is in [`LICENSE`](../LICENSE). This records the prototype scope, not legal advice or clearance for broader commercial, private-SaaS, or production use. Ultralytics software and trained weights are offered under AGPL-3.0 or Enterprise terms; this repository does not bundle those dependencies or weights, and the repository license does not relicense third-party materials. Review applicable third-party terms and obtain separate clearance before broader distribution or deployment.
 
 Scene configuration and run records are persisted as JSON files under the upload's private data directory. The API limits JSON request bodies to 128 KB and does not expose an update or delete route for these immutable records.
 
 ## Validation
 
-Run `npm run typecheck:server`, `node --import tsx --test server/scene-configuration.test.ts`, and `npm run test:backend`. Configuration records do not certify that traffic detection ran or passed.
+Run `npm run typecheck:server`, `node --import tsx --test server/analysis-run.test.ts server/scene-configuration.test.ts server/traffic-analysis.test.ts`, and `npm run test:backend`. The recorded qualification run is in [`reports/per89/qualification.md`](../reports/per89/qualification.md).
