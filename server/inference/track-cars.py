@@ -62,6 +62,8 @@ def main() -> None:
     parser.add_argument("--ffprobe", default="ffprobe")
     args = parser.parse_args()
 
+    print("MEDIA_TRAFFIC_PROGRESS:media_inspection", file=sys.stderr, flush=True)
+
     if not args.source.is_file():
         raise SystemExit("Uploaded source video is missing.")
     if not args.weights.is_file():
@@ -80,9 +82,11 @@ def main() -> None:
         raise SystemExit(f"Configured checkpoint SHA-256 does not match the qualified yolo26n model: {checkpoint_sha256}")
 
     timestamps = frame_timestamps(args.source, args.ffprobe)
+    print("MEDIA_TRAFFIC_PROGRESS:preparation", file=sys.stderr, flush=True)
     tracker_config = yaml.safe_load(args.tracker.read_text(encoding="utf-8"))
     started = time.perf_counter()
     model = YOLO(str(args.weights))
+    print("MEDIA_TRAFFIC_PROGRESS:car_tracking", file=sys.stderr, flush=True)
     capture = cv2.VideoCapture(str(args.source))
     if not capture.isOpened():
         raise SystemExit("OpenCV could not decode the uploaded source video.")

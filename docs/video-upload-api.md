@@ -30,6 +30,12 @@ The current lifecycle intentionally has no persisted `queued` or `running` statu
 
 `GET /api/videos/:id/preview` returns `409 PREVIEW_PROCESSING` while transcoding, `409 PREVIEW_UNAVAILABLE` after a terminal conversion failure, or the `video/mp4` preview when ready. It supports single byte ranges (`206`); malformed or unsatisfiable ranges return `416` with `Content-Range: bytes */<size>`.
 
+## Traffic analysis runs (PER-93)
+
+Save a scene configuration, then `POST /api/videos/:id/analysis-runs` with its `configurationId`. The server accepts a run only while the persisted playable preview is present. Each response keeps the existing run `schemaVersion: 2` and includes a distinct `id`, `status` (`queued`, `running`, `completed`, or `failed`), and `phase`. Phases move through actual media inspection, preparation, car tracking, signal analysis, and result generation; clients should show the returned value instead of estimating progress. `GET /api/videos/:id/analysis-runs/:runId` returns the persisted record.
+
+`completed` is stored atomically with the result only after the preview file is still available and result metadata has been generated. `failed` responses include a sanitized `error.stage`, stable `error.code`, and actionable `error.message`; raw Python diagnostics and local paths are not part of the API. After restart, queued/running records become failed and a retry must create a new run ID. The source SHA-256 is compared to the checked-in demo manifest independently of inference: only an exact match is `manifest-verified`; every other upload is `not-identified`, not presumed real or synthetic. Provenance retains the source identity, immutable configuration snapshot, model/runtime versions when available, tracking/signal parameters, and timebase. A successful run with no tracks remains a completed empty result.
+
 Error responses have `{ "error": { "code": "...", "message": "..." } }`. Empty or unreadable video returns `422`; unsupported extension/container returns `415`; uploads over the configured byte cap return `413`; invalid multipart requests and interrupted uploads return `400` with retry guidance where applicable. Rejected uploads leave no source or temporary file. Conversion failures remain visible in the job and are not converted into successful placeholder results.
 
 ## Verification

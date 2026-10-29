@@ -76,7 +76,10 @@ export type TrafficAnalysisResult = {
 };
 
 export type AnalysisProvenance = {
-  source: { videoId: string; sha256: string; path: 'uploaded-original'; durationSeconds: number; width: number; height: number };
+  source: {
+    videoId: string; sha256: string; path: 'uploaded-original'; durationSeconds: number; width: number; height: number;
+    syntheticSource?: { status: 'manifest-verified' | 'not-identified'; evidence: 'demo-video-manifest-sha256' | 'no-matching-manifest' };
+  };
   detector: { family: 'YOLO26'; weights: string; sha256?: string; runtime: 'Ultralytics'; runtimeVersion?: string; pythonVersion?: string; pytorchVersion?: string; platform?: string; inferenceSeconds?: number; device: 'cpu' };
   tracker: { name: 'ByteTrack'; configFile: 'server/inference/bytetrack.yaml'; configSha256?: string; config?: Record<string, unknown> };
   sampling: { strategy: 'every-decoded-frame'; framesPerSample: 1; timestampSource: 'ffprobe.best_effort_timestamp_time'; decodedFrameCount?: number };
@@ -88,11 +91,12 @@ export type AnalysisRunSnapshot = {
   id: string;
   videoId: string;
   status: 'queued' | 'running' | 'completed' | 'failed';
+  phase?: 'queued' | 'media_inspection' | 'preparation' | 'car_tracking' | 'signal_analysis' | 'result_generation' | 'completed' | 'failed';
   analysisStarted: boolean;
   configurationSnapshot: SceneConfigurationSnapshot;
   createdAt: string;
   updatedAt: string;
   provenance: AnalysisProvenance;
   result?: TrafficAnalysisResult;
-  error?: { code: string; message: string; stage: 'inference' };
+  error?: { code: string; message: string; stage: 'media_inspection' | 'preparation' | 'car_tracking' | 'signal_analysis' | 'result_generation' | 'inference' };
 };

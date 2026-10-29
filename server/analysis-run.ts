@@ -1,12 +1,12 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { spawn } from 'node:child_process';
-import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MediaError, sha256File, type UploadJob } from './media.js';
 import { invalidGeometryFields, type SceneConfigurationSnapshot } from './scene-configuration.js';
 import { assembleSignalTimeline, classifySignalObservation, type RawSignalPixelObservation } from './signal-analysis.js';
-import { assembleTrackResult, type AnalysisProvenance, type AnalysisRun, type RawTrackingFrame } from './traffic-analysis.js';
+import { assembleTrackResult, type AnalysisProvenance, type AnalysisRun, type AnalysisRunPhase, type RawTrackingFrame } from './traffic-analysis.js';
 
 const EXPECTED_CHECKPOINT_SHA256 = '9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef';
 export const DEFAULT_ANALYSIS_TIMEOUT_MS = 15 * 60 * 1000;
@@ -39,13 +39,15 @@ export type TrackingOutput = {
   };
 };
 
+export type AnalysisProgress = (phase: Extract<AnalysisRunPhase, 'media_inspection' | 'preparation' | 'car_tracking' | 'signal_analysis' | 'result_generation'>) => Promise<void>;
+
 type RunOptions = {
   dataDirectory: string;
   videoId: string;
   upload: UploadJob;
   configurationId: unknown;
   sourcePath: string;
-  runTracking?: (sourcePath: string, outputPath: string, signalRegion: SceneConfigurationSnapshot['geometry']['signalRegion']) => Promise<TrackingOutput>;
+  runTracking?: (sourcePath: string, outputPath: string, signalRegion: SceneConfigurationSnapshot['geometry']['signalRegion'], onProgress?: AnalysisProgress) => Promise<TrackingOutput>;
   inferenceTimeoutMs?: number;
   now?: () => string;
 };
@@ -102,6 +104,7 @@ async function initialProvenance(videoId: string, upload: UploadJob): Promise<An
   const modelPath = process.env.YOLO_MODEL_PATH;
   const trackerPath = path.join(inferenceDirectory, 'bytetrack.yaml');
   const trackerBytes = await readFile(trackerPath);
+  const syntheticSource = await identifySyntheticSource(upload.source.sha256);
   let checkpointSha256: string | undefined;
   if (modelPath) {
     try {
@@ -118,6 +121,7 @@ async function initialProvenance(videoId: string, upload: UploadJob): Promise<An
       durationSeconds: upload.source.media.durationSeconds,
       width: upload.source.media.width,
       height: upload.source.media.height,
+      syntheticSource,
     },
     detector: {
       family: 'YOLO26',
@@ -139,6 +143,19 @@ async function initialProvenance(videoId: string, upload: UploadJob): Promise<An
   };
 }
 
+export async function identifySyntheticSource(sourceSha256: string): Promise<NonNullable<AnalysisProvenance['source']['syntheticSource']>> {
+  const manifestPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../example/demo-traffic-video/manifest.json');
+  try {
+    const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as { synthetic?: unknown; video?: { sha256?: unknown } };
+    if (manifest.synthetic === true && manifest.video?.sha256 === sourceSha256) {
+      return { status: 'manifest-verified', evidence: 'demo-video-manifest-sha256' };
+    }
+  } catch {
+    // Provenance remains explicitly unknown when the checked-in source manifest is unavailable.
+  }
+  return { status: 'not-identified', evidence: 'no-matching-manifest' };
+}
+
 export async function createAndQueueAnalysisRun(options: RunOptions): Promise<AnalysisRun> {
   const configurationSnapshot = await readConfiguration(options.dataDirectory, options.videoId, options.upload, options.configurationId);
   const createdAt = (options.now || (() => new Date().toISOString()))();
@@ -147,6 +164,7 @@ export async function createAndQueueAnalysisRun(options: RunOptions): Promise<An
     id: randomUUID(),
     videoId: options.videoId,
     status: 'queued',
+    phase: 'queued',
     analysisStarted: true,
     configurationSnapshot,
     provenance: await initialProvenance(options.videoId, options.upload),
@@ -173,6 +191,7 @@ export async function executeAnalysisRun(options: ExecuteOptions): Promise<Analy
   const now = options.now || (() => new Date().toISOString());
   const saveRun = options.persistState || persistRun;
   run.status = 'running';
+  run.phase = 'media_inspection';
   run.updatedAt = now();
   const outputPath = path.join(recordDirectory(options.dataDirectory, options.videoId), `${run.id}.tracking.json`);
   try {
@@ -187,8 +206,14 @@ export async function executeAnalysisRun(options: ExecuteOptions): Promise<Analy
       throw new Error('Uploaded source SHA-256 no longer matches the immutable upload record.');
     }
     const timeoutMs = validTimeout(options.inferenceTimeoutMs ?? Number(process.env.YOLO_INFERENCE_TIMEOUT_MS));
-    const tracker = options.runTracking || ((source, output, signalRegion) => runUltralyticsTracker(source, output, signalRegion, timeoutMs));
-    const output = await withTimeout(tracker(options.sourcePath, outputPath, run.configurationSnapshot.geometry.signalRegion), timeoutMs);
+    const reportProgress: AnalysisProgress = async phase => {
+      if (run.status !== 'running') return;
+      run.phase = phase;
+      run.updatedAt = now();
+      await saveRun(options.dataDirectory, run);
+    };
+    const tracker = options.runTracking || ((source, output, signalRegion, onProgress) => runUltralyticsTracker(source, output, signalRegion, timeoutMs, onProgress));
+    const output = await withTimeout(tracker(options.sourcePath, outputPath, run.configurationSnapshot.geometry.signalRegion, reportProgress), timeoutMs);
     if (await sha256File(options.sourcePath) !== options.upload.source.sha256) {
       throw new Error('Uploaded source changed while inference was running; the run was rejected.');
     }
@@ -209,17 +234,20 @@ export async function executeAnalysisRun(options: ExecuteOptions): Promise<Analy
     if (output.frames.some((frame, index) => frame.frameIndex !== index)) {
       throw new Error('Tracker output omitted or reordered decoded source frames.');
     }
+    await reportProgress('signal_analysis');
+    const signalTimeline = assembleSignalTimeline({
+      durationSeconds: options.upload.source.media.durationSeconds,
+      observations: output.signalPixelObservations.map(observation => classifySignalObservation(
+        observation.frameIndex,
+        observation.timeSeconds,
+        observation.colorScores,
+        observation.signalRegionTooSmall,
+      )),
+    });
+    await reportProgress('result_generation');
     run.result = {
       ...assembleTrackResult({ width: output.width, height: output.height, frames: output.frames }),
-      signalTimeline: assembleSignalTimeline({
-        durationSeconds: options.upload.source.media.durationSeconds,
-        observations: output.signalPixelObservations.map(observation => classifySignalObservation(
-          observation.frameIndex,
-          observation.timeSeconds,
-          observation.colorScores,
-          observation.signalRegionTooSmall,
-        )),
-      }),
+      signalTimeline,
     };
     run.provenance.detector = {
       ...run.provenance.detector,
@@ -250,27 +278,71 @@ export async function executeAnalysisRun(options: ExecuteOptions): Promise<Analy
       imageSize: output.provenance.imageSize,
       classFilter: { id: 2, name: 'car' },
     };
+    await assertPlayablePreview(options.dataDirectory, options.videoId, options.upload);
     run.status = 'completed';
+    run.phase = 'completed';
     delete run.error;
   } catch (error) {
     const code = (error as NodeJS.ErrnoException).code;
     run.status = 'failed';
-    run.error = {
-      code: typeof code === 'string' ? code : 'YOLO_INFERENCE_FAILED',
-      message: error instanceof Error ? error.message : 'YOLO inference failed.',
-      stage: 'inference',
-    };
+    const failureCode = typeof code === 'string' ? code : 'YOLO_INFERENCE_FAILED';
+    const currentPhase = run.phase as AnalysisRunPhase;
+    const failureStage = currentPhase === 'queued' || currentPhase === 'completed' || currentPhase === 'failed' ? 'car_tracking' : currentPhase;
+    run.phase = 'failed';
+    run.error = { code: failureCode, message: sanitizedFailureMessage(failureCode, failureStage), stage: failureStage };
     delete run.result;
   } finally {
     run.updatedAt = now();
     try {
       await saveRun(options.dataDirectory, run);
     } catch (error) {
-      console.error('Could not persist the terminal traffic-analysis run state:', error);
+      if (run.status === 'completed') {
+        run.status = 'failed';
+        run.phase = 'failed';
+        run.error = {
+          code: 'ANALYSIS_RESULT_PERSIST_FAILED',
+          message: sanitizedFailureMessage('ANALYSIS_RESULT_PERSIST_FAILED', 'result_generation'),
+          stage: 'result_generation',
+        };
+        delete run.result;
+        run.updatedAt = now();
+        try {
+          await saveRun(options.dataDirectory, run);
+        } catch {
+          console.error('Could not persist the terminal traffic-analysis run state.');
+        }
+      } else {
+        console.error('Could not persist the terminal traffic-analysis run state.');
+      }
     }
     await rm(outputPath, { force: true });
   }
   return run;
+}
+
+async function assertPlayablePreview(dataDirectory: string, videoId: string, upload: UploadJob): Promise<void> {
+  const filename = path.join(dataDirectory, 'videos', videoId, 'preview.mp4');
+  const preview = await stat(filename).catch(() => undefined);
+  if (upload.status !== 'completed' || upload.preview.status !== 'completed' || !upload.derivative
+    || !preview?.isFile() || preview.size !== upload.derivative.sizeBytes) {
+    throw Object.assign(new Error('The playable preview is unavailable or changed during analysis.'), { code: 'ANALYSIS_PREVIEW_UNAVAILABLE' });
+  }
+}
+
+function sanitizedFailureMessage(code: string, phase: Exclude<AnalysisRunPhase, 'queued' | 'completed' | 'failed'>): string {
+  if (code === 'YOLO_MODEL_NOT_CONFIGURED') return 'Set YOLO_MODEL_PATH to the qualified yolo26n.pt checkpoint, then start a new analysis run.';
+  if (code === 'YOLO_RUNTIME_UNAVAILABLE') return 'The configured YOLO Python runtime could not start. Check YOLO_PYTHON_PATH and install the pinned inference dependencies, then retry.';
+  if (code === 'ANALYSIS_INFERENCE_TIMEOUT') return 'Traffic analysis exceeded its configured time limit. Shorten the video or increase YOLO_INFERENCE_TIMEOUT_MS, then start a new run.';
+  if (code === 'ANALYSIS_WORKER_INTERRUPTED') return 'The server restarted before analysis completed. Start a new analysis run.';
+  if (code === 'ANALYSIS_PREVIEW_UNAVAILABLE') return 'The playable preview is no longer available. Retry video preparation before starting analysis again.';
+  if (code === 'ANALYSIS_RESULT_PERSIST_FAILED') return 'The analysis result could not be saved. Check available storage and start a new analysis run.';
+  if (code === 'ANALYSIS_RUN_STATE_PERSIST_FAILED') return 'Analysis progress could not be saved. Check available storage and server permissions, then retry.';
+  if (code === 'YOLO_OUTPUT_INVALID') return 'The YOLO runtime returned an invalid result. Check runtime compatibility and start a new run.';
+  if (phase === 'media_inspection') return 'Source inspection failed. Check that the original video is readable and FFprobe is available, then retry.';
+  if (phase === 'preparation') return 'Analysis preparation failed. Check the qualified model checkpoint, Python runtime, and tracker configuration, then retry.';
+  if (phase === 'signal_analysis') return 'Signal analysis failed. Check the configured signal region and source video, then start a new run.';
+  if (phase === 'result_generation') return 'The analysis result could not be generated or saved. Check available storage and run the analysis again.';
+  return 'Traffic analysis failed during car tracking. Verify the uploaded source, qualified model and runtime, then start a new run; include this run ID when contacting the operator.';
 }
 
 function validTimeout(value: number | undefined): number {
@@ -312,11 +384,18 @@ export async function recoverInterruptedAnalysisRuns(
         continue;
       }
       if (run.videoId !== videoEntry.name || (run.status !== 'queued' && run.status !== 'running')) continue;
+      const interruptedPhase = run.phase as AnalysisRunPhase | undefined;
+      const failureStage: Exclude<AnalysisRunPhase, 'queued' | 'completed' | 'failed'> = interruptedPhase === 'media_inspection'
+        || interruptedPhase === 'preparation' || interruptedPhase === 'car_tracking'
+        || interruptedPhase === 'signal_analysis' || interruptedPhase === 'result_generation'
+        ? interruptedPhase
+        : 'car_tracking';
       run.status = 'failed';
+      run.phase = 'failed';
       run.error = {
         code: 'ANALYSIS_WORKER_INTERRUPTED',
-        message: 'The server restarted before car tracking completed. Start a new analysis run.',
-        stage: 'inference',
+        message: sanitizedFailureMessage('ANALYSIS_WORKER_INTERRUPTED', failureStage),
+        stage: failureStage,
       };
       delete run.result;
       run.updatedAt = now();
@@ -337,7 +416,7 @@ export async function readAnalysisRun(dataDirectory: string, videoId: string, ru
   }
 }
 
-function runUltralyticsTracker(sourcePath: string, outputPath: string, signalRegion: SceneConfigurationSnapshot['geometry']['signalRegion'], timeoutMs: number): Promise<TrackingOutput> {
+function runUltralyticsTracker(sourcePath: string, outputPath: string, signalRegion: SceneConfigurationSnapshot['geometry']['signalRegion'], timeoutMs: number, onProgress?: AnalysisProgress): Promise<TrackingOutput> {
   const modelPath = process.env.YOLO_MODEL_PATH;
   if (!modelPath) return Promise.reject(Object.assign(new Error('Set YOLO_MODEL_PATH to the qualified yolo26n.pt checkpoint to enable traffic analysis and signal recognition.'), { code: 'YOLO_MODEL_NOT_CONFIGURED' }));
   const pythonPath = process.env.YOLO_PYTHON_PATH || 'python3';
@@ -346,7 +425,8 @@ function runUltralyticsTracker(sourcePath: string, outputPath: string, signalReg
   const temporaryOutput = `${outputPath}.${randomUUID()}.tmp.json`;
   return new Promise((resolve, reject) => {
     const child = spawn(pythonPath, [scriptPath, '--source', sourcePath, '--weights', modelPath, '--tracker', trackerPath, '--output', temporaryOutput, '--signal-region-json', JSON.stringify(signalRegion), '--ffprobe', process.env.FFPROBE_PATH || 'ffprobe'], { shell: false, stdio: ['ignore', 'ignore', 'pipe'] });
-    let stderr = '';
+    let stderrBuffer = '';
+    let progressChain = Promise.resolve();
     let timedOut = false;
     let killTimer: NodeJS.Timeout | undefined;
     const timeout = setTimeout(() => {
@@ -355,7 +435,16 @@ function runUltralyticsTracker(sourcePath: string, outputPath: string, signalReg
       killTimer = setTimeout(() => child.kill('SIGKILL'), 2_000);
     }, timeoutMs);
     child.stderr.setEncoding('utf8');
-    child.stderr.on('data', chunk => { stderr = (stderr + chunk).slice(-16_000); });
+    child.stderr.on('data', chunk => {
+      const text = String(chunk);
+      stderrBuffer += text;
+      const lines = stderrBuffer.split(/\r?\n/);
+      stderrBuffer = lines.pop() || '';
+      for (const line of lines) {
+        const match = /^MEDIA_TRAFFIC_PROGRESS:(media_inspection|preparation|car_tracking)$/.exec(line);
+        if (match && onProgress) progressChain = progressChain.then(() => onProgress(match[1] as 'media_inspection' | 'preparation' | 'car_tracking'));
+      }
+    });
     child.once('error', error => {
       clearTimeout(timeout);
       if (killTimer) clearTimeout(killTimer);
@@ -364,13 +453,19 @@ function runUltralyticsTracker(sourcePath: string, outputPath: string, signalReg
     child.once('close', async code => {
       clearTimeout(timeout);
       if (killTimer) clearTimeout(killTimer);
+      try {
+        await progressChain;
+      } catch (error) {
+        await rm(temporaryOutput, { force: true });
+        return reject(error);
+      }
       if (timedOut) {
         await rm(temporaryOutput, { force: true });
         return reject(Object.assign(new Error(`Traffic analysis timed out after ${timeoutMs} ms; the inference process was terminated.`), { code: 'ANALYSIS_INFERENCE_TIMEOUT' }));
       }
       if (code !== 0) {
         await rm(temporaryOutput, { force: true });
-        return reject(Object.assign(new Error(stderr.trim().slice(-2_000) || `YOLO inference exited with code ${code}.`), { code: 'YOLO_INFERENCE_FAILED' }));
+        return reject(Object.assign(new Error(`YOLO inference exited with code ${code}.`), { code: 'YOLO_INFERENCE_FAILED' }));
       }
       try {
         const output = JSON.parse(await readFile(temporaryOutput, 'utf8')) as TrackingOutput;
