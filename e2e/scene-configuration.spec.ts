@@ -3,6 +3,7 @@ import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
 const fixturePath = path.join(process.cwd(), 'e2e/fixtures/rights-cleared-blue.mp4');
+const evidenceDirectory = process.env.PER107_EVIDENCE_DIR || 'reports/per107';
 type Bounds = { x: number; y: number; width: number; height: number };
 
 async function openConfiguredUpload(page: Page) {
@@ -188,7 +189,7 @@ test('persists scene configuration and immutable run records through real API ro
   await expect(firstRunCard).toContainText('YOLO26');
   await expect(firstRunCard).toContainText('ByteTrack');
   await expect(firstRunCard).not.toContainText('.local-data/');
-  const provenanceEvidencePath = path.join(process.cwd(), 'reports/per107/analysis-run-failure-and-provenance.png');
+  const provenanceEvidencePath = path.join(evidenceDirectory, 'analysis-run-failure-and-provenance.png');
   await mkdir(path.dirname(provenanceEvidencePath), { recursive: true });
   await firstRunCard.screenshot({ path: provenanceEvidencePath });
 
@@ -234,8 +235,7 @@ test('persists scene configuration and immutable run records through real API ro
   expect(secondRunReadBackBody.status).toBe('failed');
   expect(secondRunReadBackBody.configurationSnapshot).toEqual(secondConfiguration);
 
-  const reportDirectory = process.env.PLAYWRIGHT_REPORT_DIR || 'reports/per88';
-  const evidencePath = path.join(process.cwd(), reportDirectory, 'revalidation-mobile.png');
+  const evidencePath = path.join(evidenceDirectory, 'revalidation-mobile.png');
   await mkdir(path.dirname(evidencePath), { recursive: true });
   await page.screenshot({ path: evidencePath, fullPage: true });
 });

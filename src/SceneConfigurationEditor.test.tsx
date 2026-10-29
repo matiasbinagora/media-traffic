@@ -301,23 +301,32 @@ describe('scene configuration editor', () => {
       error: { code: 'YOLO_INFERENCE_FAILED', message: 'The source could not be decoded by the model runtime.', stage: 'inference' },
     };
     render(<SceneConfigurationEditor {...props} initialRuns={[failedRun]} />);
-    expect(within(screen.getByRole('region', { name: 'Analysis run records' })).getByRole('alert')).toHaveTextContent('The source could not be decoded by the model runtime.');
+    expect(within(screen.getByRole('region', { name: 'Analysis run records' })).getByRole('alert')).toHaveTextContent('Traffic analysis failed during inference. Verify the source video and qualified runtime, then start a new run.');
     expect(screen.getByText('ANALYSIS FAILED')).toBeInTheDocument();
     expect(screen.queryByTestId('traffic-analysis-overlay')).not.toBeInTheDocument();
   });
 
-  it('does not display runtime paths or stderr in a failure message', () => {
+  it.each([
+    ['Unix /opt path', 'ENOENT', "ENOENT: no such file or directory, open '/opt/private/model.pt'", '/opt/private/model.pt'],
+    ['Windows drive path', 'ENOENT', 'ENOENT: cannot open C:\\Users\\operator\\private\\model.pt', 'C:\\Users\\operator'],
+    ['UNC path', 'ENOENT', 'ENOENT: cannot open \\\\nas01\\models\\private\\model.pt', '\\\\nas01\\models'],
+    ['runtime stderr', 'ENOENT', 'Runtime failed at /Users/operator/private/yolo.pt. stderr: ModuleNotFoundError', '/Users/operator/private'],
+    ['unknown prototype-key error code', 'toString', 'untrusted server exception details', 'untrusted server exception details'],
+  ])('replaces untrusted %s failure details with a safe actionable message', (_caseName, code, message, privateDetail) => {
     const failedRun: AnalysisRunSnapshot = {
       ...queuedRun,
       status: 'failed',
       phase: 'failed',
-      error: { code: 'YOLO_RUNTIME_UNAVAILABLE', stage: 'preparation', message: 'Runtime failed at /Users/operator/private/yolo.pt. stderr: ModuleNotFoundError' },
+      error: { code, stage: 'preparation', message },
     };
     render(<SceneConfigurationEditor {...props} initialRuns={[failedRun]} />);
 
     const runHistory = screen.getByRole('region', { name: 'Analysis run records' });
-    expect(within(runHistory).getByRole('alert')).toHaveTextContent('Check the configured analysis runtime');
-    expect(runHistory).not.toHaveTextContent('/Users/operator/private');
+    const failure = within(runHistory).getByRole('alert');
+    expect(failure).toHaveTextContent('Analysis preparation failed. Check the qualified model checkpoint, Python runtime, and tracker configuration, then retry.');
+    expect(failure).toHaveTextContent('ANALYSIS_FAILED');
+    expect(runHistory).not.toHaveTextContent(privateDetail);
+    expect(runHistory).not.toHaveTextContent('ENOENT');
     expect(runHistory).not.toHaveTextContent('ModuleNotFoundError');
     expect(screen.queryByTestId('traffic-analysis-overlay')).not.toBeInTheDocument();
   });

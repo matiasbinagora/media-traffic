@@ -73,11 +73,39 @@ function fileLabel(value: string): string {
   return value.split(/[\\/]/).filter(Boolean).at(-1) || value;
 }
 
-function safeFailureMessage(message: string, phase: AnalysisStage | undefined): string {
-  if (/\/(?:Users|home|tmp|var)\//i.test(message) || /stderr|traceback|exception:/i.test(message)) {
-    return `Analysis failed during ${phaseLabel(phase).toLowerCase()}. Check the configured analysis runtime and start a new run.`;
-  }
-  return message;
+const safeFailureMessagesByCode: Record<string, string> = {
+  YOLO_MODEL_NOT_CONFIGURED: 'Set YOLO_MODEL_PATH to the qualified yolo26n.pt checkpoint, then start a new analysis run.',
+  YOLO_RUNTIME_UNAVAILABLE: 'The configured YOLO Python runtime could not start. Check YOLO_PYTHON_PATH and install the pinned inference dependencies, then retry.',
+  ANALYSIS_INFERENCE_TIMEOUT: 'Traffic analysis exceeded its configured time limit. Shorten the video or increase YOLO_INFERENCE_TIMEOUT_MS, then start a new run.',
+  ANALYSIS_WORKER_INTERRUPTED: 'The server restarted before analysis completed. Start a new analysis run.',
+  ANALYSIS_PREVIEW_UNAVAILABLE: 'The playable preview is no longer available. Retry video preparation before starting analysis again.',
+  ANALYSIS_RESULT_PERSIST_FAILED: 'The analysis result could not be saved. Check available storage and start a new analysis run.',
+  ANALYSIS_RUN_STATE_PERSIST_FAILED: 'Analysis progress could not be saved. Check available storage and server permissions, then retry.',
+  YOLO_OUTPUT_INVALID: 'The YOLO runtime returned an invalid result. Check runtime compatibility and start a new run.',
+};
+
+const safeFailureMessagesByStage: Record<AnalysisStage, string> = {
+  queued: 'Analysis could not be started. Check the run configuration, then start a new analysis run.',
+  media_inspection: 'Source inspection failed. Check that the original video is readable and FFprobe is available, then retry.',
+  preparation: 'Analysis preparation failed. Check the qualified model checkpoint, Python runtime, and tracker configuration, then retry.',
+  car_tracking: 'Traffic analysis failed during car tracking. Verify the uploaded source, qualified model and runtime, then start a new run.',
+  signal_analysis: 'Signal analysis failed. Check the configured signal region and source video, then start a new run.',
+  result_generation: 'The analysis result could not be generated or saved. Check available storage and run the analysis again.',
+  inference: 'Traffic analysis failed during inference. Verify the source video and qualified runtime, then start a new run.',
+  completed: 'The completed run contains an invalid failure record. Start a new analysis run.',
+  failed: 'Traffic analysis failed. Check the run configuration and start a new analysis run.',
+};
+
+function safeFailureCode(code: string): string {
+  return Object.prototype.hasOwnProperty.call(safeFailureMessagesByCode, code) || code === 'YOLO_INFERENCE_FAILED'
+    ? code
+    : 'ANALYSIS_FAILED';
+}
+
+function safeFailureMessage(code: string, stage: AnalysisStage): string {
+  if (Object.prototype.hasOwnProperty.call(safeFailureMessagesByCode, code)) return safeFailureMessagesByCode[code];
+  if (Object.prototype.hasOwnProperty.call(safeFailureMessagesByStage, stage)) return safeFailureMessagesByStage[stage];
+  return 'Traffic analysis failed. Check the run configuration and start a new analysis run.';
 }
 
 function sourceClassification(run: AnalysisRunSnapshot): string {
@@ -495,8 +523,8 @@ export function SceneConfigurationEditor({
           <span>{statusLabel(run.status)} · Stage: {phaseLabel(run.phase)}</span>
           <span>Configuration {run.configurationSnapshot.id}</span>
           {run.status === 'failed' && run.error && <div className="analysis-failure" role="alert">
-            <strong>{phaseLabel(run.error.stage)} · {run.error.code}</strong>
-            <p>{safeFailureMessage(run.error.message, run.error.stage)}</p>
+            <strong>{phaseLabel(run.error.stage)} · {safeFailureCode(run.error.code)}</strong>
+            <p>{safeFailureMessage(run.error.code, run.error.stage)}</p>
           </div>}
           {run.status === 'completed' && run.result && <div className="analysis-result-summary" role="status">
             <p>{run.result.sampledFrameCount} sampled frames · {run.result.tracks.length} observed vehicle tracks</p>
