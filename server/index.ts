@@ -21,6 +21,7 @@ import {
   SUPPORTED_EXTENSIONS,
 } from './media.js';
 import { saveSceneConfiguration } from './scene-configuration.js';
+import type { SceneRegion } from './scene-configuration.js';
 import { createAndQueueAnalysisRun, readAnalysisRun, recoverInterruptedAnalysisRuns, type TrackingOutput } from './analysis-run.js';
 
 type ServerOptions = {
@@ -30,7 +31,7 @@ type ServerOptions = {
   ffprobePath?: string;
   processingTimeoutMs?: number;
   host?: string;
-  analysisRunner?: (sourcePath: string, outputPath: string) => Promise<TrackingOutput>;
+  analysisRunner?: (sourcePath: string, outputPath: string, signalRegion: SceneRegion) => Promise<TrackingOutput>;
   analysisTimeoutMs?: number;
 };
 
