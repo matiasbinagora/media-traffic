@@ -3,22 +3,22 @@
   "signalTimeline": [
     {
       "startFrame": 0,
-      "endFrameExclusive": 60,
+      "endFrameExclusive": 61,
       "startSeconds": 0,
-      "endSeconds": 2,
+      "endSeconds": 2.033333333333333,
       "state": "green"
     },
     {
-      "startFrame": 60,
-      "endFrameExclusive": 90,
-      "startSeconds": 2,
-      "endSeconds": 3,
+      "startFrame": 61,
+      "endFrameExclusive": 91,
+      "startSeconds": 2.033333333333333,
+      "endSeconds": 3.033333333333333,
       "state": "amber"
     },
     {
-      "startFrame": 90,
+      "startFrame": 91,
       "endFrameExclusive": 210,
-      "startSeconds": 3,
+      "startSeconds": 3.033333333333333,
       "endSeconds": 7,
       "state": "red"
     },
@@ -35,15 +35,15 @@
     "intervals": [],
     "reviewedBoundaryFrames": [
       0,
-      59,
       60,
-      89,
+      61,
       90,
+      91,
       209,
       210,
       299
     ],
-    "basis": "Manual review of decoded source frames, independent of detector output. No signal-state intervals were ambiguous; the red-crossing boundary judgement is documented with its event annotation."
+    "basis": "Manual review of decoded source frames, independent of detector output. The renderer uses inclusive transition endpoints with red, then amber, then green overlay priority, so frames 60, 90, and 210 show green, amber, and green respectively. No signal-state intervals were ambiguous; the red-crossing boundary judgement is documented with its event annotation."
   },
   "events": [
     {
@@ -68,7 +68,7 @@
       "startSeconds": 3,
       "endSeconds": 7,
       "vehicleId": "blue-car",
-      "notes": "The blue car is stationary and visibly behind the stop line throughout the red phase [3, 7] s, then proceeds after green returns."
+      "notes": "The blue car is stationary and visibly behind the stop line during [3, 7) s. This window includes amber at frame 90 and red frames 91–209; green returns at frame 210 (7 s), immediately after the stop interval ends."
     }
   ]
 }

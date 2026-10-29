@@ -1,29 +1,31 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { spawnSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import { validateDemoManifest } from '../scripts/demo-manifest.mjs';
 
-const videoBytes = await readFile(new URL('../example/demo-traffic-video/source.mp4', import.meta.url));
+const sourceVideoPath = fileURLToPath(new URL('../example/demo-traffic-video/source.mp4', import.meta.url));
+const videoBytes = await readFile(sourceVideoPath);
 const videoHash = createHash('sha256').update(videoBytes).digest('hex');
 
 const defaultGroundTruth = {
   schemaVersion: 1,
   signalTimeline: [
-    { startFrame: 0, endFrameExclusive: 60, startSeconds: 0, endSeconds: 2, state: 'green' },
-    { startFrame: 60, endFrameExclusive: 90, startSeconds: 2, endSeconds: 3, state: 'amber' },
-    { startFrame: 90, endFrameExclusive: 210, startSeconds: 3, endSeconds: 7, state: 'red' },
+    { startFrame: 0, endFrameExclusive: 61, startSeconds: 0, endSeconds: 61 / 30, state: 'green' },
+    { startFrame: 61, endFrameExclusive: 91, startSeconds: 61 / 30, endSeconds: 91 / 30, state: 'amber' },
+    { startFrame: 91, endFrameExclusive: 210, startSeconds: 91 / 30, endSeconds: 7, state: 'red' },
     { startFrame: 210, endFrameExclusive: 300, startSeconds: 7, endSeconds: 10, state: 'green' },
   ],
   signalAmbiguityReview: {
     status: 'none_observed',
     intervals: [],
-    reviewedBoundaryFrames: [0, 59, 60, 89, 90, 209, 210, 299],
-    basis: 'Manual review of decoded source frames, independent of detector output. No signal-state intervals were ambiguous; the red-crossing boundary judgement is documented with its event annotation.',
+    reviewedBoundaryFrames: [0, 60, 61, 90, 91, 209, 210, 299],
+    basis: 'Manual review of decoded source frames, independent of detector output. The renderer uses inclusive transition endpoints with red, then amber, then green overlay priority, so frames 60, 90, and 210 show green, amber, and green respectively. No signal-state intervals were ambiguous; the red-crossing boundary judgement is documented with its event annotation.',
   },
   events: [
     { eventId: 'red-1', type: 'red_crossing', startSeconds: 5.933, endSeconds: 5.967 },
@@ -87,22 +89,61 @@ test('records the full signal timeline and explicit signal ambiguity review', as
   const groundTruth = JSON.parse(await readFile(groundTruthPath, 'utf8'));
 
   assert.deepEqual(groundTruth.signalTimeline, [
-    { startFrame: 0, endFrameExclusive: 60, startSeconds: 0, endSeconds: 2, state: 'green' },
-    { startFrame: 60, endFrameExclusive: 90, startSeconds: 2, endSeconds: 3, state: 'amber' },
-    { startFrame: 90, endFrameExclusive: 210, startSeconds: 3, endSeconds: 7, state: 'red' },
+    { startFrame: 0, endFrameExclusive: 61, startSeconds: 0, endSeconds: 61 / 30, state: 'green' },
+    { startFrame: 61, endFrameExclusive: 91, startSeconds: 61 / 30, endSeconds: 91 / 30, state: 'amber' },
+    { startFrame: 91, endFrameExclusive: 210, startSeconds: 91 / 30, endSeconds: 7, state: 'red' },
     { startFrame: 210, endFrameExclusive: 300, startSeconds: 7, endSeconds: 10, state: 'green' },
   ]);
   assert.deepEqual(groundTruth.signalAmbiguityReview, {
     status: 'none_observed',
     intervals: [],
-    reviewedBoundaryFrames: [0, 59, 60, 89, 90, 209, 210, 299],
-    basis: 'Manual review of decoded source frames, independent of detector output. No signal-state intervals were ambiguous; the red-crossing boundary judgement is documented with its event annotation.',
+    reviewedBoundaryFrames: [0, 60, 61, 90, 91, 209, 210, 299],
+    basis: 'Manual review of decoded source frames, independent of detector output. The renderer uses inclusive transition endpoints with red, then amber, then green overlay priority, so frames 60, 90, and 210 show green, amber, and green respectively. No signal-state intervals were ambiguous; the red-crossing boundary judgement is documented with its event annotation.',
   });
 
   const root = await createAsset(t);
   const result = await validateDemoManifest(path.join(root, 'manifest.json'));
   assert.equal(result.signalTimelineIntervalCount, 4);
   assert.equal(result.signalTimelineFrameCount, 300);
+});
+
+test('signal timeline agrees with decoded lamp pixels on both sides of every phase boundary', async () => {
+  const frames = [33, 36, 59, 60, 61, 89, 90, 91, 178, 179, 209, 210, 211];
+  const filter = `select='${frames.map((frame) => `eq(n,${frame})`).join('+')}',crop=2:122:350:92`;
+  const rawPixels = execFileSync('ffmpeg', [
+    '-v', 'error', '-i', sourceVideoPath,
+    '-vf', filter,
+    '-fps_mode', 'passthrough',
+    '-frames:v', String(frames.length),
+    '-f', 'rawvideo', '-pix_fmt', 'rgb24', 'pipe:1',
+  ]);
+  const frameSize = 2 * 122 * 3;
+  assert.equal(rawPixels.length, frameSize * frames.length, 'FFmpeg should return one lamp crop per requested decoded frame');
+
+  const actualStates = frames.map((_, index) => {
+    const frame = rawPixels.subarray(index * frameSize, (index + 1) * frameSize);
+    const sample = (y) => [...frame.subarray(y * 2 * 3, y * 2 * 3 + 3)];
+    const [red, amber, green] = [sample(0), sample(53), sample(121)];
+    const redLit = red[0] > 190 && red[0] > red[1] + 45;
+    const amberLit = amber[0] > 190 && amber[1] > 150 && amber[2] < 100;
+    const greenLit = green[1] > 180 && green[1] > green[0] * 2;
+    assert.equal(Number(redLit) + Number(amberLit) + Number(greenLit), 1, `exactly one sampled lamp should be lit at frame ${frames[index]}`);
+    return redLit ? 'red' : amberLit ? 'amber' : 'green';
+  });
+
+  assert.deepEqual(actualStates, ['green', 'green', 'green', 'green', 'amber', 'amber', 'amber', 'red', 'red', 'red', 'red', 'green', 'green']);
+  const groundTruth = JSON.parse(await readFile(new URL('../example/demo-traffic-video/ground-truth.json', import.meta.url), 'utf8'));
+  for (const [index, frame] of frames.entries()) {
+    const interval = groundTruth.signalTimeline.find(({ startFrame, endFrameExclusive }) => frame >= startFrame && frame < endFrameExclusive);
+    assert.equal(interval?.state, actualStates[index], `ground-truth signal state disagrees with decoded lamp pixels at frame ${frame}`);
+  }
+
+  const signalAt = (frame) => groundTruth.signalTimeline.find(({ startFrame, endFrameExclusive }) => frame >= startFrame && frame < endFrameExclusive)?.state;
+  assert.equal(signalAt(33), 'green', 'the green-crossing bracket must occur during green');
+  assert.equal(signalAt(36), 'green', 'the green-crossing bracket must occur during green');
+  assert.equal(signalAt(178), 'red', 'the red-crossing bracket must occur during red');
+  assert.equal(signalAt(179), 'red', 'the red-crossing bracket must occur during red');
+  assert.deepEqual([signalAt(90), signalAt(91), signalAt(209), signalAt(210)], ['amber', 'red', 'red', 'green']);
 });
 
 test('rejects ground truth without an explicit signal ambiguity review', async (t) => {
@@ -117,7 +158,7 @@ test('rejects ground truth without an explicit signal ambiguity review', async (
 
 test('rejects signal timeline gaps or overlaps', async (t) => {
   const annotations = structuredClone(defaultGroundTruth);
-  annotations.signalTimeline[1].startFrame = 61;
+  annotations.signalTimeline[1].startFrame = 62;
   const root = await createAsset(t, { annotations });
 
   await assert.rejects(
