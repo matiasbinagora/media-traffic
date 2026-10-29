@@ -12,7 +12,7 @@ Implementation evidence for OpenSpec task 7.1. This is backend contract evidence
 
 ## Checks
 
-- `npm test`: PASS — 46 Node tests, 4 Python tests and 28 Vitest tests.
+- `npm test`: PASS — 48 Node tests, 4 Python tests and 28 Vitest tests.
 - `npm run typecheck:server`: PASS.
 - `npm run typecheck:frontend`: PASS (API type compatibility).
 - `npm run build`: PASS.

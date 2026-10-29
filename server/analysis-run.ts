@@ -41,6 +41,28 @@ export type TrackingOutput = {
 
 export type AnalysisProgress = (phase: Extract<AnalysisRunPhase, 'media_inspection' | 'preparation' | 'car_tracking' | 'signal_analysis' | 'result_generation'>) => Promise<void>;
 
+const MAX_PROGRESS_BUFFER_CHARS = 4_096;
+
+export class ProgressOutputParser {
+  private remainder = '';
+
+  get bufferedChars(): number {
+    return this.remainder.length;
+  }
+
+  push(chunk: string): Array<Extract<AnalysisRunPhase, 'media_inspection' | 'preparation' | 'car_tracking'>> {
+    const parts = `${this.remainder}${chunk}`.split(/[\r\n]+/);
+    this.remainder = parts.pop() || '';
+    if (this.remainder.length > MAX_PROGRESS_BUFFER_CHARS) this.remainder = this.remainder.slice(-MAX_PROGRESS_BUFFER_CHARS);
+    const phases: Array<Extract<AnalysisRunPhase, 'media_inspection' | 'preparation' | 'car_tracking'>> = [];
+    for (const line of parts) {
+      const match = /^MEDIA_TRAFFIC_PROGRESS:(media_inspection|preparation|car_tracking)$/.exec(line);
+      if (match) phases.push(match[1] as 'media_inspection' | 'preparation' | 'car_tracking');
+    }
+    return phases;
+  }
+}
+
 type RunOptions = {
   dataDirectory: string;
   videoId: string;
@@ -287,7 +309,9 @@ export async function executeAnalysisRun(options: ExecuteOptions): Promise<Analy
     run.status = 'failed';
     const failureCode = typeof code === 'string' ? code : 'YOLO_INFERENCE_FAILED';
     const currentPhase = run.phase as AnalysisRunPhase;
-    const failureStage = currentPhase === 'queued' || currentPhase === 'completed' || currentPhase === 'failed' ? 'car_tracking' : currentPhase;
+    const failureStage = failureCode === 'YOLO_MODEL_NOT_CONFIGURED' || failureCode === 'YOLO_RUNTIME_UNAVAILABLE'
+      ? 'preparation'
+      : currentPhase === 'queued' || currentPhase === 'completed' || currentPhase === 'failed' ? 'car_tracking' : currentPhase;
     run.phase = 'failed';
     run.error = { code: failureCode, message: sanitizedFailureMessage(failureCode, failureStage), stage: failureStage };
     delete run.result;
@@ -385,16 +409,16 @@ export async function recoverInterruptedAnalysisRuns(
       }
       if (run.videoId !== videoEntry.name || (run.status !== 'queued' && run.status !== 'running')) continue;
       const interruptedPhase = run.phase as AnalysisRunPhase | undefined;
-      const failureStage: Exclude<AnalysisRunPhase, 'queued' | 'completed' | 'failed'> = interruptedPhase === 'media_inspection'
+      const failureStage: Exclude<AnalysisRunPhase, 'completed' | 'failed'> = interruptedPhase === 'media_inspection'
         || interruptedPhase === 'preparation' || interruptedPhase === 'car_tracking'
         || interruptedPhase === 'signal_analysis' || interruptedPhase === 'result_generation'
         ? interruptedPhase
-        : 'car_tracking';
+        : run.status === 'queued' ? 'queued' : 'car_tracking';
       run.status = 'failed';
       run.phase = 'failed';
       run.error = {
         code: 'ANALYSIS_WORKER_INTERRUPTED',
-        message: sanitizedFailureMessage('ANALYSIS_WORKER_INTERRUPTED', failureStage),
+        message: 'The server restarted before analysis completed. Start a new analysis run.',
         stage: failureStage,
       };
       delete run.result;
@@ -425,7 +449,7 @@ function runUltralyticsTracker(sourcePath: string, outputPath: string, signalReg
   const temporaryOutput = `${outputPath}.${randomUUID()}.tmp.json`;
   return new Promise((resolve, reject) => {
     const child = spawn(pythonPath, [scriptPath, '--source', sourcePath, '--weights', modelPath, '--tracker', trackerPath, '--output', temporaryOutput, '--signal-region-json', JSON.stringify(signalRegion), '--ffprobe', process.env.FFPROBE_PATH || 'ffprobe'], { shell: false, stdio: ['ignore', 'ignore', 'pipe'] });
-    let stderrBuffer = '';
+    const progressParser = new ProgressOutputParser();
     let progressChain = Promise.resolve();
     let timedOut = false;
     let killTimer: NodeJS.Timeout | undefined;
@@ -436,13 +460,8 @@ function runUltralyticsTracker(sourcePath: string, outputPath: string, signalReg
     }, timeoutMs);
     child.stderr.setEncoding('utf8');
     child.stderr.on('data', chunk => {
-      const text = String(chunk);
-      stderrBuffer += text;
-      const lines = stderrBuffer.split(/\r?\n/);
-      stderrBuffer = lines.pop() || '';
-      for (const line of lines) {
-        const match = /^MEDIA_TRAFFIC_PROGRESS:(media_inspection|preparation|car_tracking)$/.exec(line);
-        if (match && onProgress) progressChain = progressChain.then(() => onProgress(match[1] as 'media_inspection' | 'preparation' | 'car_tracking'));
+      for (const phase of progressParser.push(String(chunk))) {
+        if (onProgress) progressChain = progressChain.then(() => onProgress(phase));
       }
     });
     child.once('error', error => {

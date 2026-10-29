@@ -78,7 +78,7 @@ export type AnalysisProvenance = {
   signalRecognition: { method: 'configured-region-hsv'; algorithmVersion: 1; minimumColorPixelRatio: 0.005; ambiguousColorRatio: 0.5; requiredConsecutiveFrames: 3 };
 };
 
-export type AnalysisRunError = { code: string; message: string; stage: Exclude<AnalysisRunPhase, 'queued' | 'completed' | 'failed'> };
+export type AnalysisRunError = { code: string; message: string; stage: Exclude<AnalysisRunPhase, 'completed' | 'failed'> };
 
 export type AnalysisRun = {
   schemaVersion: 2;

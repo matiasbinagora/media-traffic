@@ -98,5 +98,5 @@ export type AnalysisRunSnapshot = {
   updatedAt: string;
   provenance: AnalysisProvenance;
   result?: TrafficAnalysisResult;
-  error?: { code: string; message: string; stage: 'media_inspection' | 'preparation' | 'car_tracking' | 'signal_analysis' | 'result_generation' | 'inference' };
+  error?: { code: string; message: string; stage: 'queued' | 'media_inspection' | 'preparation' | 'car_tracking' | 'signal_analysis' | 'result_generation' | 'inference' };
 };

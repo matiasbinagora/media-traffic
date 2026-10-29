@@ -4,7 +4,7 @@ import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises
 import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
-import { executeAnalysisRun, identifySyntheticSource, recoverInterruptedAnalysisRuns } from './analysis-run.js';
+import { executeAnalysisRun, identifySyntheticSource, ProgressOutputParser, recoverInterruptedAnalysisRuns } from './analysis-run.js';
 import type { AnalysisRun } from './traffic-analysis.js';
 
 function makeRun(videoId: string, status: AnalysisRun['status']): AnalysisRun {
@@ -217,13 +217,67 @@ test('marks queued and running records as failed after restart while retaining t
       const persisted = JSON.parse(await readFile(path.join(recordsDirectory, `${run.id}.json`), 'utf8')) as AnalysisRun;
       assert.equal(persisted.status, 'failed');
       assert.equal(persisted.error?.code, 'ANALYSIS_WORKER_INTERRUPTED');
-      assert.equal(persisted.error?.stage, 'car_tracking');
+      assert.equal(persisted.error?.stage, run.status === 'queued' ? 'queued' : 'car_tracking');
       assert.equal(persisted.updatedAt, '2026-10-27T12:05:00.000Z');
     }
     const unchanged = JSON.parse(await readFile(path.join(recordsDirectory, `${completed.id}.json`), 'utf8')) as AnalysisRun;
     assert.equal(unchanged.status, 'completed');
   } finally {
     await rm(dataDirectory, { recursive: true, force: true });
+  }
+});
+
+test('parses CR-delimited progress and bounds unterminated runtime output', () => {
+  const parser = new ProgressOutputParser();
+  assert.deepEqual(parser.push('MEDIA_TRAFFIC_PROGRESS:media_inspection\rMEDIA_TRAFFIC_PROGRESS:preparation\r'), ['media_inspection', 'preparation']);
+  assert.deepEqual(parser.push('x'.repeat(100_000)), []);
+  assert.ok(parser.bufferedChars <= 4_096);
+  assert.deepEqual(parser.push('\nMEDIA_TRAFFIC_PROGRESS:car_tracking\r'), ['car_tracking']);
+  assert.ok(parser.bufferedChars <= 4_096);
+});
+
+test('reports a missing model at the preparation stage without exposing paths', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'media-traffic-run-model-missing-'));
+  const dataDirectory = path.join(root, 'data');
+  const videoId = randomUUID();
+  const sourcePath = path.join(root, 'source.mp4');
+  const source = Buffer.from('test video input');
+  await writeFile(sourcePath, source);
+  const sha256 = createHash('sha256').update(source).digest('hex');
+  const run = makeRun(videoId, 'queued');
+  run.provenance.source.sha256 = sha256;
+  const previousModelPath = process.env.YOLO_MODEL_PATH;
+  delete process.env.YOLO_MODEL_PATH;
+
+  try {
+    const failed = await executeAnalysisRun({
+      dataDirectory,
+      videoId,
+      upload: {
+        schemaVersion: 1,
+        id: videoId,
+        originalName: 'source.mp4',
+        status: 'completed',
+        upload: { status: 'completed', sizeBytes: source.length, sha256 },
+        preview: { status: 'completed', contentType: 'video/mp4', url: `/api/videos/${videoId}/preview` },
+        source: { sizeBytes: source.length, sha256, media: { durationSeconds: 1, width: 320, height: 240 } },
+        createdAt: run.createdAt,
+        updatedAt: run.updatedAt,
+      } as never,
+      configurationId: randomUUID(),
+      sourcePath,
+      run,
+    });
+
+    assert.equal(failed.status, 'failed');
+    assert.equal(failed.error?.code, 'YOLO_MODEL_NOT_CONFIGURED');
+    assert.equal(failed.error?.stage, 'preparation');
+    assert.equal(failed.error?.message, 'Set YOLO_MODEL_PATH to the qualified yolo26n.pt checkpoint, then start a new analysis run.');
+    assert.equal('result' in failed, false);
+  } finally {
+    if (previousModelPath === undefined) delete process.env.YOLO_MODEL_PATH;
+    else process.env.YOLO_MODEL_PATH = previousModelPath;
+    await rm(root, { recursive: true, force: true });
   }
 });
 
