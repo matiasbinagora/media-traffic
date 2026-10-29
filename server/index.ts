@@ -22,7 +22,7 @@ import {
 } from './media.js';
 import { saveSceneConfiguration } from './scene-configuration.js';
 import type { SceneRegion } from './scene-configuration.js';
-import { createAndQueueAnalysisRun, readAnalysisRun, recoverInterruptedAnalysisRuns, type TrackingOutput } from './analysis-run.js';
+import { createAndQueueAnalysisRun, readAnalysisRun, recoverInterruptedAnalysisRuns, type AnalysisProgress, type TrackingOutput } from './analysis-run.js';
 
 type ServerOptions = {
   dataDirectory?: string;
@@ -31,7 +31,7 @@ type ServerOptions = {
   ffprobePath?: string;
   processingTimeoutMs?: number;
   host?: string;
-  analysisRunner?: (sourcePath: string, outputPath: string, signalRegion: SceneRegion) => Promise<TrackingOutput>;
+  analysisRunner?: (sourcePath: string, outputPath: string, signalRegion: SceneRegion, onProgress?: AnalysisProgress) => Promise<TrackingOutput>;
   analysisTimeoutMs?: number;
 };
 
@@ -303,6 +303,12 @@ export function createMediaServer(options: ServerOptions = {}): http.Server {
           return sendJson(response, 201, snapshot);
         }
         if (collection === 'analysis-runs' && request.method === 'POST' && !itemId) {
+          const previewPath = path.join(dataDirectory, 'videos', videoId, 'preview.mp4');
+          const previewStat = await stat(previewPath).catch(() => undefined);
+          if (job.status !== 'completed' || job.preview.status !== 'completed' || !job.derivative
+            || !previewStat?.isFile() || previewStat.size !== job.derivative.sizeBytes) {
+            return sendJson(response, 409, { error: { code: 'PREVIEW_UNAVAILABLE', message: 'Finish video preparation and make sure its playable preview is present before starting traffic analysis.' } });
+          }
           const input = await readJsonBody(request);
           const configurationId = input !== null && typeof input === 'object' && !Array.isArray(input)
             ? (input as Record<string, unknown>).configurationId

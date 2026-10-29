@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
@@ -19,6 +19,7 @@ let lastSignalRegion: { x: number; y: number; width: number; height: number } | 
 let simulateInferenceFailure = false;
 let simulateInvalidCheckpoint = false;
 let simulateSignalTimestampMismatch = false;
+let observedAnalysisPhases: string[] = [];
 
 const deterministicTrackingOutput: TrackingOutput = {
   width: 320,
@@ -73,8 +74,13 @@ before(async () => {
   server = createMediaServer({
     dataDirectory,
     maxUploadBytes: 1024 * 1024,
-    analysisRunner: async (_sourcePath, _outputPath, signalRegion) => {
-      if (simulateInferenceFailure) throw new Error('test inference failure');
+    analysisRunner: async (_sourcePath, _outputPath, signalRegion, onProgress) => {
+      observedAnalysisPhases = [];
+      for (const phase of ['media_inspection', 'preparation', 'car_tracking'] as const) {
+        await onProgress?.(phase);
+        observedAnalysisPhases.push(phase);
+      }
+      if (simulateInferenceFailure) throw Object.assign(new Error('sensitive /private/model/checkpoint.pt detail'), { code: 'YOLO_INFERENCE_FAILED' });
       lastSignalRegion = structuredClone(signalRegion);
       const output = structuredClone(deterministicTrackingOutput);
       if (simulateInvalidCheckpoint) output.provenance.checkpointSha256 = '0'.repeat(64);
@@ -180,6 +186,9 @@ test('captures immutable configuration snapshots per run when later scene edits 
   const completedFirstRun = await waitForAnalysisRun(firstRun.id);
   assert.deepEqual(lastSignalRegion, first.geometry.signalRegion, 'signal recognition must use the saved run configuration');
   assert.equal(completedFirstRun.status, 'completed');
+  assert.equal(completedFirstRun.phase, 'completed');
+  assert.deepEqual(observedAnalysisPhases, ['media_inspection', 'preparation', 'car_tracking']);
+  assert.deepEqual(completedFirstRun.provenance.source.syntheticSource, { status: 'not-identified', evidence: 'no-matching-manifest' });
   assert.deepEqual(completedFirstRun.result.tracks.map((track: any) => track.trackId), ['1', '2']);
   assert.equal(completedFirstRun.result.tracks[0].observations.length, 3);
   assert.equal(completedFirstRun.result.tracks[1].observations.length, 2);
@@ -244,6 +253,25 @@ test('cannot create an analysis run without an explicitly saved configuration', 
   assert.equal((await response.json() as any).error.code, 'SCENE_CONFIGURATION_REQUIRED');
 });
 
+test('does not queue analysis if the playable preview has disappeared', async () => {
+  const snapshot = configuration('10000000-0000-4000-8000-000000000008');
+  assert.equal((await saveConfiguration(snapshot)).status, 201);
+  const previewPath = path.join(dataDirectory, 'videos', videoId, 'preview.mp4');
+  const preview = await readFile(previewPath);
+  await rm(previewPath);
+  try {
+    const response = await fetch(`${baseUrl}/api/videos/${videoId}/analysis-runs`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ configurationId: snapshot.id }),
+    });
+    assert.equal(response.status, 409);
+    assert.equal((await response.json() as any).error.code, 'PREVIEW_UNAVAILABLE');
+  } finally {
+    await writeFile(previewPath, preview);
+  }
+});
+
 test('fails the run when signal evidence is not synchronized with source frames', async () => {
   const snapshot = configuration('10000000-0000-4000-8000-000000000007');
   assert.equal((await saveConfiguration(snapshot)).status, 201);
@@ -258,7 +286,8 @@ test('fails the run when signal evidence is not synchronized with source frames'
     const queued = await response.json() as Record<string, any>;
     const failed = await waitForAnalysisRun(queued.id);
     assert.equal(failed.status, 'failed');
-    assert.match(failed.error.message, /Signal observations did not match every decoded source frame/);
+    assert.equal(failed.error.stage, 'car_tracking');
+    assert.match(failed.error.message, /failed during car tracking/);
     assert.equal('result' in failed, false);
   } finally {
     simulateSignalTimestampMismatch = false;
@@ -279,8 +308,10 @@ test('persists a failed inference state without substituting fixture detections'
   const failed = await waitForAnalysisRun(queued.id);
   simulateInferenceFailure = false;
   assert.equal(failed.status, 'failed');
-  assert.equal(failed.error.stage, 'inference');
-  assert.equal(failed.error.message, 'test inference failure');
+  assert.equal(failed.error.stage, 'car_tracking');
+  assert.doesNotMatch(failed.error.message, /private|checkpoint\.pt|sensitive/i);
+  assert.equal(failed.error.message, 'Traffic analysis failed during car tracking. Verify the uploaded source, qualified model and runtime, then start a new run; include this run ID when contacting the operator.');
+  assert.equal(failed.phase, 'failed');
   assert.equal('result' in failed, false);
 });
 
@@ -297,6 +328,6 @@ test('rejects tracker output with checkpoint provenance that differs from the qu
   const failed = await waitForAnalysisRun(queued.id);
   simulateInvalidCheckpoint = false;
   assert.equal(failed.status, 'failed');
-  assert.match(failed.error.message, /provenance does not match/);
+  assert.match(failed.error.message, /failed during car tracking/);
   assert.equal('result' in failed, false);
 });

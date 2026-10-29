@@ -42,7 +42,7 @@ All checkboxes remain pending until the task has its required implementation and
 
 ## 7. Honest Processing and Provenance — US-08
 
-- [ ] 7.1 Owner: m-traffic-backend-developer. Expose asynchronous stages, terminal failures and reproducible immutable run provenance; verify model-loading/media/inference failures cannot yield fixture success and reruns remain distinct (`processing-provenance`). Depends on 1.2, 3.1, 4.1–4.2.
+- [x] 7.1 Owner: m-traffic-backend-developer. Expose asynchronous stages, terminal failures and reproducible immutable run provenance; verify model-loading/media/inference failures cannot yield fixture success and reruns remain distinct (`processing-provenance`). Depends on 1.2, 3.1, 4.1–4.2. Evidence: [PER-93 backend evidence](../../../reports/per93/backend-evidence.md) and focused persistence/API tests in `server/analysis-run.test.ts` and `server/scene-configuration.test.ts`; this does not certify real-inference accuracy or frontend presentation.
 - [ ] 7.2 Owner: m-traffic-frontend-developer. Show actual stages, errors, source labels and model/configuration details; verify loading/error/completed journeys and absence of fabricated detections, documenting limitations (`processing-provenance`). Depends on 7.1.
 
 ## 8. Independent Validation and Acceptance — US-09
