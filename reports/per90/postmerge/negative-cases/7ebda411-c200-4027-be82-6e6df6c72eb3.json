@@ -1,0 +1,488 @@
+{
+  "schemaVersion": 2,
+  "id": "7ebda411-c200-4027-be82-6e6df6c72eb3",
+  "videoId": "5d88a343-ad5c-4cff-9a63-38b10f0e0967",
+  "status": "completed",
+  "analysisStarted": true,
+  "configurationSnapshot": {
+    "schemaVersion": 1,
+    "id": "98b96712-7e34-4655-80a3-90bbe537c494",
+    "source": {
+      "videoId": "5d88a343-ad5c-4cff-9a63-38b10f0e0967",
+      "sha256": "72091aa6aa12737f1583316a5d84c838f31876e41643d20f97942f501d2d9f19",
+      "width": 320,
+      "height": 240
+    },
+    "geometry": {
+      "vehicleRegion": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      },
+      "stopLine": {
+        "start": {
+          "x": 0,
+          "y": 0.7
+        },
+        "end": {
+          "x": 1,
+          "y": 0.7
+        }
+      },
+      "crossingDirection": "top-to-bottom",
+      "signalRegion": {
+        "x": 0.2,
+        "y": 0.2,
+        "width": 0.5,
+        "height": 0.4
+      },
+      "signalAssociation": "competing-red-green-test"
+    },
+    "createdAt": "2026-10-29T01:50:00.000Z"
+  },
+  "provenance": {
+    "source": {
+      "videoId": "5d88a343-ad5c-4cff-9a63-38b10f0e0967",
+      "sha256": "72091aa6aa12737f1583316a5d84c838f31876e41643d20f97942f501d2d9f19",
+      "path": "uploaded-original",
+      "durationSeconds": 1,
+      "width": 320,
+      "height": 240
+    },
+    "detector": {
+      "family": "YOLO26",
+      "weights": "yolo26n.pt",
+      "sha256": "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef",
+      "runtime": "Ultralytics",
+      "device": "cpu",
+      "runtimeVersion": "8.4.190",
+      "pythonVersion": "3.12.13",
+      "pytorchVersion": "2.14.1",
+      "platform": "macOS-27.0.1-arm64-arm-64bit",
+      "inferenceSeconds": 1.323
+    },
+    "tracker": {
+      "name": "ByteTrack",
+      "configFile": "server/inference/bytetrack.yaml",
+      "configSha256": "4e4a91e815e198c2ac6e3b1def0cdd7020534e2d228ca638ec4dd87eae6179bc",
+      "config": {
+        "tracker_type": "bytetrack",
+        "track_high_thresh": 0.25,
+        "track_low_thresh": 0.1,
+        "new_track_thresh": 0.25,
+        "track_buffer": 30,
+        "match_thresh": 0.8,
+        "fuse_score": true
+      }
+    },
+    "sampling": {
+      "strategy": "every-decoded-frame",
+      "framesPerSample": 1,
+      "timestampSource": "ffprobe.best_effort_timestamp_time",
+      "decodedFrameCount": 30
+    },
+    "thresholds": {
+      "confidence": 0.25,
+      "imageSize": 640,
+      "classFilter": {
+        "id": 2,
+        "name": "car"
+      }
+    },
+    "signalRecognition": {
+      "method": "configured-region-hsv",
+      "algorithmVersion": 1,
+      "minimumColorPixelRatio": 0.005,
+      "ambiguousColorRatio": 0.5,
+      "requiredConsecutiveFrames": 3
+    }
+  },
+  "createdAt": "2026-10-29T01:49:55.896Z",
+  "updatedAt": "2026-10-29T01:49:58.079Z",
+  "result": {
+    "frameWidth": 320,
+    "frameHeight": 240,
+    "sampledFrameCount": 30,
+    "tracks": [],
+    "possibleIdentitySwitches": [],
+    "signalTimeline": {
+      "stabilityRule": {
+        "method": "consecutive-decoded-frames",
+        "requiredFrames": 3
+      },
+      "observations": [
+        {
+          "frameIndex": 0,
+          "timeSeconds": 0,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 1,
+          "timeSeconds": 0.033333,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 2,
+          "timeSeconds": 0.066667,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 3,
+          "timeSeconds": 0.1,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 4,
+          "timeSeconds": 0.133333,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 5,
+          "timeSeconds": 0.166667,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 6,
+          "timeSeconds": 0.2,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 7,
+          "timeSeconds": 0.233333,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 8,
+          "timeSeconds": 0.266667,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 9,
+          "timeSeconds": 0.3,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 10,
+          "timeSeconds": 0.333333,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 11,
+          "timeSeconds": 0.366667,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 12,
+          "timeSeconds": 0.4,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 13,
+          "timeSeconds": 0.433333,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 14,
+          "timeSeconds": 0.466667,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 15,
+          "timeSeconds": 0.5,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 16,
+          "timeSeconds": 0.533333,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 17,
+          "timeSeconds": 0.566667,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 18,
+          "timeSeconds": 0.6,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 19,
+          "timeSeconds": 0.633333,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 20,
+          "timeSeconds": 0.666667,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 21,
+          "timeSeconds": 0.7,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 22,
+          "timeSeconds": 0.733333,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 23,
+          "timeSeconds": 0.766667,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 24,
+          "timeSeconds": 0.8,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 25,
+          "timeSeconds": 0.833333,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 26,
+          "timeSeconds": 0.866667,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 27,
+          "timeSeconds": 0.9,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 28,
+          "timeSeconds": 0.933333,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        },
+        {
+          "frameIndex": 29,
+          "timeSeconds": 0.966667,
+          "state": "unknown",
+          "evidenceScore": 0.103093,
+          "colorScores": {
+            "red": 0.103093,
+            "yellow": 0,
+            "green": 0.103093
+          },
+          "reason": "multiple_colors"
+        }
+      ],
+      "intervals": [
+        {
+          "state": "unknown",
+          "startFrameIndex": 0,
+          "endFrameExclusive": 30,
+          "startSeconds": 0,
+          "endSeconds": 1,
+          "rationale": "ambiguous_signal"
+        }
+      ]
+    }
+  }
+}
