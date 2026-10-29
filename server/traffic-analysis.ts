@@ -66,6 +66,7 @@ export type AnalysisProvenance = {
   tracker: { name: 'ByteTrack'; configFile: 'server/inference/bytetrack.yaml'; configSha256?: string; config?: Record<string, unknown> };
   sampling: { strategy: 'every-decoded-frame'; framesPerSample: 1; timestampSource: 'ffprobe.best_effort_timestamp_time'; decodedFrameCount?: number };
   thresholds: { confidence: number; imageSize: number; classFilter: { id: 2; name: 'car' } };
+  signalRecognition: { method: 'configured-region-hsv'; algorithmVersion: 1; minimumColorPixelRatio: 0.005; ambiguousColorRatio: 0.5; requiredConsecutiveFrames: 3 };
 };
 
 export type AnalysisRunError = { code: string; message: string; stage: 'inference' };
@@ -78,7 +79,7 @@ export type AnalysisRun = {
   analysisStarted: boolean;
   configurationSnapshot: import('./scene-configuration.js').SceneConfigurationSnapshot;
   provenance: AnalysisProvenance;
-  result?: TrackResult;
+  result?: TrackResult & { signalTimeline: import('./signal-analysis.js').SignalTimeline };
   error?: AnalysisRunError;
   createdAt: string;
   updatedAt: string;

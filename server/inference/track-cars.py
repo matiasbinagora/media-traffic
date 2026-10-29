@@ -15,6 +15,7 @@ import time
 from pathlib import Path
 
 import cv2
+import numpy as np
 import torch
 import ultralytics
 import yaml
@@ -50,12 +51,37 @@ def frame_timestamps(source: Path, ffprobe: str) -> list[float]:
     return timestamps
 
 
+def observe_signal(image, signal_region: dict[str, float]) -> dict[str, object]:
+    height, width = image.shape[:2]
+    left = max(0, min(width, math.floor(signal_region["x"] * width)))
+    top = max(0, min(height, math.floor(signal_region["y"] * height)))
+    right = max(0, min(width, math.ceil((signal_region["x"] + signal_region["width"]) * width)))
+    bottom = max(0, min(height, math.ceil((signal_region["y"] + signal_region["height"]) * height)))
+    if right - left < 3 or bottom - top < 3:
+        return {"signalRegionTooSmall": True, "colorScores": {"red": 0.0, "yellow": 0.0, "green": 0.0}}
+
+    hsv = cv2.cvtColor(image[top:bottom, left:right], cv2.COLOR_BGR2HSV)
+    pixel_count = (right - left) * (bottom - top)
+    red_mask = cv2.bitwise_or(
+        cv2.inRange(hsv, np.array([0, 100, 120]), np.array([10, 255, 255])),
+        cv2.inRange(hsv, np.array([170, 100, 120]), np.array([179, 255, 255])),
+    )
+    masks = {
+        "red": red_mask,
+        "yellow": cv2.inRange(hsv, np.array([12, 100, 120]), np.array([35, 255, 255])),
+        "green": cv2.inRange(hsv, np.array([36, 100, 100]), np.array([90, 255, 255])),
+    }
+    scores = {color: round(cv2.countNonZero(mask) / pixel_count, 6) for color, mask in masks.items()}
+    return {"colorScores": scores}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", required=True, type=Path)
     parser.add_argument("--weights", required=True, type=Path)
     parser.add_argument("--tracker", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--signal-region-json", required=True)
     parser.add_argument("--ffprobe", default="ffprobe")
     args = parser.parse_args()
 
@@ -63,6 +89,15 @@ def main() -> None:
         raise SystemExit("Uploaded source video is missing.")
     if not args.weights.is_file():
         raise SystemExit("Configured YOLO checkpoint is missing.")
+    try:
+        signal_region = json.loads(args.signal_region_json)
+        region_values = [signal_region[key] for key in ("x", "y", "width", "height")]
+        if any(not isinstance(value, (int, float)) or not math.isfinite(value) for value in region_values):
+            raise ValueError("Signal-region coordinates must be finite numbers.")
+        if signal_region["x"] < 0 or signal_region["y"] < 0 or signal_region["width"] <= 0 or signal_region["height"] <= 0 or signal_region["x"] + signal_region["width"] > 1 or signal_region["y"] + signal_region["height"] > 1:
+            raise ValueError("Signal-region coordinates must be a positive normalized rectangle inside the source frame.")
+    except (KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
+        raise SystemExit(f"Invalid configured signal region: {error}") from error
     checkpoint_sha256 = sha256_file(args.weights)
     if checkpoint_sha256 != EXPECTED_CHECKPOINT_SHA256:
         raise SystemExit(f"Configured checkpoint SHA-256 does not match the qualified yolo26n model: {checkpoint_sha256}")
@@ -77,6 +112,7 @@ def main() -> None:
     width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
     frames = []
+    signal_pixel_observations = []
     frame_index = 0
     try:
         while True:
@@ -118,6 +154,11 @@ def main() -> None:
                 "timeSeconds": timestamps[frame_index],
                 "detections": detections,
             })
+            signal_pixel_observations.append({
+                "frameIndex": frame_index,
+                "timeSeconds": timestamps[frame_index],
+                **observe_signal(image, signal_region),
+            })
             frame_index += 1
     finally:
         capture.release()
@@ -129,6 +170,7 @@ def main() -> None:
         "width": width,
         "height": height,
         "frames": frames,
+        "signalPixelObservations": signal_pixel_observations,
         "provenance": {
             "source": "uploaded-original",
             "checkpoint": args.weights.name,

@@ -15,13 +15,16 @@ function makeRun(videoId: string, status: AnalysisRun['status']): AnalysisRun {
     videoId,
     status,
     analysisStarted: true,
-    configurationSnapshot: {} as AnalysisRun['configurationSnapshot'],
+    configurationSnapshot: {
+      geometry: { signalRegion: { x: 0.1, y: 0.1, width: 0.1, height: 0.2 } },
+    } as AnalysisRun['configurationSnapshot'],
     provenance: {
       source: { videoId, sha256: 'a'.repeat(64), path: 'uploaded-original', durationSeconds: 1, width: 320, height: 240 },
       detector: { family: 'YOLO26', weights: 'yolo26n.pt', runtime: 'Ultralytics', device: 'cpu' },
       tracker: { name: 'ByteTrack', configFile: 'server/inference/bytetrack.yaml' },
       sampling: { strategy: 'every-decoded-frame', framesPerSample: 1, timestampSource: 'ffprobe.best_effort_timestamp_time' },
       thresholds: { confidence: 0.25, imageSize: 640, classFilter: { id: 2, name: 'car' } },
+      signalRecognition: { method: 'configured-region-hsv', algorithmVersion: 1, minimumColorPixelRatio: 0.005, ambiguousColorRatio: 0.5, requiredConsecutiveFrames: 3 },
     },
     createdAt,
     updatedAt: createdAt,
