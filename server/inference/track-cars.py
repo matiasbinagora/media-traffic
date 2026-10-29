@@ -20,6 +20,7 @@ import torch
 import ultralytics
 import yaml
 from ultralytics import YOLO
+from signal_observation import observe_signal
 
 
 EXPECTED_CHECKPOINT_SHA256 = "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef"
@@ -49,30 +50,6 @@ def frame_timestamps(source: Path, ffprobe: str) -> list[float]:
     if any(current <= previous for previous, current in zip(timestamps, timestamps[1:])):
         raise ValueError("Source presentation timestamps are not strictly increasing.")
     return timestamps
-
-
-def observe_signal(image, signal_region: dict[str, float]) -> dict[str, object]:
-    height, width = image.shape[:2]
-    left = max(0, min(width, math.floor(signal_region["x"] * width)))
-    top = max(0, min(height, math.floor(signal_region["y"] * height)))
-    right = max(0, min(width, math.ceil((signal_region["x"] + signal_region["width"]) * width)))
-    bottom = max(0, min(height, math.ceil((signal_region["y"] + signal_region["height"]) * height)))
-    if right - left < 3 or bottom - top < 3:
-        return {"signalRegionTooSmall": True, "colorScores": {"red": 0.0, "yellow": 0.0, "green": 0.0}}
-
-    hsv = cv2.cvtColor(image[top:bottom, left:right], cv2.COLOR_BGR2HSV)
-    pixel_count = (right - left) * (bottom - top)
-    red_mask = cv2.bitwise_or(
-        cv2.inRange(hsv, np.array([0, 100, 120]), np.array([10, 255, 255])),
-        cv2.inRange(hsv, np.array([170, 100, 120]), np.array([179, 255, 255])),
-    )
-    masks = {
-        "red": red_mask,
-        "yellow": cv2.inRange(hsv, np.array([12, 100, 120]), np.array([35, 255, 255])),
-        "green": cv2.inRange(hsv, np.array([36, 100, 100]), np.array([90, 255, 255])),
-    }
-    scores = {color: round(cv2.countNonZero(mask) / pixel_count, 6) for color, mask in masks.items()}
-    return {"colorScores": scores}
 
 
 def main() -> None:

@@ -24,7 +24,7 @@ export type SignalInterval = {
   endFrameExclusive: number;
   startSeconds: number;
   endSeconds: number;
-  rationale: 'stable_for_three_consecutive_frames' | 'no_readable_signal' | 'ambiguous_signal' | 'transition_not_stable';
+  rationale: 'stable_for_three_consecutive_frames' | 'no_readable_signal' | 'ambiguous_signal' | 'signal_region_too_small' | 'transition_not_stable';
   transitionEvidence?: { supportingFrameIndices: [number, number, number] };
 };
 
@@ -45,17 +45,16 @@ export function classifySignalObservation(
     || colors.some(color => !Number.isFinite(colorScores[color]) || colorScores[color] < 0 || colorScores[color] > 1)) {
     throw new Error('Signal pixel evidence must include valid frame, timestamp, and color ratios.');
   }
+  const ranked = colors.map(color => ({ color, score: colorScores[color] })).sort((left, right) => right.score - left.score);
+  const [leading, runnerUp] = ranked;
   if (signalRegionTooSmall) {
     return { frameIndex, timeSeconds, state: 'unknown', evidenceScore: 0, colorScores, reason: 'signal_region_too_small' };
   }
-
-  const ranked = colors.map(color => ({ color, score: colorScores[color] })).sort((left, right) => right.score - left.score);
-  const [leading, runnerUp] = ranked;
   if (leading.score < 0.005) {
-    return { frameIndex, timeSeconds, state: 'unknown', evidenceScore: 0, colorScores, reason: 'no_clear_lamp' };
+    return { frameIndex, timeSeconds, state: 'unknown', evidenceScore: leading.score, colorScores, reason: 'no_clear_lamp' };
   }
   if (runnerUp.score >= leading.score * 0.5) {
-    return { frameIndex, timeSeconds, state: 'unknown', evidenceScore: 0, colorScores, reason: 'multiple_colors' };
+    return { frameIndex, timeSeconds, state: 'unknown', evidenceScore: leading.score, colorScores, reason: 'multiple_colors' };
   }
   return { frameIndex, timeSeconds, state: leading.color, evidenceScore: leading.score, colorScores };
 }
@@ -90,7 +89,9 @@ export function assembleSignalTimeline(input: { durationSeconds: number; observa
   while (start < input.observations.length) {
     const rawState = input.observations[start].state;
     let end = start + 1;
-    while (end < input.observations.length && input.observations[end].state === rawState) end += 1;
+    while (end < input.observations.length
+      && input.observations[end].state === rawState
+      && (rawState !== 'unknown' || input.observations[end].reason === input.observations[start].reason)) end += 1;
     const isStableColor = rawState !== 'unknown' && end - start >= 3;
     const state: SignalState = isStableColor ? rawState : 'unknown';
     const rationale = isStableColor
@@ -99,7 +100,9 @@ export function assembleSignalTimeline(input: { durationSeconds: number; observa
         ? 'transition_not_stable'
         : input.observations[start].reason === 'multiple_colors'
           ? 'ambiguous_signal'
-          : 'no_readable_signal';
+          : input.observations[start].reason === 'signal_region_too_small'
+            ? 'signal_region_too_small'
+            : 'no_readable_signal';
     intervals.push({
       state,
       startFrameIndex: start,

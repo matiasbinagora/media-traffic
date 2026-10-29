@@ -26,7 +26,7 @@
     "test:playwright": "playwright test",
     "typecheck:frontend": "tsc --noEmit -p tsconfig.frontend.json",
     "server": "tsx server/index.ts",
-    "test:backend": "node --import tsx --test server/*.test.ts tests/*.test.mjs",
+    "test:backend": "node --import tsx --test server/*.test.ts tests/*.test.mjs && python3 -m unittest server.inference.test_signal_observation",
     "test": "npm run test:backend && npm run test:frontend",
     "typecheck:server": "tsc --noEmit --target ES2022 --module NodeNext --moduleResolution NodeNext --strict --skipLibCheck --types node server/index.ts server/media.ts"
   },

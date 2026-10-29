@@ -18,8 +18,11 @@ test('classifies clear HSV pixel ratios and leaves absent or competing colors un
   assert.equal(classifySignalObservation(1, 0.1, { red: 0, yellow: 0.03, green: 0 }).state, 'yellow');
   assert.equal(classifySignalObservation(2, 0.2, { red: 0, yellow: 0, green: 0.03 }).state, 'green');
   assert.equal(classifySignalObservation(3, 0.3, { red: 0.004, yellow: 0, green: 0 }).reason, 'no_clear_lamp');
+  assert.equal(classifySignalObservation(3, 0.3, { red: 0.004, yellow: 0, green: 0 }).evidenceScore, 0.004);
   assert.equal(classifySignalObservation(4, 0.4, { red: 0.03, yellow: 0.016, green: 0 }).reason, 'multiple_colors');
+  assert.equal(classifySignalObservation(4, 0.4, { red: 0.03, yellow: 0.016, green: 0 }).evidenceScore, 0.03);
   assert.equal(classifySignalObservation(5, 0.5, { red: 0, yellow: 0, green: 0 }, true).reason, 'signal_region_too_small');
+  assert.equal(classifySignalObservation(5, 0.5, { red: 0, yellow: 0, green: 0 }, true).evidenceScore, 0);
 });
 
 test('retains observations and confirms color intervals only after three consecutive frames', () => {
@@ -52,6 +55,22 @@ test('keeps a brief color flash unknown instead of promoting it to a signal phas
     'transition_not_stable', 'no_readable_signal', 'transition_not_stable',
   ]);
   assert.equal(result.observations[0].state, 'red', 'raw evidence remains available when the stable interval is unknown');
+});
+
+test('keeps adjacent unknown intervals separate when their rationales differ', () => {
+  const noReadableSignal = { ...observation(0, 'unknown'), reason: 'no_clear_lamp' as const };
+  const ambiguousSignal = { ...observation(1, 'unknown'), reason: 'multiple_colors' as const };
+  const tooSmallSignal = { ...observation(2, 'unknown'), reason: 'signal_region_too_small' as const };
+  const result = assembleSignalTimeline({
+    durationSeconds: 0.3,
+    observations: [noReadableSignal, ambiguousSignal, tooSmallSignal],
+  });
+
+  assert.deepEqual(result.intervals.map(interval => [interval.state, interval.rationale]), [
+    ['unknown', 'no_readable_signal'],
+    ['unknown', 'ambiguous_signal'],
+    ['unknown', 'signal_region_too_small'],
+  ]);
 });
 
 test('rejects missing, reordered, or out-of-duration signal samples', () => {
