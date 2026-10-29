@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom/vitest';
 import { SceneConfigurationEditor, type SceneConfigurationSnapshot } from './SceneConfigurationEditor';
@@ -189,14 +189,31 @@ describe('scene configuration editor', () => {
             confidence: 0.9, state: 'observed',
           }],
         }],
+        signalTimeline: {
+          stabilityRule: { method: 'consecutive-decoded-frames', requiredFrames: 3 },
+          observations: [],
+          intervals: [
+            { state: 'red', startFrameIndex: 0, endFrameExclusive: 2, startSeconds: 12, endSeconds: 14, rationale: 'stable_for_three_consecutive_frames', transitionEvidence: { supportingFrameIndices: [0, 1, 2] } },
+            { state: 'unknown', startFrameIndex: 2, endFrameExclusive: 3, startSeconds: 14, endSeconds: 22, rationale: 'ambiguous_signal' },
+          ],
+        },
       },
     };
     render(<SceneConfigurationEditor {...props} initialRuns={[completedRun]} sourceTimeOffsetSeconds={12} />);
     const video = screen.getByLabelText('Video for scene configuration');
-    Object.defineProperty(video, 'currentTime', { configurable: true, value: 0.5 });
+    let playbackTime = 0.5;
+    Object.defineProperty(video, 'currentTime', { configurable: true, get: () => playbackTime, set: value => { playbackTime = value; } });
     fireEvent.timeUpdate(video);
     expect(screen.getByTestId('traffic-analysis-overlay')).toHaveAttribute('aria-label', 'Traffic detections at 12.50 seconds');
     expect(screen.getByText(/1 observed vehicle at 12.50 s/)).toBeInTheDocument();
+    const timelineRegion = screen.getByRole('region', { name: 'Inferred traffic signal timeline' });
+    expect(within(timelineRegion).getByRole('status')).toHaveTextContent('Red · stable for three consecutive frames');
+    const signalSlider = screen.getByRole('slider', { name: 'Signal timeline playback position' });
+    expect(signalSlider).toHaveValue('0.5');
+    fireEvent.change(signalSlider, { target: { value: '2.5' } });
+    expect(video).toHaveProperty('currentTime', 2.5);
+    expect(within(timelineRegion).getByRole('status')).toHaveTextContent('Unknown · ambiguous signal');
+    expect(screen.getByTestId('traffic-analysis-overlay')).toHaveAttribute('aria-label', 'Traffic detections at 14.50 seconds');
   });
 
   it('surfaces a terminal inference failure separately from upload and preview success', () => {

@@ -1,0 +1,2902 @@
+{
+  "seekSteps": [
+    {
+      "step": "Home",
+      "sliderValue": "0",
+      "sliderValueText": "0:00.00 · Red · stable for three consecutive frames",
+      "videoTime": 0,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 1",
+      "sliderValue": "0.01",
+      "sliderValueText": "0:00.01 · Red · stable for three consecutive frames",
+      "videoTime": 0.01,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": false,
+      "readyState": 4,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 2",
+      "sliderValue": "0.02",
+      "sliderValueText": "0:00.02 · Red · stable for three consecutive frames",
+      "videoTime": 0.02,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 3",
+      "sliderValue": "0.03",
+      "sliderValueText": "0:00.03 · Red · stable for three consecutive frames",
+      "videoTime": 0.03,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": false,
+      "readyState": 4,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 4",
+      "sliderValue": "0.04",
+      "sliderValueText": "0:00.04 · Red · stable for three consecutive frames",
+      "videoTime": 0.04,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 5",
+      "sliderValue": "0.05",
+      "sliderValueText": "0:00.05 · Red · stable for three consecutive frames",
+      "videoTime": 0.05,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 6",
+      "sliderValue": "0.06",
+      "sliderValueText": "0:00.06 · Red · stable for three consecutive frames",
+      "videoTime": 0.06,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 7",
+      "sliderValue": "0.07",
+      "sliderValueText": "0:00.07 · Red · stable for three consecutive frames",
+      "videoTime": 0.07,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": false,
+      "readyState": 4,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 8",
+      "sliderValue": "0.08",
+      "sliderValueText": "0:00.08 · Red · stable for three consecutive frames",
+      "videoTime": 0.08,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 9",
+      "sliderValue": "0.09",
+      "sliderValueText": "0:00.09 · Red · stable for three consecutive frames",
+      "videoTime": 0.09,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": false,
+      "readyState": 4,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 10",
+      "sliderValue": "0.1",
+      "sliderValueText": "0:00.10 · Red · stable for three consecutive frames",
+      "videoTime": 0.1,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 11",
+      "sliderValue": "0.11",
+      "sliderValueText": "0:00.11 · Red · stable for three consecutive frames",
+      "videoTime": 0.11,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 12",
+      "sliderValue": "0.12",
+      "sliderValueText": "0:00.12 · Red · stable for three consecutive frames",
+      "videoTime": 0.12,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 13",
+      "sliderValue": "0.13",
+      "sliderValueText": "0:00.13 · Red · stable for three consecutive frames",
+      "videoTime": 0.13,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": false,
+      "readyState": 4,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 14",
+      "sliderValue": "0.14",
+      "sliderValueText": "0:00.14 · Red · stable for three consecutive frames",
+      "videoTime": 0.14,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 15",
+      "sliderValue": "0.15",
+      "sliderValueText": "0:00.15 · Red · stable for three consecutive frames",
+      "videoTime": 0.15,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": false,
+      "readyState": 4,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 16",
+      "sliderValue": "0.16",
+      "sliderValueText": "0:00.16 · Red · stable for three consecutive frames",
+      "videoTime": 0.16,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 17",
+      "sliderValue": "0.17",
+      "sliderValueText": "0:00.17 · Red · stable for three consecutive frames",
+      "videoTime": 0.17,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": false,
+      "readyState": 4,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 18",
+      "sliderValue": "0.18",
+      "sliderValueText": "0:00.18 · Red · stable for three consecutive frames",
+      "videoTime": 0.18,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 19",
+      "sliderValue": "0.19",
+      "sliderValueText": "0:00.19 · Red · stable for three consecutive frames",
+      "videoTime": 0.19,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 20",
+      "sliderValue": "0.2",
+      "sliderValueText": "0:00.20 · Red · stable for three consecutive frames",
+      "videoTime": 0.2,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 21",
+      "sliderValue": "0.21",
+      "sliderValueText": "0:00.21 · Red · stable for three consecutive frames",
+      "videoTime": 0.21,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": false,
+      "readyState": 4,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 22",
+      "sliderValue": "0.22",
+      "sliderValueText": "0:00.22 · Red · stable for three consecutive frames",
+      "videoTime": 0.22,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 23",
+      "sliderValue": "0.23",
+      "sliderValueText": "0:00.23 · Red · stable for three consecutive frames",
+      "videoTime": 0.23,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": false,
+      "readyState": 4,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 24",
+      "sliderValue": "0.24",
+      "sliderValueText": "0:00.24 · Red · stable for three consecutive frames",
+      "videoTime": 0.24,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 25",
+      "sliderValue": "0.25",
+      "sliderValueText": "0:00.25 · Red · stable for three consecutive frames",
+      "videoTime": 0.25,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": false,
+      "readyState": 4,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 26",
+      "sliderValue": "0.26",
+      "sliderValueText": "0:00.26 · Red · stable for three consecutive frames",
+      "videoTime": 0.26,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 27",
+      "sliderValue": "0.27",
+      "sliderValueText": "0:00.27 · Red · stable for three consecutive frames",
+      "videoTime": 0.27,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": false,
+      "readyState": 4,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 28",
+      "sliderValue": "0.28",
+      "sliderValueText": "0:00.28 · Red · stable for three consecutive frames",
+      "videoTime": 0.28,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 29",
+      "sliderValue": "0.29",
+      "sliderValueText": "0:00.29 · Red · stable for three consecutive frames",
+      "videoTime": 0.29,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "step": "ArrowRight 30",
+      "sliderValue": "0.3",
+      "sliderValueText": "0:00.30 · Unknown · ambiguous signal",
+      "videoTime": 0.3,
+      "duration": 0.6,
+      "paused": true,
+      "seeking": true,
+      "readyState": 1,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    }
+  ],
+  "events": [
+    {
+      "type": "timeupdate",
+      "sliderValue": "0.12",
+      "currentTime": 0.1344,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0",
+      "currentTime": 0.1344,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0",
+      "currentTime": 0,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.01",
+      "currentTime": 0,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.01",
+      "currentTime": 0.01,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.01",
+      "currentTime": 0.01,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.01",
+      "currentTime": 0.01,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "timeupdate",
+      "sliderValue": "0.01",
+      "currentTime": 0.01,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeked",
+      "sliderValue": "0.01",
+      "currentTime": 0.01,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.02",
+      "currentTime": 0.01,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.02",
+      "currentTime": 0.02,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.03",
+      "currentTime": 0.02,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.03",
+      "currentTime": 0.03,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.03",
+      "currentTime": 0.03,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.03",
+      "currentTime": 0.03,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "timeupdate",
+      "sliderValue": "0.03",
+      "currentTime": 0.03,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeked",
+      "sliderValue": "0.03",
+      "currentTime": 0.03,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.04",
+      "currentTime": 0.03,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.04",
+      "currentTime": 0.04,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.04",
+      "currentTime": 0.04,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "timeupdate",
+      "sliderValue": "0.04",
+      "currentTime": 0.04,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeked",
+      "sliderValue": "0.04",
+      "currentTime": 0.04,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.05",
+      "currentTime": 0.04,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.05",
+      "currentTime": 0.05,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.06",
+      "currentTime": 0.05,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.06",
+      "currentTime": 0.06,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.07",
+      "currentTime": 0.06,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.07",
+      "currentTime": 0.07,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.07",
+      "currentTime": 0.07,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.07",
+      "currentTime": 0.07,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.07",
+      "currentTime": 0.07,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "timeupdate",
+      "sliderValue": "0.07",
+      "currentTime": 0.07,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeked",
+      "sliderValue": "0.07",
+      "currentTime": 0.07,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.08",
+      "currentTime": 0.07,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.08",
+      "currentTime": 0.08,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.09",
+      "currentTime": 0.08,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.09",
+      "currentTime": 0.09,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.09",
+      "currentTime": 0.09,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.09",
+      "currentTime": 0.09,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "timeupdate",
+      "sliderValue": "0.09",
+      "currentTime": 0.09,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeked",
+      "sliderValue": "0.09",
+      "currentTime": 0.09,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.1",
+      "currentTime": 0.09,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.1",
+      "currentTime": 0.1,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.1",
+      "currentTime": 0.1,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "timeupdate",
+      "sliderValue": "0.1",
+      "currentTime": 0.1,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeked",
+      "sliderValue": "0.1",
+      "currentTime": 0.1,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.11",
+      "currentTime": 0.1,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.11",
+      "currentTime": 0.11,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.12",
+      "currentTime": 0.11,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.12",
+      "currentTime": 0.12,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.13",
+      "currentTime": 0.12,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.13",
+      "currentTime": 0.13,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.13",
+      "currentTime": 0.13,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.13",
+      "currentTime": 0.13,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.13",
+      "currentTime": 0.13,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "timeupdate",
+      "sliderValue": "0.13",
+      "currentTime": 0.13,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeked",
+      "sliderValue": "0.13",
+      "currentTime": 0.13,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.14",
+      "currentTime": 0.13,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.14",
+      "currentTime": 0.14,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.15",
+      "currentTime": 0.14,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.15",
+      "currentTime": 0.15,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.15",
+      "currentTime": 0.15,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.15",
+      "currentTime": 0.15,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "timeupdate",
+      "sliderValue": "0.15",
+      "currentTime": 0.15,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeked",
+      "sliderValue": "0.15",
+      "currentTime": 0.15,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.16",
+      "currentTime": 0.15,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.16",
+      "currentTime": 0.16,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.17",
+      "currentTime": 0.16,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.17",
+      "currentTime": 0.17,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.17",
+      "currentTime": 0.17,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.17",
+      "currentTime": 0.17,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "timeupdate",
+      "sliderValue": "0.17",
+      "currentTime": 0.17,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeked",
+      "sliderValue": "0.17",
+      "currentTime": 0.17,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.18",
+      "currentTime": 0.17,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.18",
+      "currentTime": 0.18,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.18",
+      "currentTime": 0.18,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "timeupdate",
+      "sliderValue": "0.18",
+      "currentTime": 0.18,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeked",
+      "sliderValue": "0.18",
+      "currentTime": 0.18,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.19",
+      "currentTime": 0.18,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.19",
+      "currentTime": 0.19,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.2",
+      "currentTime": 0.19,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.2",
+      "currentTime": 0.2,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.21",
+      "currentTime": 0.2,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.21",
+      "currentTime": 0.21,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.21",
+      "currentTime": 0.21,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.21",
+      "currentTime": 0.21,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.21",
+      "currentTime": 0.21,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "timeupdate",
+      "sliderValue": "0.21",
+      "currentTime": 0.21,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeked",
+      "sliderValue": "0.21",
+      "currentTime": 0.21,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.22",
+      "currentTime": 0.21,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.22",
+      "currentTime": 0.22,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.23",
+      "currentTime": 0.22,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.23",
+      "currentTime": 0.23,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.23",
+      "currentTime": 0.23,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.23",
+      "currentTime": 0.23,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "timeupdate",
+      "sliderValue": "0.23",
+      "currentTime": 0.23,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeked",
+      "sliderValue": "0.23",
+      "currentTime": 0.23,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.24",
+      "currentTime": 0.23,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.24",
+      "currentTime": 0.24,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.25",
+      "currentTime": 0.24,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.25",
+      "currentTime": 0.25,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.25",
+      "currentTime": 0.25,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.25",
+      "currentTime": 0.25,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "timeupdate",
+      "sliderValue": "0.25",
+      "currentTime": 0.25,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeked",
+      "sliderValue": "0.25",
+      "currentTime": 0.25,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.26",
+      "currentTime": 0.25,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.26",
+      "currentTime": 0.26,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.27",
+      "currentTime": 0.26,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.27",
+      "currentTime": 0.27,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.27",
+      "currentTime": 0.27,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.27",
+      "currentTime": 0.27,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "timeupdate",
+      "sliderValue": "0.27",
+      "currentTime": 0.27,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeked",
+      "sliderValue": "0.27",
+      "currentTime": 0.27,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.28",
+      "currentTime": 0.27,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.28",
+      "currentTime": 0.28,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.29",
+      "currentTime": 0.28,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.29",
+      "currentTime": 0.29,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.29",
+      "currentTime": 0.29,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeking",
+      "sliderValue": "0.29",
+      "currentTime": 0.29,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "timeupdate",
+      "sliderValue": "0.29",
+      "currentTime": 0.29,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "seeked",
+      "sliderValue": "0.29",
+      "currentTime": 0.29,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "sliderValue": "0.3",
+      "currentTime": 0.29,
+      "seeking": false,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    },
+    {
+      "type": "change",
+      "sliderValue": "0.3",
+      "currentTime": 0.3,
+      "seeking": true,
+      "seekable": [
+        [
+          0,
+          0.6
+        ]
+      ],
+      "buffered": [
+        [
+          0,
+          0.6
+        ]
+      ]
+    }
+  ]
+}
