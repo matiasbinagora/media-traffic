@@ -40,12 +40,39 @@ export type PossibleIdentitySwitch = {
   identityContinuity: 'unverified';
 };
 
+export type SignalState = 'red' | 'yellow' | 'green' | 'unknown';
+
+export type SignalInterval = {
+  state: SignalState;
+  startFrameIndex: number;
+  endFrameExclusive: number;
+  startSeconds: number;
+  endSeconds: number;
+  rationale: 'stable_for_three_consecutive_frames' | 'no_readable_signal' | 'ambiguous_signal' | 'signal_region_too_small' | 'transition_not_stable';
+  transitionEvidence?: { supportingFrameIndices: [number, number, number] };
+};
+
+export type SignalTimeline = {
+  stabilityRule: { method: 'consecutive-decoded-frames'; requiredFrames: 3 };
+  observations: Array<{
+    frameIndex: number;
+    timeSeconds: number;
+    state: SignalState;
+    evidenceScore: number;
+    colorScores: { red: number; yellow: number; green: number };
+    reason?: 'no_clear_lamp' | 'multiple_colors' | 'signal_region_too_small';
+  }>;
+  intervals: SignalInterval[];
+};
+
 export type TrafficAnalysisResult = {
   frameWidth: number;
   frameHeight: number;
   sampledFrameCount: number;
   tracks: CarTrajectory[];
   possibleIdentitySwitches: PossibleIdentitySwitch[];
+  /** Optional for compatibility with completed run records created before signal inference was added. */
+  signalTimeline?: SignalTimeline;
 };
 
 export type AnalysisProvenance = {

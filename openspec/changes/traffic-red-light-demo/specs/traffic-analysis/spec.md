@@ -30,6 +30,10 @@ The system SHALL infer red, yellow, green or unknown from pixels in the saved co
 
 Linear: [PER-90](https://linear.app/matias-personal/issue/PER-90/recognize-the-associated-traffic-signal-over-time).
 
+The inferred timeline SHALL be visible alongside video playback and synchronized to its current playback position.
+
+Linear: [PER-104](https://linear.app/matias-personal/issue/PER-104).
+
 #### Scenario: Observe readable signal
 - **WHEN** the configured associated signal is readable in the uploaded original video
 - **THEN** the analysis result provides timestamped inferred observations and stable intervals, with the observations supporting each state transition, for inspection in playback context
@@ -37,6 +41,10 @@ Linear: [PER-90](https://linear.app/matias-personal/issue/PER-90/recognize-the-a
 #### Scenario: Handle ambiguous signal
 - **WHEN** the signal is obscured, missing, unreadable, has competing color evidence, or a color lasts fewer than the documented three consecutive decoded frames
 - **THEN** the affected interval is unknown with a rationale and cannot establish a confident red-light candidate
+
+#### Scenario: Inspect signal state in playback context
+- **WHEN** a completed analysis result includes signal intervals and the user plays, pauses, or seeks the video
+- **THEN** the current inferred state and timestamp stay synchronized with playback, while the responsive timeline distinguishes ambiguous, unreadable, too-small, and unstable unknown intervals from stable colors
 
 ### Requirement: Identify evidence-backed red-light crossing candidates
 
