@@ -27,6 +27,8 @@ The PER-86 reference asset lives under `example/demo-traffic-video/`. Keep the g
 
 The annotation JSON has `schemaVersion: 1`. A qualifying asset needs exactly one event of each type: `red_crossing`, `green_crossing`, and `correct_stop`. For an unqualified candidate, record only events that visual review can substantiate; the validator intentionally rejects incomplete event coverage. Each event has a unique `eventId`, `startSeconds`, and `endSeconds`; its interval must fit within the source duration. The validator checks file hashes, metadata, event coverage and timing, and rejects paths outside the asset directory or embedded inference data.
 
+`ground-truth.json` also records `signalTimeline` as zero-based decoded-frame intervals. `startFrame` is inclusive and `endFrameExclusive` is exclusive; the paired timestamps use the same half-open interval in seconds. The validator requires the intervals to cover every FFprobe-reported frame once, without gaps or overlap, and checks that timestamps agree with the frame rate. `signalAmbiguityReview` records the reviewed transition-boundary frames and either `none_observed` with an empty `intervals` array or `intervals_recorded` with notes for each ambiguous signal interval. Keep this independent visual annotation separate from model output.
+
 Run validation with:
 
 ```bash

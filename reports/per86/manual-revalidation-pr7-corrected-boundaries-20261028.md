@@ -1,0 +1,26 @@
+# PER-86 Independent Manual Revalidation — Corrected PR #7 Boundaries
+
+**Reviewed commit:** `1d24d9a17d33d50e08d10ed1e4c06f918d4cbcd4` (`Correct PER-86 signal timeline boundaries`). This report supersedes the earlier PR #7 manual review: that review incorrectly assigned the inclusive overlay endpoint frames 60 and 90 to amber and red. The source was decoded afresh from this exact commit; previous evidence files were preserved.
+
+## Acceptance criteria
+
+| PER-86 criterion | Verdict | Evidence |
+| --- | --- | --- |
+| The generated video shows a red crossing, a green crossing, and a car stopping before the line | PASS | Fresh native-resolution crops show the gold car at frames 33 and 36 (`evidence/pr7-green-crossing-native-frames-20261028.jpg`, left-to-right) and the red car at frames 178 and 179 (`evidence/pr7-red-crossing-native-frames-20261028.jpg`, left-to-right). The current manifest annotates these as 1.100–1.200 s and 5.933–5.967 s. At the red event, the selected leading front-bumper/headlight tip reaches the line at frame 178 and is about 2 px beyond by frame 179. Blue-car stop evidence and temporal continuity are visible in the fresh event sheet `evidence/pr7-corrected-event-boundaries-20261028.jpg`; the blue car stays behind the line through the red interval and moves after green returns. |
+| Fixed camera, signal, stop line, vehicles, and trajectories remain visually coherent; unreadable or discontinuous scenes are rejected | PASS | Directly inspected newly decoded transition frames and both crossing intervals. The camera and intersection geometry remain fixed, the same associated signal remains legible, and the three vehicle paths remain coherent. No signal-state ambiguity was observed at the tested transitions. This result qualifies the synthetic scene only. |
+| FFprobe verifies playable media and records duration, dimensions, frame rate, and file hash | PASS | Re-ran FFprobe: H.264, 1920×1080, 30/1 fps, 300 frames, duration 10.000 s. Source SHA-256 is `0a1d32f82239e18fcbd1ae105a58343eb263e2c4bb48935c4d771270fdd53918`, matching `manifest.json`. |
+| A reviewer records expected signal intervals and crossing events, including timestamps and ambiguous cases, independently of detector output | PASS | Fresh visual inspection of frame sequences `[59,60,61]`, `[89,90,91]`, and `[209,210,211]` confirms green, green, amber; amber, amber, red; and red, green, green respectively. This exactly matches the corrected frame timeline: green `[0,61)` (0–2.033333 s), amber `[61,91)` (2.033333–3.033333 s), red `[91,210)` (3.033333–7 s), green `[210,300)` (7–10 s). The red event’s near-line judgment and rejected earlier brackets are explicit in the event note; the timeline review separately records no ambiguous signal intervals. Event windows agree with phases: green crossing frames 33–36; red crossing frames 178–179; stop interval `[90,210)`, including amber frame 90 and red frames 91–209, with green at frame 210 after the interval. |
+| Actual YOLO inference confirms sample usability; model, configuration, observations, and limitations are recorded | PASS | Current video bytes and detector output match merged PR #6/main. The full 300-frame inference report records the pinned `yolo26n.pt` checkpoint, runtime, device, confidence and class filters, both crossing-boundary detections, and 120/120 stopped-target detections. `reports/per86/inference-readiness.md` explains that the inference artifact records the prior GT digest because the only later change was manually reviewed reference timeline data; video and inference output were unchanged. |
+| Synthetic label, independent expected annotations, and genuine inference remain distinct | PASS | The manifest labels the asset synthetic and hashes separate video and ground-truth files. The detector output remains in its own JSON file. Inference script predictions are made from decoded video frames; the GT file is not supplied to the model. The application source does not read the GT annotation file. |
+
+## Verification performed
+
+- `node scripts/demo-manifest.mjs example/demo-traffic-video/manifest.json` — `valid: true`; matching video/GT hashes; 3 expected event types; 4 timeline intervals cover all 300 frames; ambiguity-review status `none_observed`.
+- `ffprobe -v error -select_streams v:0 -show_entries stream=codec_name,width,height,r_frame_rate,nb_frames,duration -of json example/demo-traffic-video/source.mp4` — metadata above.
+- `shasum -a 256 example/demo-traffic-video/source.mp4 example/demo-traffic-video/ground-truth.json` — video `0a1d32…e53918`; GT `e18546…f957ed`, matching the manifest.
+- Independently selected phase-transition indices 59–61, 89–91, and 209–211 from the exact MP4 and viewed the pixels directly; see `evidence/pr7-corrected-phase-boundaries-20261028.jpg` (row-major order).
+- Independently selected event frames 32–37 and 177–180; see `evidence/pr7-corrected-event-boundaries-20261028.jpg` (row-major order), plus native-resolution crossing crops above.
+
+## Qualification limits
+
+This validates only the synthetic 10-second reference clip and its stated story-specific YOLO gate. It does not establish real-world accuracy, signal inference, general tracking quality, or production performance. The prior inaccurate QA report remains in place for traceability and is superseded by this commit-specific review.

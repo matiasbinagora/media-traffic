@@ -14,6 +14,6 @@
   },
   "groundTruth": {
     "path": "ground-truth.json",
-    "sha256": "59f6238d0a62fbf8973e175d9529f9a46b5c2ab4b08b8601c29ec2fd9eb3b23e"
+    "sha256": "e1854684c36a5d0d3dda99df3ffc33bb9651a93c18efac7ca0c90d8afff957ed"
   }
 }
