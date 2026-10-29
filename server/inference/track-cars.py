@@ -15,10 +15,12 @@ import time
 from pathlib import Path
 
 import cv2
+import numpy as np
 import torch
 import ultralytics
 import yaml
 from ultralytics import YOLO
+from signal_observation import observe_signal
 
 
 EXPECTED_CHECKPOINT_SHA256 = "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef"
@@ -56,6 +58,7 @@ def main() -> None:
     parser.add_argument("--weights", required=True, type=Path)
     parser.add_argument("--tracker", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--signal-region-json", required=True)
     parser.add_argument("--ffprobe", default="ffprobe")
     args = parser.parse_args()
 
@@ -63,6 +66,15 @@ def main() -> None:
         raise SystemExit("Uploaded source video is missing.")
     if not args.weights.is_file():
         raise SystemExit("Configured YOLO checkpoint is missing.")
+    try:
+        signal_region = json.loads(args.signal_region_json)
+        region_values = [signal_region[key] for key in ("x", "y", "width", "height")]
+        if any(not isinstance(value, (int, float)) or not math.isfinite(value) for value in region_values):
+            raise ValueError("Signal-region coordinates must be finite numbers.")
+        if signal_region["x"] < 0 or signal_region["y"] < 0 or signal_region["width"] <= 0 or signal_region["height"] <= 0 or signal_region["x"] + signal_region["width"] > 1 or signal_region["y"] + signal_region["height"] > 1:
+            raise ValueError("Signal-region coordinates must be a positive normalized rectangle inside the source frame.")
+    except (KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
+        raise SystemExit(f"Invalid configured signal region: {error}") from error
     checkpoint_sha256 = sha256_file(args.weights)
     if checkpoint_sha256 != EXPECTED_CHECKPOINT_SHA256:
         raise SystemExit(f"Configured checkpoint SHA-256 does not match the qualified yolo26n model: {checkpoint_sha256}")
@@ -77,6 +89,7 @@ def main() -> None:
     width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
     frames = []
+    signal_pixel_observations = []
     frame_index = 0
     try:
         while True:
@@ -118,6 +131,11 @@ def main() -> None:
                 "timeSeconds": timestamps[frame_index],
                 "detections": detections,
             })
+            signal_pixel_observations.append({
+                "frameIndex": frame_index,
+                "timeSeconds": timestamps[frame_index],
+                **observe_signal(image, signal_region),
+            })
             frame_index += 1
     finally:
         capture.release()
@@ -129,6 +147,7 @@ def main() -> None:
         "width": width,
         "height": height,
         "frames": frames,
+        "signalPixelObservations": signal_pixel_observations,
         "provenance": {
             "source": "uploaded-original",
             "checkpoint": args.weights.name,

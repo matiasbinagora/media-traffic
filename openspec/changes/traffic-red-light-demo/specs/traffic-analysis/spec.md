@@ -26,17 +26,17 @@ Linear: [PER-89](https://linear.app/matias-personal/issue/PER-89/detect-cars-and
 <a id="us-05"></a>
 US-05: As a user, I want the visible signal state over time so that each crossing has signal context.
 
-The system SHALL infer red, yellow, green or unknown from the configured signal region in video and expose timestamped state evidence independently of demonstration annotations.
+The system SHALL infer red, yellow, green or unknown from pixels in the saved configured signal region and expose timestamped state evidence independently of demonstration annotations or generic YOLO traffic-light classes. It SHALL preserve raw observations and the temporal evidence supporting stable state intervals. Unknown intervals with different rationales SHALL remain distinguishable, and observations with a sampleable crop SHALL retain the leading colored-pixel ratio as evidence even when state is unknown.
 
 Linear: [PER-90](https://linear.app/matias-personal/issue/PER-90/recognize-the-associated-traffic-signal-over-time).
 
 #### Scenario: Observe readable signal
-- **WHEN** the configured associated signal is readable in the video
-- **THEN** the result provides synchronized inferred state observations that can be inspected with playback
+- **WHEN** the configured associated signal is readable in the uploaded original video
+- **THEN** the analysis result provides timestamped inferred observations and stable intervals, with the observations supporting each state transition, for inspection in playback context
 
 #### Scenario: Handle ambiguous signal
-- **WHEN** the signal is obscured, unreadable or ambiguous around a transition
-- **THEN** the state is unknown or temporally uncertain and cannot establish a confident red-light candidate
+- **WHEN** the signal is obscured, missing, unreadable, has competing color evidence, or a color lasts fewer than the documented three consecutive decoded frames
+- **THEN** the affected interval is unknown with a rationale and cannot establish a confident red-light candidate
 
 ### Requirement: Identify evidence-backed red-light crossing candidates
 

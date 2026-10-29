@@ -15,8 +15,10 @@ let baseUrl: string;
 let dataDirectory: string;
 let videoId: string;
 let sourceSha256: string;
+let lastSignalRegion: { x: number; y: number; width: number; height: number } | undefined;
 let simulateInferenceFailure = false;
 let simulateInvalidCheckpoint = false;
+let simulateSignalTimestampMismatch = false;
 
 const deterministicTrackingOutput: TrackingOutput = {
   width: 320,
@@ -34,6 +36,11 @@ const deterministicTrackingOutput: TrackingOutput = {
       { trackId: 1, box: [32, 42, 82, 102], confidence: 0.89 },
     ] },
   ],
+  signalPixelObservations: [0, 1, 2].map(frameIndex => ({
+    frameIndex,
+    timeSeconds: frameIndex / 10,
+    colorScores: { red: 0, yellow: 0, green: 0.03 },
+  })),
   provenance: {
     checkpoint: 'yolo26n.pt',
     checkpointSha256: '9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef',
@@ -66,10 +73,12 @@ before(async () => {
   server = createMediaServer({
     dataDirectory,
     maxUploadBytes: 1024 * 1024,
-    analysisRunner: async () => {
+    analysisRunner: async (_sourcePath, _outputPath, signalRegion) => {
       if (simulateInferenceFailure) throw new Error('test inference failure');
+      lastSignalRegion = structuredClone(signalRegion);
       const output = structuredClone(deterministicTrackingOutput);
       if (simulateInvalidCheckpoint) output.provenance.checkpointSha256 = '0'.repeat(64);
+      if (simulateSignalTimestampMismatch) output.signalPixelObservations[2].timeSeconds += 0.05;
       return output;
     },
   });
@@ -169,6 +178,7 @@ test('captures immutable configuration snapshots per run when later scene edits 
   assert.equal(firstRun.analysisStarted, true);
   assert.deepEqual(firstRun.configurationSnapshot, first);
   const completedFirstRun = await waitForAnalysisRun(firstRun.id);
+  assert.deepEqual(lastSignalRegion, first.geometry.signalRegion, 'signal recognition must use the saved run configuration');
   assert.equal(completedFirstRun.status, 'completed');
   assert.deepEqual(completedFirstRun.result.tracks.map((track: any) => track.trackId), ['1', '2']);
   assert.equal(completedFirstRun.result.tracks[0].observations.length, 3);
@@ -178,6 +188,12 @@ test('captures immutable configuration snapshots per run when later scene edits 
   assert.equal(completedFirstRun.provenance.detector.platform, deterministicTrackingOutput.provenance.platform);
   assert.equal(completedFirstRun.provenance.detector.inferenceSeconds, deterministicTrackingOutput.provenance.inferenceSeconds);
   assert.equal(completedFirstRun.provenance.sampling.decodedFrameCount, deterministicTrackingOutput.provenance.decodedFrameCount);
+  assert.equal(completedFirstRun.result.signalTimeline.intervals[0].state, 'green');
+  assert.deepEqual(completedFirstRun.result.signalTimeline.intervals[0].transitionEvidence?.supportingFrameIndices, [0, 1, 2]);
+  assert.deepEqual(completedFirstRun.result.signalTimeline.observations.map((observation: any) => observation.frameIndex), [0, 1, 2]);
+  assert.deepEqual(completedFirstRun.provenance.signalRecognition, {
+    method: 'configured-region-hsv', algorithmVersion: 1, minimumColorPixelRatio: 0.005, ambiguousColorRatio: 0.5, requiredConsecutiveFrames: 3,
+  });
 
   const second = configuration('10000000-0000-4000-8000-000000000003', 0.9);
   const saveSecond = await saveConfiguration(second);
@@ -226,6 +242,27 @@ test('cannot create an analysis run without an explicitly saved configuration', 
   });
   assert.equal(response.status, 422);
   assert.equal((await response.json() as any).error.code, 'SCENE_CONFIGURATION_REQUIRED');
+});
+
+test('fails the run when signal evidence is not synchronized with source frames', async () => {
+  const snapshot = configuration('10000000-0000-4000-8000-000000000007');
+  assert.equal((await saveConfiguration(snapshot)).status, 201);
+  simulateSignalTimestampMismatch = true;
+  try {
+    const response = await fetch(`${baseUrl}/api/videos/${videoId}/analysis-runs`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ configurationId: snapshot.id }),
+    });
+    assert.equal(response.status, 202);
+    const queued = await response.json() as Record<string, any>;
+    const failed = await waitForAnalysisRun(queued.id);
+    assert.equal(failed.status, 'failed');
+    assert.match(failed.error.message, /Signal observations did not match every decoded source frame/);
+    assert.equal('result' in failed, false);
+  } finally {
+    simulateSignalTimestampMismatch = false;
+  }
 });
 
 test('persists a failed inference state without substituting fixture detections', async () => {

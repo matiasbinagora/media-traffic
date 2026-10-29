@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MediaError, sha256File, type UploadJob } from './media.js';
 import { invalidGeometryFields, type SceneConfigurationSnapshot } from './scene-configuration.js';
+import { assembleSignalTimeline, classifySignalObservation, type RawSignalPixelObservation } from './signal-analysis.js';
 import { assembleTrackResult, type AnalysisProvenance, type AnalysisRun, type RawTrackingFrame } from './traffic-analysis.js';
 
 const EXPECTED_CHECKPOINT_SHA256 = '9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef';
@@ -15,6 +16,7 @@ export type TrackingOutput = {
   width: number;
   height: number;
   frames: RawTrackingFrame[];
+  signalPixelObservations: RawSignalPixelObservation[];
   provenance: {
     checkpoint: string;
     checkpointSha256: string;
@@ -43,7 +45,7 @@ type RunOptions = {
   upload: UploadJob;
   configurationId: unknown;
   sourcePath: string;
-  runTracking?: (sourcePath: string, outputPath: string) => Promise<TrackingOutput>;
+  runTracking?: (sourcePath: string, outputPath: string, signalRegion: SceneConfigurationSnapshot['geometry']['signalRegion']) => Promise<TrackingOutput>;
   inferenceTimeoutMs?: number;
   now?: () => string;
 };
@@ -127,6 +129,13 @@ async function initialProvenance(videoId: string, upload: UploadJob): Promise<An
     tracker: { name: 'ByteTrack', configFile: 'server/inference/bytetrack.yaml', configSha256: digest(trackerBytes) },
     sampling: { strategy: 'every-decoded-frame', framesPerSample: 1, timestampSource: 'ffprobe.best_effort_timestamp_time' },
     thresholds: { confidence: 0.25, imageSize: 640, classFilter: { id: 2, name: 'car' } },
+    signalRecognition: {
+      method: 'configured-region-hsv',
+      algorithmVersion: 1,
+      minimumColorPixelRatio: 0.005,
+      ambiguousColorRatio: 0.5,
+      requiredConsecutiveFrames: 3,
+    },
   };
 }
 
@@ -178,12 +187,15 @@ export async function executeAnalysisRun(options: ExecuteOptions): Promise<Analy
       throw new Error('Uploaded source SHA-256 no longer matches the immutable upload record.');
     }
     const timeoutMs = validTimeout(options.inferenceTimeoutMs ?? Number(process.env.YOLO_INFERENCE_TIMEOUT_MS));
-    const tracker = options.runTracking || ((source, output) => runUltralyticsTracker(source, output, timeoutMs));
-    const output = await withTimeout(tracker(options.sourcePath, outputPath), timeoutMs);
+    const tracker = options.runTracking || ((source, output, signalRegion) => runUltralyticsTracker(source, output, signalRegion, timeoutMs));
+    const output = await withTimeout(tracker(options.sourcePath, outputPath, run.configurationSnapshot.geometry.signalRegion), timeoutMs);
     if (await sha256File(options.sourcePath) !== options.upload.source.sha256) {
       throw new Error('Uploaded source changed while inference was running; the run was rejected.');
     }
     if (output.frames.length !== output.provenance.decodedFrameCount) throw new Error('Tracker output frame count did not match the recorded decoded frame count.');
+    if (!Array.isArray(output.signalPixelObservations) || output.signalPixelObservations.length !== output.frames.length || output.signalPixelObservations.some((observation, index) => observation.frameIndex !== index || observation.timeSeconds !== output.frames[index].timeSeconds)) {
+      throw new Error('Signal observations did not match every decoded source frame and presentation timestamp.');
+    }
     if (output.width !== options.upload.source.media.width || output.height !== options.upload.source.media.height) {
       throw new Error('Tracker output dimensions did not match the uploaded source video.');
     }
@@ -197,7 +209,18 @@ export async function executeAnalysisRun(options: ExecuteOptions): Promise<Analy
     if (output.frames.some((frame, index) => frame.frameIndex !== index)) {
       throw new Error('Tracker output omitted or reordered decoded source frames.');
     }
-    run.result = assembleTrackResult({ width: output.width, height: output.height, frames: output.frames });
+    run.result = {
+      ...assembleTrackResult({ width: output.width, height: output.height, frames: output.frames }),
+      signalTimeline: assembleSignalTimeline({
+        durationSeconds: options.upload.source.media.durationSeconds,
+        observations: output.signalPixelObservations.map(observation => classifySignalObservation(
+          observation.frameIndex,
+          observation.timeSeconds,
+          observation.colorScores,
+          observation.signalRegionTooSmall,
+        )),
+      }),
+    };
     run.provenance.detector = {
       ...run.provenance.detector,
       weights: output.provenance.checkpoint,
@@ -257,7 +280,7 @@ function validTimeout(value: number | undefined): number {
 function withTimeout<T>(operation: Promise<T>, timeoutMs: number): Promise<T> {
   let timer: NodeJS.Timeout;
   const timeout = new Promise<never>((_resolve, reject) => {
-    timer = setTimeout(() => reject(Object.assign(new Error(`Car tracking timed out after ${timeoutMs} ms.`), { code: 'ANALYSIS_INFERENCE_TIMEOUT' })), timeoutMs);
+    timer = setTimeout(() => reject(Object.assign(new Error(`Traffic analysis timed out after ${timeoutMs} ms.`), { code: 'ANALYSIS_INFERENCE_TIMEOUT' })), timeoutMs);
   });
   return Promise.race([operation, timeout]).finally(() => clearTimeout(timer!));
 }
@@ -314,15 +337,15 @@ export async function readAnalysisRun(dataDirectory: string, videoId: string, ru
   }
 }
 
-function runUltralyticsTracker(sourcePath: string, outputPath: string, timeoutMs: number): Promise<TrackingOutput> {
+function runUltralyticsTracker(sourcePath: string, outputPath: string, signalRegion: SceneConfigurationSnapshot['geometry']['signalRegion'], timeoutMs: number): Promise<TrackingOutput> {
   const modelPath = process.env.YOLO_MODEL_PATH;
-  if (!modelPath) return Promise.reject(Object.assign(new Error('Set YOLO_MODEL_PATH to the qualified yolo26n.pt checkpoint to enable car tracking.'), { code: 'YOLO_MODEL_NOT_CONFIGURED' }));
+  if (!modelPath) return Promise.reject(Object.assign(new Error('Set YOLO_MODEL_PATH to the qualified yolo26n.pt checkpoint to enable traffic analysis and signal recognition.'), { code: 'YOLO_MODEL_NOT_CONFIGURED' }));
   const pythonPath = process.env.YOLO_PYTHON_PATH || 'python3';
   const scriptPath = path.join(inferenceDirectory, 'track-cars.py');
   const trackerPath = path.join(inferenceDirectory, 'bytetrack.yaml');
   const temporaryOutput = `${outputPath}.${randomUUID()}.tmp.json`;
   return new Promise((resolve, reject) => {
-    const child = spawn(pythonPath, [scriptPath, '--source', sourcePath, '--weights', modelPath, '--tracker', trackerPath, '--output', temporaryOutput, '--ffprobe', process.env.FFPROBE_PATH || 'ffprobe'], { shell: false, stdio: ['ignore', 'ignore', 'pipe'] });
+    const child = spawn(pythonPath, [scriptPath, '--source', sourcePath, '--weights', modelPath, '--tracker', trackerPath, '--output', temporaryOutput, '--signal-region-json', JSON.stringify(signalRegion), '--ffprobe', process.env.FFPROBE_PATH || 'ffprobe'], { shell: false, stdio: ['ignore', 'ignore', 'pipe'] });
     let stderr = '';
     let timedOut = false;
     let killTimer: NodeJS.Timeout | undefined;
@@ -343,7 +366,7 @@ function runUltralyticsTracker(sourcePath: string, outputPath: string, timeoutMs
       if (killTimer) clearTimeout(killTimer);
       if (timedOut) {
         await rm(temporaryOutput, { force: true });
-        return reject(Object.assign(new Error(`Car tracking timed out after ${timeoutMs} ms; the inference process was terminated.`), { code: 'ANALYSIS_INFERENCE_TIMEOUT' }));
+        return reject(Object.assign(new Error(`Traffic analysis timed out after ${timeoutMs} ms; the inference process was terminated.`), { code: 'ANALYSIS_INFERENCE_TIMEOUT' }));
       }
       if (code !== 0) {
         await rm(temporaryOutput, { force: true });
