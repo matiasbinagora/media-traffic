@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { AnalysisRunSnapshot } from './analysis-types';
 import { TrafficAnalysisOverlay } from './TrafficAnalysisOverlay';
+import { SignalTimeline } from './SignalTimeline';
 import {
   getContainedVideoRect,
   isValidSceneGeometry,
@@ -357,6 +358,18 @@ export function SceneConfigurationEditor({
           />}
         </div>
       </div>
+      {completedRun?.result?.signalTimeline && <SignalTimeline
+        timeline={completedRun.result.signalTimeline}
+        playbackTimeSeconds={previewTimeSeconds}
+        sourceTimeOffsetSeconds={sourceTimeOffsetSeconds}
+        durationSeconds={completedRun.provenance.source.durationSeconds}
+        onSeek={playbackTime => {
+          const video = videoRef.current;
+          if (!video) return;
+          video.currentTime = playbackTime;
+          setPreviewTimeSeconds(playbackTime);
+        }}
+      />}
       <div className="preview-caption"><span>UPLOAD COMPLETE · PREVIEW READY</span><span>{latestRun ? `ANALYSIS ${latestRun.status.toUpperCase()}` : 'ANALYSIS NOT STARTED'}</span></div>
       <p id="scene-canvas-help" className="scene-canvas-help">Choose a mark, then drag over the video frame to draw it. Letterbox bars are excluded from geometry.</p>
       <p id="scene-keyboard-help" className="visually-hidden">Keyboard: focus the video editor, use arrow keys to move the drawing cursor, hold Shift to move farther, and press Enter twice to set the two points. Press Escape to cancel.</p>
