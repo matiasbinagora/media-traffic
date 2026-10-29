@@ -47,6 +47,86 @@ const emptyGeometry: SceneGeometry = {
   signalAssociation: '',
 };
 
+type AnalysisStage = NonNullable<AnalysisRunSnapshot['phase']> | NonNullable<AnalysisRunSnapshot['error']>['stage'];
+
+const analysisPhaseLabels: Record<AnalysisStage, string> = {
+  queued: 'Queued',
+  media_inspection: 'Inspecting source media',
+  preparation: 'Preparing analysis',
+  car_tracking: 'Tracking cars',
+  signal_analysis: 'Analyzing the traffic signal',
+  result_generation: 'Saving analysis results',
+  inference: 'Running inference',
+  completed: 'Analysis complete',
+  failed: 'Analysis failed',
+};
+
+function phaseLabel(phase: AnalysisStage | undefined): string {
+  return phase ? analysisPhaseLabels[phase] : 'Stage not reported by the server';
+}
+
+function statusLabel(status: AnalysisRunSnapshot['status']): string {
+  return status === 'queued' ? 'Queued' : status === 'running' ? 'Running' : status === 'completed' ? 'Completed' : 'Failed';
+}
+
+function fileLabel(value: string): string {
+  return value.split(/[\\/]/).filter(Boolean).at(-1) || value;
+}
+
+function safeFailureMessage(message: string, phase: AnalysisStage | undefined): string {
+  if (/\/(?:Users|home|tmp|var)\//i.test(message) || /stderr|traceback|exception:/i.test(message)) {
+    return `Analysis failed during ${phaseLabel(phase).toLowerCase()}. Check the configured analysis runtime and start a new run.`;
+  }
+  return message;
+}
+
+function sourceClassification(run: AnalysisRunSnapshot): string {
+  const synthetic = run.provenance.source.syntheticSource;
+  if (synthetic?.status === 'manifest-verified') return 'Synthetic demo video · manifest SHA-256 verified';
+  if (synthetic?.status === 'not-identified') return 'Source is not identified as the synthetic demo.';
+  return 'Source classification was not reported by the server.';
+}
+
+function numberLabel(value: number): string {
+  return Number(value.toFixed(3)).toString();
+}
+
+function regionLabel(region: NormalizedRegion | null): string {
+  return region
+    ? `x ${numberLabel(region.x)}, y ${numberLabel(region.y)}, width ${numberLabel(region.width)}, height ${numberLabel(region.height)}`
+    : 'not configured';
+}
+
+function stopLineLabel(stopLine: SceneGeometry['stopLine']): string {
+  return stopLine
+    ? `(${numberLabel(stopLine.start.x)}, ${numberLabel(stopLine.start.y)}) to (${numberLabel(stopLine.end.x)}, ${numberLabel(stopLine.end.y)})`
+    : 'not configured';
+}
+
+function RunProvenance({ run }: { run: AnalysisRunSnapshot }) {
+  const { source, detector, tracker, sampling, thresholds } = run.provenance;
+  const config = run.configurationSnapshot;
+  const { geometry } = config;
+  const unknownSignalIntervals = run.result?.signalTimeline?.intervals.filter(interval => interval.state === 'unknown') || [];
+  return <details className="run-provenance">
+    <summary>Inspect run evidence and provenance</summary>
+    <dl>
+      <dt>Source classification</dt><dd>{sourceClassification(run)}</dd>
+      <dt>Source identity</dt><dd>Video {source.videoId} · SHA-256 {source.sha256}</dd>
+      <dt>Source media</dt><dd>Uploaded original · {source.width} × {source.height} · {source.durationSeconds.toFixed(2)} seconds</dd>
+      <dt>Analysis model</dt><dd>{detector.family} · {fileLabel(detector.weights)} · {detector.sha256 ? `SHA-256 ${detector.sha256}` : 'model hash not reported'}</dd>
+      <dt>Runtime</dt><dd>{detector.runtime}{detector.runtimeVersion ? ` ${detector.runtimeVersion}` : ''} · Python {detector.pythonVersion || 'not reported'} · PyTorch {detector.pytorchVersion || 'not reported'} · {detector.device}{detector.platform ? ` · ${detector.platform}` : ''}{detector.inferenceSeconds !== undefined ? ` · ${detector.inferenceSeconds.toFixed(2)} seconds` : ''}</dd>
+      <dt>Tracker configuration</dt><dd>{tracker.name} · SHA-256 {tracker.configSha256 || 'not reported'}{tracker.config && ` · ${Object.entries(tracker.config).map(([key, value]) => `${key}: ${String(value)}`).join(', ')}`}</dd>
+      <dt>Sampling and timestamps</dt><dd>{sampling.strategy} · {sampling.timestampSource}{sampling.decodedFrameCount !== undefined ? ` · ${sampling.decodedFrameCount} decoded frames` : ''}</dd>
+      <dt>Model thresholds</dt><dd>Confidence {thresholds.confidence} · image size {thresholds.imageSize} · class {thresholds.classFilter.name} ({thresholds.classFilter.id})</dd>
+      <dt>Scene configuration</dt><dd>Snapshot {config.id} · video SHA-256 {config.source.sha256} · crossing direction {geometry.crossingDirection || 'not configured'} · governing signal {geometry.signalAssociation || 'not configured'}</dd>
+      <dt>Configured regions</dt><dd>Vehicle ({regionLabel(geometry.vehicleRegion)}) · stop line {stopLineLabel(geometry.stopLine)} · signal ({regionLabel(geometry.signalRegion)})</dd>
+      {run.result && <><dt>Analysis result</dt><dd>{run.result.sampledFrameCount} sampled frames · {run.result.tracks.length} vehicle tracks · {run.result.frameWidth} × {run.result.frameHeight}</dd></>}
+      {unknownSignalIntervals.length > 0 && <><dt>Indeterminate signal intervals</dt><dd>{unknownSignalIntervals.map(interval => `${interval.startSeconds.toFixed(2)}–${interval.endSeconds.toFixed(2)} s`).join(', ')}</dd></>}
+    </dl>
+  </details>;
+}
+
 function freezeSnapshot(value: SceneConfigurationSnapshot): SceneConfigurationSnapshot {
   Object.freeze(value.source);
   Object.freeze(value.geometry.vehicleRegion);
@@ -371,6 +451,10 @@ export function SceneConfigurationEditor({
         }}
       />}
       <div className="preview-caption"><span>UPLOAD COMPLETE · PREVIEW READY</span><span>{latestRun ? `ANALYSIS ${latestRun.status.toUpperCase()}` : 'ANALYSIS NOT STARTED'}</span></div>
+      {latestRun && <p className="analysis-run-status" role="status" aria-label="Analysis run status" aria-live="polite">
+        <strong>{statusLabel(latestRun.status)}</strong>
+        <span> · Stage: {phaseLabel(latestRun.phase)}</span>
+      </p>}
       <p id="scene-canvas-help" className="scene-canvas-help">Choose a mark, then drag over the video frame to draw it. Letterbox bars are excluded from geometry.</p>
       <p id="scene-keyboard-help" className="visually-hidden">Keyboard: focus the video editor, use arrow keys to move the drawing cursor, hold Shift to move farther, and press Enter twice to set the two points. Press Escape to cancel.</p>
 
@@ -408,22 +492,18 @@ export function SceneConfigurationEditor({
         <h3>Saved run records</h3>
         <ul>{analysisRuns.map(run => <li key={run.id}>
           <strong>Run {run.id}</strong>
-          <span>{run.status === 'queued' ? 'Analysis queued' : run.status === 'running' ? 'Analysis running' : run.status === 'completed' ? 'Analysis complete' : 'Analysis failed'}</span>
+          <span>{statusLabel(run.status)} · Stage: {phaseLabel(run.phase)}</span>
           <span>Configuration {run.configurationSnapshot.id}</span>
-          {run.status === 'failed' && run.error && <span role="alert">{run.error.message}</span>}
-          {run.status === 'completed' && run.result && <span>{run.result.sampledFrameCount} sampled frames · {run.result.tracks.length} vehicle tracks</span>}
-          <details>
-            <summary>Inspect run evidence and provenance</summary>
-            <dl>
-              <dt>Vehicle region</dt><dd>{JSON.stringify(run.configurationSnapshot.geometry.vehicleRegion)}</dd>
-              <dt>Stop line</dt><dd>{JSON.stringify(run.configurationSnapshot.geometry.stopLine)}</dd>
-              <dt>Crossing direction</dt><dd>{run.configurationSnapshot.geometry.crossingDirection}</dd>
-              <dt>Signal region</dt><dd>{JSON.stringify(run.configurationSnapshot.geometry.signalRegion)}</dd>
-              <dt>Governing signal</dt><dd>{run.configurationSnapshot.geometry.signalAssociation}</dd>
-              <dt>Analysis provenance</dt><dd>{JSON.stringify(run.provenance)}</dd>
-              {run.result && <><dt>Frame dimensions</dt><dd>{run.result.frameWidth} × {run.result.frameHeight}</dd></>}
-            </dl>
-          </details>
+          {run.status === 'failed' && run.error && <div className="analysis-failure" role="alert">
+            <strong>{phaseLabel(run.error.stage)} · {run.error.code}</strong>
+            <p>{safeFailureMessage(run.error.message, run.error.stage)}</p>
+          </div>}
+          {run.status === 'completed' && run.result && <div className="analysis-result-summary" role="status">
+            <p>{run.result.sampledFrameCount} sampled frames · {run.result.tracks.length} observed vehicle tracks</p>
+            {run.result.tracks.length === 0 && <p>No vehicles were observed; no candidate crossing can be assessed from this run.</p>}
+            {run.result.signalTimeline?.intervals.some(interval => interval.state === 'unknown') && <p>Signal state is indeterminate for one or more intervals; review the timeline before drawing conclusions.</p>}
+          </div>}
+          <RunProvenance run={run} />
         </li>)}</ul>
       </section>}
 

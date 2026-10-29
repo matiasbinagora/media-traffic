@@ -179,9 +179,18 @@ test('persists scene configuration and immutable run records through real API ro
   expect(firstRun).toMatchObject({ status: 'queued', analysisStarted: true, configurationSnapshot: firstConfiguration });
   const firstTerminalRun = await waitForRunStatus(page, firstRun.videoId, firstRun.id, 'failed');
   expect(firstTerminalRun).not.toHaveProperty('result');
-  await expect(page.getByRole('region', { name: 'Analysis run records' })).toContainText(firstConfiguration.id);
-  await expect(page.getByRole('region', { name: 'Analysis run records' })).toContainText('Analysis failed');
-  await expect(page.getByRole('region', { name: 'Analysis run records' })).toContainText('Set YOLO_MODEL_PATH');
+  const firstRunCard = page.getByRole('region', { name: 'Analysis run records' }).getByRole('listitem').first();
+  await expect(firstRunCard).toContainText(firstConfiguration.id);
+  await expect(firstRunCard).toContainText('Failed · Stage: Analysis failed');
+  await expect(firstRunCard.getByRole('alert')).toContainText('Set YOLO_MODEL_PATH');
+  await firstRunCard.getByText('Inspect run evidence and provenance').click();
+  await expect(firstRunCard).toContainText('Source is not identified as the synthetic demo.');
+  await expect(firstRunCard).toContainText('YOLO26');
+  await expect(firstRunCard).toContainText('ByteTrack');
+  await expect(firstRunCard).not.toContainText('.local-data/');
+  const provenanceEvidencePath = path.join(process.cwd(), 'reports/per107/analysis-run-failure-and-provenance.png');
+  await mkdir(path.dirname(provenanceEvidencePath), { recursive: true });
+  await firstRunCard.screenshot({ path: provenanceEvidencePath });
 
   await page.getByLabel('Crossing direction').selectOption('bottom-to-top');
   const secondSavePromise = page.waitForResponse(response => response.url().includes('/configurations') && response.request().method() === 'POST');
