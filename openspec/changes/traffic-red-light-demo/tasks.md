@@ -13,8 +13,8 @@ All checkboxes remain pending until the task has its required implementation and
 
 ## 2. Qualified Demonstration Asset — US-01
 
-- [ ] 2.1 Owner: m-traffic-orchestrator. Coordinate video generation through the required video workflow and independently annotate red crossing, green crossing and correct stop; verify an asset manifest labels synthetic media and records expected timestamps separately from inference inputs (`demo-video`).
-- [ ] 2.2 Owner: m-traffic-backend-developer. After the inference-readiness gate, qualify camera/vehicle/signal continuity and actual YOLO detectability on the generated asset; verify real inference output, timestamp inspection and a qualification report, revising unusable footage before acceptance. Depends on 1.4.
+- [x] 2.1 Owner: m-traffic-orchestrator. Coordinate video generation through the required video workflow and independently annotate red crossing, green crossing and correct stop; verify an asset manifest labels synthetic media and records expected timestamps separately from inference inputs (`demo-video`). Evidence: `reports/per86/candidate-visual-review.md` and `reports/per86/manual-revalidation-pr7-corrected-boundaries-20261028.md`, including corrected phase-boundary and event-frame crops.
+- [x] 2.2 Owner: m-traffic-backend-developer. After the inference-readiness gate, qualify camera/vehicle/signal continuity and actual YOLO detectability on the generated asset; verify real inference output, timestamp inspection and a qualification report, revising unusable footage before acceptance. Depends on 1.4. Evidence: `reports/per103/qualification.md`, `reports/per103/yolo-inference.json`, `reports/per86/inference-readiness.md`, and independent PER-86 manual revalidation.
 
 ## 3. Upload and Configuration — US-02, US-03
 
