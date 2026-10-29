@@ -53,7 +53,7 @@ function probeVideo(filename) {
     output = execFileSync(process.env.FFPROBE_PATH || 'ffprobe', [
       '-v', 'error',
       '-select_streams', 'v:0',
-      '-show_entries', 'stream=codec_name,width,height,avg_frame_rate,r_frame_rate,duration:format=duration,format_name',
+      '-show_entries', 'stream=codec_name,width,height,avg_frame_rate,r_frame_rate,duration,nb_frames:format=duration,format_name',
       '-of', 'json',
       filename,
     ], { encoding: 'utf8' });
@@ -72,7 +72,65 @@ function probeVideo(filename) {
   const [rateNumerator, rateDenominator] = (stream.avg_frame_rate || stream.r_frame_rate || '').split('/').map(Number);
   const frameRate = rateDenominator ? rateNumerator / rateDenominator : rateNumerator;
   const durationSeconds = Number(stream.duration ?? metadata.format?.duration);
-  return { stream, format: metadata.format, frameRate, durationSeconds };
+  const frameCount = Number(stream.nb_frames);
+  return { stream, format: metadata.format, frameRate, durationSeconds, frameCount };
+}
+
+function validateSignalTimeline(annotations, { frameRate, frameCount, durationSeconds }) {
+  requireCondition(Number.isInteger(frameCount) && frameCount > 0, 'ffprobe did not provide a positive decoded frame count');
+  requireCondition(Array.isArray(annotations.signalTimeline) && annotations.signalTimeline.length > 0, 'groundTruth must include a signalTimeline');
+
+  let nextFrame = 0;
+  const reviewedBoundaries = new Set();
+  for (const interval of annotations.signalTimeline) {
+    requireCondition(['green', 'amber', 'red'].includes(interval?.state), 'signalTimeline state must be green, amber, or red');
+    requireCondition(Number.isInteger(interval.startFrame) && Number.isInteger(interval.endFrameExclusive), 'signalTimeline frame boundaries must be integers');
+    requireCondition(
+      interval.startFrame === nextFrame && interval.endFrameExclusive > interval.startFrame && interval.endFrameExclusive <= frameCount,
+      'signalTimeline intervals must cover every decoded frame exactly once',
+    );
+    requireCondition(Number.isFinite(interval.startSeconds) && Number.isFinite(interval.endSeconds), 'signalTimeline timestamps must be finite numbers');
+    requireCondition(
+      Math.abs(interval.startSeconds - interval.startFrame / frameRate) <= 0.001
+        && Math.abs(interval.endSeconds - interval.endFrameExclusive / frameRate) <= 0.001,
+      'signalTimeline timestamps must match their decoded frame boundaries',
+    );
+    nextFrame = interval.endFrameExclusive;
+    reviewedBoundaries.add(interval.startFrame);
+    reviewedBoundaries.add(interval.endFrameExclusive - 1);
+  }
+  requireCondition(nextFrame === frameCount, 'signalTimeline intervals must cover every decoded frame exactly once');
+  requireCondition(Math.abs(frameCount / frameRate - durationSeconds) <= 0.001, 'decoded frame count does not match the probed video duration');
+
+  const ambiguityReview = annotations.signalAmbiguityReview;
+  requireCondition(ambiguityReview && typeof ambiguityReview === 'object', 'groundTruth must include an explicit signalAmbiguityReview record');
+  requireCondition(typeof ambiguityReview.basis === 'string' && ambiguityReview.basis.trim().length > 0, 'signalAmbiguityReview basis is required');
+  requireCondition(Array.isArray(ambiguityReview.intervals), 'signalAmbiguityReview intervals must be an array');
+  requireCondition(Array.isArray(ambiguityReview.reviewedBoundaryFrames), 'signalAmbiguityReview must list reviewedBoundaryFrames');
+  const explicitlyReviewedBoundaries = new Set();
+  for (const frame of ambiguityReview.reviewedBoundaryFrames) {
+    requireCondition(Number.isInteger(frame) && frame >= 0 && frame < frameCount, 'signalAmbiguityReview reviewedBoundaryFrames must reference decoded frames');
+    explicitlyReviewedBoundaries.add(frame);
+  }
+  for (const frame of reviewedBoundaries) {
+    requireCondition(explicitlyReviewedBoundaries.has(frame), `signalTimeline boundary frame ${frame} must be listed as reviewed`);
+  }
+
+  if (ambiguityReview.status === 'none_observed') {
+    requireCondition(ambiguityReview.intervals.length === 0, 'none_observed signalAmbiguityReview must have no intervals');
+  } else if (ambiguityReview.status === 'intervals_recorded') {
+    requireCondition(ambiguityReview.intervals.length > 0, 'intervals_recorded signalAmbiguityReview must include at least one interval');
+    for (const interval of ambiguityReview.intervals) {
+      requireCondition(
+        Number.isInteger(interval?.startFrame) && Number.isInteger(interval?.endFrameExclusive)
+          && interval.startFrame >= 0 && interval.endFrameExclusive > interval.startFrame && interval.endFrameExclusive <= frameCount,
+        'signalAmbiguityReview intervals must use valid decoded frame boundaries',
+      );
+      requireCondition(typeof interval.notes === 'string' && interval.notes.trim().length > 0, 'each signalAmbiguityReview interval must include notes');
+    }
+  } else {
+    requireCondition(false, 'signalAmbiguityReview status must be none_observed or intervals_recorded');
+  }
 }
 
 async function readJson(filename, fieldName) {
@@ -131,6 +189,7 @@ export async function validateDemoManifest(manifestPath) {
   const annotations = await readJson(groundTruthPath, 'groundTruth');
   requireCondition(annotations?.schemaVersion === 1, 'groundTruth schemaVersion must be 1');
   requireCondition(!containsInferenceData(annotations), 'inference output must remain separate from groundTruth');
+  validateSignalTimeline(annotations, probedVideo);
   requireCondition(Array.isArray(annotations.events), 'groundTruth events must be an array');
   const eventCounts = Object.fromEntries(EXPECTED_EVENT_TYPES.map((type) => [type, 0]));
   const eventIds = new Set();
@@ -157,6 +216,9 @@ export async function validateDemoManifest(manifestPath) {
     groundTruthSha256: manifest.groundTruth.sha256.toLowerCase(),
     eventTypes: [...EXPECTED_EVENT_TYPES].sort(),
     eventCount: annotations.events.length,
+    signalTimelineIntervalCount: annotations.signalTimeline.length,
+    signalTimelineFrameCount: probedVideo.frameCount,
+    signalAmbiguityReviewStatus: annotations.signalAmbiguityReview.status,
   };
 }
 

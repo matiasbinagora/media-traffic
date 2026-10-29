@@ -1,5 +1,50 @@
 {
   "schemaVersion": 1,
+  "signalTimeline": [
+    {
+      "startFrame": 0,
+      "endFrameExclusive": 60,
+      "startSeconds": 0,
+      "endSeconds": 2,
+      "state": "green"
+    },
+    {
+      "startFrame": 60,
+      "endFrameExclusive": 90,
+      "startSeconds": 2,
+      "endSeconds": 3,
+      "state": "amber"
+    },
+    {
+      "startFrame": 90,
+      "endFrameExclusive": 210,
+      "startSeconds": 3,
+      "endSeconds": 7,
+      "state": "red"
+    },
+    {
+      "startFrame": 210,
+      "endFrameExclusive": 300,
+      "startSeconds": 7,
+      "endSeconds": 10,
+      "state": "green"
+    }
+  ],
+  "signalAmbiguityReview": {
+    "status": "none_observed",
+    "intervals": [],
+    "reviewedBoundaryFrames": [
+      0,
+      59,
+      60,
+      89,
+      90,
+      209,
+      210,
+      299
+    ],
+    "basis": "Manual review of decoded source frames, independent of detector output. No signal-state intervals were ambiguous; the red-crossing boundary judgement is documented with its event annotation."
+  },
   "events": [
     {
       "eventId": "green-crossing-gold-1",

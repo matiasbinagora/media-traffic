@@ -1,27 +1,15 @@
-# PER-86 Inference Readiness Gate
+# PER-86 Inference Qualification Addendum
 
-Reviewed: 2026-10-26. Status: **NOT QUALIFIED**. No YOLO inference was run and no model or weights are selected for product use.
+Reviewed: 2026-10-28. This supersedes the 2026-10-26 readiness decision below, which predates the redesigned sample. The original investigation is retained in Git history; the merged current sample has a successful real inference record in [`reports/per103/qualification.md`](../per103/qualification.md) and [`reports/per103/yolo-inference.json`](../per103/yolo-inference.json).
 
-## Candidate and license review
+## Selected prototype runtime and license direction
 
-YOLOX-S is a candidate for evaluation because the upstream project provides a 640-pixel COCO-pretrained detector and the YOLOX source repository is Apache-2.0 licensed. The upstream README links directly to checkpoint downloads, but the repository does not provide a distinct license notice for those pretrained checkpoint files. The checkpoints are described as COCO-pretrained; COCO's terms distinguish CC BY 4.0 annotations from third-party Flickr image rights. The software license alone is therefore insufficient to conclude that a specific checkpoint is cleared for this project's intended distribution or use. No checkpoint was downloaded or redistributed.
+The evaluated runtime was Ultralytics 8.4.190 with PyTorch 2.14.1 on Python 3.12.13, macOS arm64 CPU. The official `yolo26n.pt` asset from Ultralytics assets release v8.4.0 was pinned by SHA-256 `9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef`. The user's selected direction is a public AGPL-3.0 prototype. Ultralytics states that its trained YOLO models are offered under AGPL-3.0 by default and also offers Enterprise licensing; see [Ultralytics licensing](https://www.ultralytics.com/license). This records the product direction and upstream statement, not a legal opinion. A private, closed-source, or commercial deployment is outside this selection and requires a separate license review.
 
-Sources:
+## Reproducible sample result
 
-- [YOLOX license](https://github.com/Megvii-BaseDetection/YOLOX/blob/main/LICENSE)
-- [YOLOX README and checkpoint links](https://github.com/Megvii-BaseDetection/YOLOX/blob/main/README.md#benchmark)
-- [COCO terms of use](https://cocodataset.org/#termsofuse)
-- [CC BY 4.0 deed](https://creativecommons.org/licenses/by/4.0/)
-- [PyTorch MPS backend documentation](https://docs.pytorch.org/docs/stable/notes/mps.html)
+Inference was run on `example/demo-traffic-video/source.mp4` at 640-pixel input, COCO class 2 (`car`), confidence threshold 0.25, full-frame over all 300 decoded frames. Wall-clock time was 5.262 seconds. Video SHA-256: `0a1d32f82239e18fcbd1ae105a58343eb263e2c4bb48935c4d771270fdd53918`. The run detected cars at the green crossing boundaries (frames 33 and 36; confidence 0.8870 and 0.8699) and red crossing boundaries (frames 178 and 179; 0.8646 and 0.8673). The stopped blue target was detected in its predefined region in 120/120 frames during the red interval (100%; story-specific sample gate >=80%).
 
-Before selection, obtain an explicit license/source statement for the chosen checkpoint, including the model artifact and training-data provenance, and confirm it matches the project's intended use. This is an unresolved rights review, not a legal conclusion.
+The original inference output records ground-truth SHA-256 `59f6238d0a62fbf8973e175d9529f9a46b5c2ab4b08b8601c29ec2fd9eb3b23e`, the annotation version before the signal timeline was added. The inference run used the video, not ground-truth labels. Current ground-truth SHA-256 is `16a070030491326a3131a51c827043857fcf05013f364415b86266185fe88f7c`; only the independent reference annotations changed, not the MP4 or inference output.
 
-## Available machine and runtime
-
-Observed locally: Apple M4 Max MacBook Pro, 16 CPU cores, 48 GB unified memory, macOS 27.0.1 ARM64. Python is 3.14.6. `torch`, `torchvision`, `onnxruntime`, `ultralytics`, `yolox`, `cv2`, and `numpy` are not installed in that Python environment. FFmpeg 9.0.2 is available. PyTorch documents an MPS device backend for Apple silicon, so this machine is a plausible hardware candidate, but this is not evidence that YOLOX or a specific checkpoint executes correctly or fast enough here.
-
-No runtime or weight artifact has been exercised. The next gate must record the exact selected package/runtime version, checkpoint URI and SHA-256, device (`mps` or CPU), command/environment, successful real-video output, timings, and limitations. If MPS support or dependencies fail, report the failure and assess CPU separately; do not substitute annotations or fabricated detections.
-
-## Gate decision
-
-OpenSpec task 1.4 remains pending. Consequently, task 2.2's actual YOLO detectability and qualification report also remain pending. Manifest validation can verify the asset identity and independent annotations, but it cannot satisfy either inference gate.
+This qualifies one synthetic sample only. It does not demonstrate real-world detection quality, signal-state inference, multi-object tracking robustness, crossing classification, or production accuracy. The project must continue to keep inference output and reference annotations separate.

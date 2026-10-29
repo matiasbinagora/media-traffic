@@ -11,20 +11,36 @@ import { validateDemoManifest } from '../scripts/demo-manifest.mjs';
 const videoBytes = await readFile(new URL('../example/demo-traffic-video/source.mp4', import.meta.url));
 const videoHash = createHash('sha256').update(videoBytes).digest('hex');
 
+const defaultGroundTruth = {
+  schemaVersion: 1,
+  signalTimeline: [
+    { startFrame: 0, endFrameExclusive: 60, startSeconds: 0, endSeconds: 2, state: 'green' },
+    { startFrame: 60, endFrameExclusive: 90, startSeconds: 2, endSeconds: 3, state: 'amber' },
+    { startFrame: 90, endFrameExclusive: 210, startSeconds: 3, endSeconds: 7, state: 'red' },
+    { startFrame: 210, endFrameExclusive: 300, startSeconds: 7, endSeconds: 10, state: 'green' },
+  ],
+  signalAmbiguityReview: {
+    status: 'none_observed',
+    intervals: [],
+    reviewedBoundaryFrames: [0, 59, 60, 89, 90, 209, 210, 299],
+    basis: 'Manual review of decoded source frames, independent of detector output. No signal-state intervals were ambiguous; the red-crossing boundary judgement is documented with its event annotation.',
+  },
+  events: [
+    { eventId: 'red-1', type: 'red_crossing', startSeconds: 5.933, endSeconds: 5.967 },
+    { eventId: 'green-1', type: 'green_crossing', startSeconds: 1.1, endSeconds: 1.2 },
+    { eventId: 'stop-1', type: 'correct_stop', startSeconds: 3, endSeconds: 7 },
+  ],
+};
+
 async function createAsset(t, { annotations, manifestOverrides = {} } = {}) {
   const root = await mkdtemp(path.join(os.tmpdir(), 'media-traffic-demo-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   await mkdir(path.join(root, 'inference'), { recursive: true });
   await writeFile(path.join(root, 'source.mp4'), videoBytes);
 
-  const groundTruth = annotations ?? {
-    schemaVersion: 1,
-    events: [
-      { eventId: 'red-1', type: 'red_crossing', startSeconds: 2.1, endSeconds: 2.8 },
-      { eventId: 'green-1', type: 'green_crossing', startSeconds: 4.2, endSeconds: 4.9 },
-      { eventId: 'stop-1', type: 'correct_stop', startSeconds: 6.1, endSeconds: 7.4 },
-    ],
-  };
+  const groundTruth = annotations
+    ? { ...structuredClone(defaultGroundTruth), ...annotations }
+    : structuredClone(defaultGroundTruth);
   const annotationBytes = Buffer.from(`${JSON.stringify(groundTruth, null, 2)}\n`);
   const annotationHash = createHash('sha256').update(annotationBytes).digest('hex');
   await writeFile(path.join(root, 'ground-truth.json'), annotationBytes);
@@ -66,6 +82,50 @@ test('records crossing windows at the decoded frames where the rendered car nose
   assert.deepEqual([redCrossing.startSeconds, redCrossing.endSeconds], [5.933, 5.967]);
 });
 
+test('records the full signal timeline and explicit signal ambiguity review', async (t) => {
+  const groundTruthPath = new URL('../example/demo-traffic-video/ground-truth.json', import.meta.url);
+  const groundTruth = JSON.parse(await readFile(groundTruthPath, 'utf8'));
+
+  assert.deepEqual(groundTruth.signalTimeline, [
+    { startFrame: 0, endFrameExclusive: 60, startSeconds: 0, endSeconds: 2, state: 'green' },
+    { startFrame: 60, endFrameExclusive: 90, startSeconds: 2, endSeconds: 3, state: 'amber' },
+    { startFrame: 90, endFrameExclusive: 210, startSeconds: 3, endSeconds: 7, state: 'red' },
+    { startFrame: 210, endFrameExclusive: 300, startSeconds: 7, endSeconds: 10, state: 'green' },
+  ]);
+  assert.deepEqual(groundTruth.signalAmbiguityReview, {
+    status: 'none_observed',
+    intervals: [],
+    reviewedBoundaryFrames: [0, 59, 60, 89, 90, 209, 210, 299],
+    basis: 'Manual review of decoded source frames, independent of detector output. No signal-state intervals were ambiguous; the red-crossing boundary judgement is documented with its event annotation.',
+  });
+
+  const root = await createAsset(t);
+  const result = await validateDemoManifest(path.join(root, 'manifest.json'));
+  assert.equal(result.signalTimelineIntervalCount, 4);
+  assert.equal(result.signalTimelineFrameCount, 300);
+});
+
+test('rejects ground truth without an explicit signal ambiguity review', async (t) => {
+  const annotations = { signalAmbiguityReview: undefined };
+  const root = await createAsset(t, { annotations });
+
+  await assert.rejects(
+    validateDemoManifest(path.join(root, 'manifest.json')),
+    /must include an explicit signalAmbiguityReview record/,
+  );
+});
+
+test('rejects signal timeline gaps or overlaps', async (t) => {
+  const annotations = structuredClone(defaultGroundTruth);
+  annotations.signalTimeline[1].startFrame = 61;
+  const root = await createAsset(t, { annotations });
+
+  await assert.rejects(
+    validateDemoManifest(path.join(root, 'manifest.json')),
+    /signalTimeline intervals must cover every decoded frame exactly once/,
+  );
+});
+
 test('CLI reports a verified manifest as JSON', async (t) => {
   const root = await createAsset(t);
   const cli = new URL('../scripts/demo-manifest.mjs', import.meta.url);
@@ -79,6 +139,9 @@ test('CLI reports a verified manifest as JSON', async (t) => {
   assert.equal(output.videoSha256, videoHash);
   assert.deepEqual(output.eventTypes, ['correct_stop', 'green_crossing', 'red_crossing']);
   assert.equal(output.eventCount, 3);
+  assert.equal(output.signalTimelineIntervalCount, 4);
+  assert.equal(output.signalTimelineFrameCount, 300);
+  assert.equal(output.signalAmbiguityReviewStatus, 'none_observed');
 });
 
 test('rejects annotations when a required event class is missing', async (t) => {
