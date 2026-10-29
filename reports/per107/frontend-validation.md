@@ -21,4 +21,4 @@ The interface presents only the API-reported run status and phase, sanitizes acc
 - `revalidation-mobile.png` is the existing 640-pixel responsive layout capture.
 - Vitest uses deterministic API-run records to check queued → preparation → car-tracking polling and completed no-track/indeterminate outcomes. These fixtures do not validate inference quality.
 - The browser run intentionally stopped at the actual missing-model failure. Successful real YOLO inference, real-camera accuracy, and TestSprite are not verified here.
-- Commands ran under Node `v26.8.2`; the repository pins Node `22.23.2` in `.nvmrc`.
+- All checks, including both Chromium journeys, ran under the repository-pinned Node `v22.23.2` from `.nvmrc`.
