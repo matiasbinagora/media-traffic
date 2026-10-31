@@ -87,6 +87,32 @@ describe('traffic analysis overlay', () => {
     expect(screen.getByText(/1 observed vehicle at 1.03 s/)).toBeInTheDocument();
   });
 
+  it('selects one nearest observation at a non-dyadic 30fps midpoint', () => {
+    const midpointResult: TrafficAnalysisResult = {
+      ...result,
+      tracks: [{
+        ...result.tracks[0],
+        trackId: '2',
+        firstSeenSeconds: 5.2,
+        lastSeenSeconds: 5.266667,
+        observations: [
+          { ...result.tracks[0].observations[0], frameIndex: 156, timeSeconds: 5.2, normalizedBox: { x: 0.1, y: 0.2, width: 0.2, height: 0.2 } },
+          { ...result.tracks[0].observations[1], frameIndex: 157, timeSeconds: 5.233333, normalizedBox: { x: 0.2, y: 0.2, width: 0.2, height: 0.2 } },
+          { ...result.tracks[0].observations[0], frameIndex: 158, timeSeconds: 5.266667, normalizedBox: { x: 0.4, y: 0.2, width: 0.2, height: 0.2 } },
+          { ...result.tracks[0].observations[1], frameIndex: 159, timeSeconds: 5.3, normalizedBox: { x: 0.6, y: 0.2, width: 0.2, height: 0.2 } },
+        ],
+        gaps: [],
+      }],
+    };
+    render(<TrafficAnalysisOverlay result={midpointResult} sourceTimeSeconds={5.25} width={1000} height={500} frame={fullFrame} />);
+
+    const overlay = screen.getByTestId('traffic-analysis-overlay');
+    const observations = overlay.querySelectorAll('g[data-track-id="2"][data-overlay-kind="observation"]');
+    expect(observations).toHaveLength(1);
+    expect(observations[0].querySelector('rect')).toHaveAttribute('x', '200');
+    expect(screen.getByText(/1 observed vehicle at 5.25 s/)).toBeInTheDocument();
+  });
+
   it('reveals a trajectory segment only after both actual observations have played', () => {
     const { rerender } = render(<TrafficAnalysisOverlay result={result} sourceTimeSeconds={1.05} width={1000} height={500} frame={fullFrame} />);
     expect(screen.getByTestId('traffic-analysis-overlay').querySelector('[data-overlay-kind="trajectory"]')).not.toBeInTheDocument();

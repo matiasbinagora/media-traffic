@@ -10,30 +10,39 @@ type Props = {
   frame: PlayerRect;
 };
 
-function observationTolerance(track: TrafficAnalysisResult['tracks'][number], index: number): number {
-  const observation = track.observations[index];
-  const gapPairs = new Set(track.gaps.map(gap => `${gap.afterFrameIndex}:${gap.beforeFrameIndex}`));
-  const neighborIntervals: number[] = [];
-  const previous = track.observations[index - 1];
-  if (previous && !gapPairs.has(`${previous.frameIndex}:${observation.frameIndex}`)) {
-    neighborIntervals.push(observation.timeSeconds - previous.timeSeconds);
-  }
-  const next = track.observations[index + 1];
-  if (next && !gapPairs.has(`${observation.frameIndex}:${next.frameIndex}`)) {
-    neighborIntervals.push(next.timeSeconds - observation.timeSeconds);
-  }
-  const validIntervals = neighborIntervals.filter(interval => Number.isFinite(interval) && interval > 0);
-  // Keep boxes visible only near recorded timestamps. Use this track's cadence so
-  // a dense neighboring track cannot make a sparse track disappear at playback.
-  return validIntervals.length ? Math.min(0.05, Math.min(...validIntervals) / 2) : 0.05;
-}
-
 function activeObservation(track: TrafficAnalysisResult['tracks'][number], sourceTimeSeconds: number) {
-  const candidates = track.observations.flatMap((observation, index) => (
-    Math.abs(observation.timeSeconds - sourceTimeSeconds) <= observationTolerance(track, index)
-      ? [observation]
-      : []
-  ));
+  const gapPairs = new Set(track.gaps.map(gap => `${gap.afterFrameIndex}:${gap.beforeFrameIndex}`));
+  // Partition time between adjacent observations at their midpoint. This avoids
+  // excluding every sample when rounded 30fps timestamps put both distances a
+  // fraction above a separately rounded half-cadence tolerance. The earlier
+  // observation owns an exact midpoint; disconnected gap endpoints retain only
+  // the 50ms endpoint allowance and never gain continuity across the gap.
+  const candidates = track.observations.flatMap((observation, index) => {
+    const previous = track.observations[index - 1];
+    const next = track.observations[index + 1];
+    let lowerBound = observation.timeSeconds - 0.05;
+    let upperBound = observation.timeSeconds + 0.05;
+    let hasConnectedPrevious = false;
+
+    if (previous && !gapPairs.has(`${previous.frameIndex}:${observation.frameIndex}`)) {
+      const interval = observation.timeSeconds - previous.timeSeconds;
+      if (Number.isFinite(interval) && interval > 0) {
+        lowerBound = Math.max(lowerBound, previous.timeSeconds + interval / 2);
+        hasConnectedPrevious = true;
+      }
+    }
+    if (next && !gapPairs.has(`${observation.frameIndex}:${next.frameIndex}`)) {
+      const interval = next.timeSeconds - observation.timeSeconds;
+      if (Number.isFinite(interval) && interval > 0) {
+        upperBound = Math.min(upperBound, observation.timeSeconds + interval / 2);
+      }
+    }
+
+    const afterLowerBound = hasConnectedPrevious
+      ? sourceTimeSeconds > lowerBound
+      : sourceTimeSeconds >= lowerBound;
+    return afterLowerBound && sourceTimeSeconds <= upperBound ? [observation] : [];
+  });
 
   return candidates.reduce<typeof candidates[number] | undefined>((nearest, observation) => {
     if (!nearest) return observation;

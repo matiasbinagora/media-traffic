@@ -17,7 +17,7 @@ type QualifiedRun = {
   provenance: { source: { videoId: string; sha256: string; [key: string]: unknown }; [key: string]: unknown };
   result: {
     sampledFrameCount: number;
-    tracks: Array<{ trackId: string; observations: Array<{ timeSeconds: number; normalizedBox: { x: number; y: number; width: number; height: number } }> }>;
+    tracks: Array<{ trackId: string; observations: Array<{ frameIndex: number; timeSeconds: number; normalizedBox: { x: number; y: number; width: number; height: number } }> }>;
     signalTimeline: { intervals: Array<{ state: string; startSeconds: number; endSeconds: number }> };
   };
 };
@@ -163,8 +163,28 @@ test('renders qualified inference tracks and signal evidence in synchronized vid
   await video.evaluate(element => (element as HTMLVideoElement).pause());
   await expect.poll(async () => overlay.getAttribute('aria-label')).toContain('Traffic detections at');
 
+  // Recheck the exact 30fps midpoint found by manual QA using the hash-verified
+  // inference replay. Track 2's 5.25s midpoint belongs to the earlier sample.
+  await video.evaluate(element => { (element as HTMLVideoElement).currentTime = 5.25; });
+  await expect.poll(async () => video.evaluate(element => (element as HTMLVideoElement).currentTime), { timeout: 5000 }).toBe(5.25);
+  await expect(overlay).toHaveAttribute('aria-label', 'Traffic detections at 5.25 seconds');
+  await expect(page.getByRole('status').filter({ hasText: '2 observed vehicles at 5.25 s' })).toBeVisible();
+  const midpointTrack = qualifiedRun.result.tracks.find(track => track.trackId === '2');
+  const expectedMidpointObservation = midpointTrack?.observations.find(observation => observation.frameIndex === 157);
+  expect(expectedMidpointObservation).toBeDefined();
+  const midpointBox = overlay.locator('g[data-track-id="2"][data-overlay-kind="observation"] rect');
+  await expect(midpointBox).toHaveCount(1);
+  const midpointBoxBounds = await midpointBox.boundingBox();
+  const midpointCanvasBounds = await page.getByRole('application', { name: 'Scene geometry editor' }).boundingBox();
+  if (!midpointBoxBounds || !midpointCanvasBounds) throw new Error('Expected the midpoint observation and scene canvas to be visible.');
+  expect(Math.abs((midpointBoxBounds.x - midpointCanvasBounds.x) / midpointCanvasBounds.width - expectedMidpointObservation!.normalizedBox.x)).toBeLessThan(0.02);
+
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByRole('application', { name: 'Scene geometry editor' })).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: '2 observed vehicles at 5.25 s' })).toBeVisible();
+  await expect(overlay.locator('g[data-track-id="2"][data-overlay-kind="observation"]')).toHaveCount(1);
+  await video.evaluate((element, time) => { (element as HTMLVideoElement).currentTime = time; }, targetTime);
+  await expect.poll(async () => video.evaluate(element => (element as HTMLVideoElement).currentTime), { timeout: 5000 }).toBe(targetTime);
   await assertTrackOneAlignment();
   await expect(page.getByRole('status').filter({ hasText: /Red|Yellow|Green|Unknown/ })).toBeVisible();
   expect(uploadedVideoId).toBeTruthy();
