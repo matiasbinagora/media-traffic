@@ -75,6 +75,38 @@ describe('traffic analysis overlay', () => {
     expect(trajectory).toHaveAttribute('x2', '220');
   });
 
+  it('uses each track observation cadence instead of letting a faster track hide sparse observations', () => {
+    const mixedCadence: TrafficAnalysisResult = {
+      ...result,
+      tracks: [
+        ...result.tracks,
+        {
+          trackId: 'car-sparse', firstSeenSeconds: 4, lastSeenSeconds: 4.5,
+          observations: [
+            { frameIndex: 120, timeSeconds: 4, frameWidth: 100, frameHeight: 100, box: { x: 10, y: 40, width: 20, height: 20 }, normalizedBox: { x: 0.1, y: 0.4, width: 0.2, height: 0.2 }, confidence: 0.8, state: 'observed' },
+            { frameIndex: 135, timeSeconds: 4.5, frameWidth: 100, frameHeight: 100, box: { x: 20, y: 40, width: 20, height: 20 }, normalizedBox: { x: 0.2, y: 0.4, width: 0.2, height: 0.2 }, confidence: 0.8, state: 'observed' },
+          ],
+          gaps: [],
+        },
+        {
+          trackId: 'car-dense', firstSeenSeconds: 1.5, lastSeenSeconds: 1.566667,
+          observations: [
+            { frameIndex: 45, timeSeconds: 1.5, frameWidth: 100, frameHeight: 100, box: { x: 60, y: 40, width: 20, height: 20 }, normalizedBox: { x: 0.6, y: 0.4, width: 0.2, height: 0.2 }, confidence: 0.8, state: 'observed' },
+            { frameIndex: 46, timeSeconds: 1.533333, frameWidth: 100, frameHeight: 100, box: { x: 61, y: 40, width: 20, height: 20 }, normalizedBox: { x: 0.61, y: 0.4, width: 0.2, height: 0.2 }, confidence: 0.8, state: 'observed' },
+            { frameIndex: 47, timeSeconds: 1.566667, frameWidth: 100, frameHeight: 100, box: { x: 62, y: 40, width: 20, height: 20 }, normalizedBox: { x: 0.62, y: 0.4, width: 0.2, height: 0.2 }, confidence: 0.8, state: 'observed' },
+          ],
+          gaps: [],
+        },
+      ],
+    };
+
+    render(<TrafficAnalysisOverlay result={mixedCadence} sourceTimeSeconds={4.04} width={1000} height={500} frame={fullFrame} />);
+
+    const overlay = screen.getByTestId('traffic-analysis-overlay');
+    expect(overlay.querySelector('g[data-track-id="car-sparse"][data-overlay-kind="observation"]')).toBeInTheDocument();
+    expect(overlay.querySelector('g[data-track-id="car-dense"][data-overlay-kind="observation"]')).not.toBeInTheDocument();
+  });
+
   it('keeps boxes within the contained video frame when a wide player is height-constrained', () => {
     const frame = getContainedVideoRect(1200, 360, 1920, 1080);
     render(<TrafficAnalysisOverlay result={result} sourceTimeSeconds={1} width={1200} height={360} frame={frame} />);

@@ -10,19 +10,31 @@ type Props = {
   frame: PlayerRect;
 };
 
-function nearestObservationTime(result: TrafficAnalysisResult): number {
-  const times = [...new Set(result.tracks.flatMap(track => track.observations.map(observation => observation.timeSeconds)))].sort((a, b) => a - b);
-  const intervals = times.slice(1).map((time, index) => time - times[index]).filter(interval => Number.isFinite(interval) && interval > 0);
-  // Keep a sampled box visible only around its recorded timestamp. This window is
-  // inferred from the actual output cadence, never used to synthesize a box.
-  return intervals.length ? Math.min(0.05, Math.min(...intervals) / 2) : 0.025;
+function observationTolerance(track: TrafficAnalysisResult['tracks'][number], index: number): number {
+  const observation = track.observations[index];
+  const gapPairs = new Set(track.gaps.map(gap => `${gap.afterFrameIndex}:${gap.beforeFrameIndex}`));
+  const neighborIntervals: number[] = [];
+  const previous = track.observations[index - 1];
+  if (previous && !gapPairs.has(`${previous.frameIndex}:${observation.frameIndex}`)) {
+    neighborIntervals.push(observation.timeSeconds - previous.timeSeconds);
+  }
+  const next = track.observations[index + 1];
+  if (next && !gapPairs.has(`${observation.frameIndex}:${next.frameIndex}`)) {
+    neighborIntervals.push(next.timeSeconds - observation.timeSeconds);
+  }
+  const validIntervals = neighborIntervals.filter(interval => Number.isFinite(interval) && interval > 0);
+  // Keep boxes visible only near recorded timestamps. Use this track's cadence so
+  // a dense neighboring track cannot make a sparse track disappear at playback.
+  return validIntervals.length ? Math.min(0.05, Math.min(...validIntervals) / 2) : 0.05;
 }
 
 export function TrafficAnalysisOverlay({ result, sourceTimeSeconds, width, height, frame }: Props) {
   const { active, paths, gapCount } = useMemo(() => {
-    const tolerance = nearestObservationTime(result);
-    const observations = result.tracks.flatMap(track => track.observations.map(observation => ({ track, observation })));
-    const active = observations.filter(({ observation }) => Math.abs(observation.timeSeconds - sourceTimeSeconds) <= tolerance);
+    const active = result.tracks.flatMap(track => track.observations.flatMap((observation, index) => (
+      Math.abs(observation.timeSeconds - sourceTimeSeconds) <= observationTolerance(track, index)
+        ? [{ track, observation }]
+        : []
+    )));
     const paths = result.tracks.map(track => {
       const gapPairs = new Set(track.gaps.map(gap => `${gap.afterFrameIndex}:${gap.beforeFrameIndex}`));
       const segments: Array<[number, number, number, number]> = [];
