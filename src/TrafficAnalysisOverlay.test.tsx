@@ -64,6 +64,55 @@ describe('traffic analysis overlay', () => {
     expect(screen.getByTestId('traffic-analysis-overlay').querySelectorAll('[data-overlay-kind="trajectory"]')).toHaveLength(1);
   });
 
+  it('renders only the nearest sample per track at an exact midpoint, preferring the earlier sample on ties', () => {
+    const midpointResult: TrafficAnalysisResult = {
+      ...result,
+      tracks: [{
+        ...result.tracks[0],
+        firstSeenSeconds: 1,
+        lastSeenSeconds: 1.0625,
+        observations: [
+          { ...result.tracks[0].observations[0], timeSeconds: 1 },
+          { ...result.tracks[0].observations[1], timeSeconds: 1.0625 },
+        ],
+        gaps: [],
+      }],
+    };
+    render(<TrafficAnalysisOverlay result={midpointResult} sourceTimeSeconds={1.03125} width={1000} height={500} frame={fullFrame} />);
+
+    const overlay = screen.getByTestId('traffic-analysis-overlay');
+    const observations = overlay.querySelectorAll('g[data-track-id="car-1"][data-overlay-kind="observation"]');
+    expect(observations).toHaveLength(1);
+    expect(observations[0].querySelector('rect')).toHaveAttribute('x', '100');
+    expect(screen.getByText(/1 observed vehicle at 1.03 s/)).toBeInTheDocument();
+  });
+
+  it('selects one nearest observation at a non-dyadic 30fps midpoint', () => {
+    const midpointResult: TrafficAnalysisResult = {
+      ...result,
+      tracks: [{
+        ...result.tracks[0],
+        trackId: '2',
+        firstSeenSeconds: 5.2,
+        lastSeenSeconds: 5.266667,
+        observations: [
+          { ...result.tracks[0].observations[0], frameIndex: 156, timeSeconds: 5.2, normalizedBox: { x: 0.1, y: 0.2, width: 0.2, height: 0.2 } },
+          { ...result.tracks[0].observations[1], frameIndex: 157, timeSeconds: 5.233333, normalizedBox: { x: 0.2, y: 0.2, width: 0.2, height: 0.2 } },
+          { ...result.tracks[0].observations[0], frameIndex: 158, timeSeconds: 5.266667, normalizedBox: { x: 0.4, y: 0.2, width: 0.2, height: 0.2 } },
+          { ...result.tracks[0].observations[1], frameIndex: 159, timeSeconds: 5.3, normalizedBox: { x: 0.6, y: 0.2, width: 0.2, height: 0.2 } },
+        ],
+        gaps: [],
+      }],
+    };
+    render(<TrafficAnalysisOverlay result={midpointResult} sourceTimeSeconds={5.25} width={1000} height={500} frame={fullFrame} />);
+
+    const overlay = screen.getByTestId('traffic-analysis-overlay');
+    const observations = overlay.querySelectorAll('g[data-track-id="2"][data-overlay-kind="observation"]');
+    expect(observations).toHaveLength(1);
+    expect(observations[0].querySelector('rect')).toHaveAttribute('x', '200');
+    expect(screen.getByText(/1 observed vehicle at 5.25 s/)).toBeInTheDocument();
+  });
+
   it('reveals a trajectory segment only after both actual observations have played', () => {
     const { rerender } = render(<TrafficAnalysisOverlay result={result} sourceTimeSeconds={1.05} width={1000} height={500} frame={fullFrame} />);
     expect(screen.getByTestId('traffic-analysis-overlay').querySelector('[data-overlay-kind="trajectory"]')).not.toBeInTheDocument();
@@ -73,6 +122,38 @@ describe('traffic analysis overlay', () => {
     expect(trajectory).toHaveAttribute('data-track-id', 'car-1');
     expect(trajectory).toHaveAttribute('x1', '200');
     expect(trajectory).toHaveAttribute('x2', '220');
+  });
+
+  it('uses each track observation cadence instead of letting a faster track hide sparse observations', () => {
+    const mixedCadence: TrafficAnalysisResult = {
+      ...result,
+      tracks: [
+        ...result.tracks,
+        {
+          trackId: 'car-sparse', firstSeenSeconds: 4, lastSeenSeconds: 4.5,
+          observations: [
+            { frameIndex: 120, timeSeconds: 4, frameWidth: 100, frameHeight: 100, box: { x: 10, y: 40, width: 20, height: 20 }, normalizedBox: { x: 0.1, y: 0.4, width: 0.2, height: 0.2 }, confidence: 0.8, state: 'observed' },
+            { frameIndex: 135, timeSeconds: 4.5, frameWidth: 100, frameHeight: 100, box: { x: 20, y: 40, width: 20, height: 20 }, normalizedBox: { x: 0.2, y: 0.4, width: 0.2, height: 0.2 }, confidence: 0.8, state: 'observed' },
+          ],
+          gaps: [],
+        },
+        {
+          trackId: 'car-dense', firstSeenSeconds: 1.5, lastSeenSeconds: 1.566667,
+          observations: [
+            { frameIndex: 45, timeSeconds: 1.5, frameWidth: 100, frameHeight: 100, box: { x: 60, y: 40, width: 20, height: 20 }, normalizedBox: { x: 0.6, y: 0.4, width: 0.2, height: 0.2 }, confidence: 0.8, state: 'observed' },
+            { frameIndex: 46, timeSeconds: 1.533333, frameWidth: 100, frameHeight: 100, box: { x: 61, y: 40, width: 20, height: 20 }, normalizedBox: { x: 0.61, y: 0.4, width: 0.2, height: 0.2 }, confidence: 0.8, state: 'observed' },
+            { frameIndex: 47, timeSeconds: 1.566667, frameWidth: 100, frameHeight: 100, box: { x: 62, y: 40, width: 20, height: 20 }, normalizedBox: { x: 0.62, y: 0.4, width: 0.2, height: 0.2 }, confidence: 0.8, state: 'observed' },
+          ],
+          gaps: [],
+        },
+      ],
+    };
+
+    render(<TrafficAnalysisOverlay result={mixedCadence} sourceTimeSeconds={4.04} width={1000} height={500} frame={fullFrame} />);
+
+    const overlay = screen.getByTestId('traffic-analysis-overlay');
+    expect(overlay.querySelector('g[data-track-id="car-sparse"][data-overlay-kind="observation"]')).toBeInTheDocument();
+    expect(overlay.querySelector('g[data-track-id="car-dense"][data-overlay-kind="observation"]')).not.toBeInTheDocument();
   });
 
   it('keeps boxes within the contained video frame when a wide player is height-constrained', () => {
