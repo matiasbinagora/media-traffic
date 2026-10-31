@@ -1,0 +1,194 @@
+{
+  "config": {
+    "argv": [
+      "/Users/matiasbinagora/.nvm/versions/node/v22.23.2/bin/node",
+      "/Users/matiasbinagora/Projects/media-traffic/.worktrees/show-analysis-progress-provenance/node_modules/.bin/playwright",
+      "test",
+      "e2e/scene-configuration.spec.ts"
+    ],
+    "configFile": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/show-analysis-progress-provenance/playwright.config.ts",
+    "rootDir": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/show-analysis-progress-provenance/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/show-analysis-progress-provenance/e2e/per89-global-setup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/show-analysis-progress-provenance/reports/per107/postmerge-b13350a/revalidation-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/show-analysis-progress-provenance/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/show-analysis-progress-provenance/reports/per107/postmerge-b13350a/revalidation-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chromium",
+        "testDir": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/show-analysis-progress-provenance/e2e",
+        "snapshotDir": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/show-analysis-progress-provenance/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5188",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "video": "retain-on-failure"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/Users/matiasbinagora/Projects/media-traffic/.worktrees/show-analysis-progress-provenance/reports/per107/postmerge-b13350a/playwright-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "scene-configuration.spec.ts",
+      "file": "scene-configuration.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "persists scene configuration and immutable run records through real API routes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4010,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-31T19:30:49.995Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d147e3b62ccbae5e9337-d5afe881bf57274698ed",
+          "file": "scene-configuration.spec.ts",
+          "line": 111,
+          "column": 1
+        },
+        {
+          "title": "keeps normalized geometry aligned when the playback derivative is half-size",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 791,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-31T19:30:54.097Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d147e3b62ccbae5e9337-f9727abc6ca55f8f8a1e",
+          "file": "scene-configuration.spec.ts",
+          "line": 243,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-31T19:30:49.073Z",
+    "duration": 5887.7880000000005,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
