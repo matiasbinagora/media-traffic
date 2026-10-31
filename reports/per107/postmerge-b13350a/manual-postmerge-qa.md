@@ -30,6 +30,6 @@ env PATH=/Users/matiasbinagora/.nvm/versions/node/v22.23.2/bin:/opt/homebrew/bin
 
 Result: **2 passed** (5.9s): real API missing-model persistence/provenance and half-size preview geometry alignment. Chromium was initially blocked by sandbox Mach-port permissions; the same command passed when launched outside the sandbox.
 
-The routed UI check used `node /private/tmp/per107-postmerge-b13350.mjs` against API port 8792 and Vite port 5192. It used real uploads/configuration and intercepted only analysis-run responses. The harness is temporary and outside the repository. Evidence is isolated here: `playwright-results.json`, `revalidation-artifacts/`, `analysis-run-failure-and-provenance.png`, `revalidation-mobile.png`, and `sanitizer-boundary-mobile.png`.
+The routed UI check used `node /private/tmp/per107-postmerge-b13350.mjs` against API port 8792 and Vite port 5192. It used real uploads/configuration and intercepted only analysis-run responses. The harness and its `revalidation-artifacts/` output were temporary and are not retained in this PR. Persisted evidence here is `playwright-results.json`, `analysis-run-failure-and-provenance.png`, `revalidation-mobile.png`, and `sanitizer-boundary-mobile.png`.
 
 No product code or Linear state changed. TestSprite was not run. Existing root-level QA artifacts were left untouched.
