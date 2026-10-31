@@ -146,6 +146,7 @@ describe('video upload experience', () => {
             id: 'accepted-run-1',
             videoId: job.id,
             status: 'queued',
+            phase: 'queued',
             analysisStarted: true,
             configurationSnapshot: { ...savedConfiguration, id: body.configurationId },
             createdAt: '2026-10-20T12:02:00.000Z',
@@ -196,7 +197,7 @@ describe('video upload experience', () => {
       await waitFor(() => expect(screen.getByRole('button', { name: 'Start traffic analysis' })).toBeEnabled());
       await user.click(screen.getByRole('button', { name: 'Start traffic analysis' }));
 
-      expect(await screen.findByText('Analysis queued')).toBeInTheDocument();
+      expect(await screen.findByRole('status', { name: 'Analysis run status' })).toHaveTextContent('Queued · Stage: Queued');
       expect(screen.getByText('Run accepted-run-1')).toBeInTheDocument();
       expect(screen.queryByRole('alert')).toBeNull();
       expect(vi.mocked(fetch).mock.calls.filter(([url, options]) => String(url).endsWith('/analysis-runs') && options?.method === 'POST')).toHaveLength(1);

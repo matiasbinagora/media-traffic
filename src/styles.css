@@ -155,6 +155,10 @@ h2 { margin: 0; font: 600 23px 'Space Grotesk', sans-serif; letter-spacing: -.02
 .scene-run-history ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .scene-run-history li { display: grid; gap: 3px; color: #68766d; font-size: 10px; overflow-wrap: anywhere; }
 .scene-run-history li strong { color: #38463d; }
+.analysis-run-status { margin: 8px 0; color: #38463d; font-size: 11px; }
+.analysis-failure { margin-top: 5px; padding: 9px; border-left: 3px solid #bd423b; background: #fff2f0; color: #7e2924; }
+.analysis-failure p, .analysis-result-summary p { margin: 4px 0; line-height: 1.5; }
+.analysis-result-summary { margin: 3px 0; color: #38463d; }
 .scene-run-history details { margin-top: 4px; }
 .scene-run-history summary { width: fit-content; color: #087c58; cursor: pointer; font-weight: 600; }
 .scene-run-history dl { display: grid; grid-template-columns: minmax(100px, auto) minmax(0, 1fr); gap: 4px 10px; margin: 8px 0 2px; }
