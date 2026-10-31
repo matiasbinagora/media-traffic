@@ -28,13 +28,31 @@ function observationTolerance(track: TrafficAnalysisResult['tracks'][number], in
   return validIntervals.length ? Math.min(0.05, Math.min(...validIntervals) / 2) : 0.05;
 }
 
+function activeObservation(track: TrafficAnalysisResult['tracks'][number], sourceTimeSeconds: number) {
+  const candidates = track.observations.flatMap((observation, index) => (
+    Math.abs(observation.timeSeconds - sourceTimeSeconds) <= observationTolerance(track, index)
+      ? [observation]
+      : []
+  ));
+
+  return candidates.reduce<typeof candidates[number] | undefined>((nearest, observation) => {
+    if (!nearest) return observation;
+    const distance = Math.abs(observation.timeSeconds - sourceTimeSeconds);
+    const nearestDistance = Math.abs(nearest.timeSeconds - sourceTimeSeconds);
+    if (distance < nearestDistance) return observation;
+    if (distance > nearestDistance) return nearest;
+    if (observation.timeSeconds < nearest.timeSeconds) return observation;
+    if (observation.timeSeconds > nearest.timeSeconds) return nearest;
+    return observation.frameIndex < nearest.frameIndex ? observation : nearest;
+  }, undefined);
+}
+
 export function TrafficAnalysisOverlay({ result, sourceTimeSeconds, width, height, frame }: Props) {
   const { active, paths, gapCount } = useMemo(() => {
-    const active = result.tracks.flatMap(track => track.observations.flatMap((observation, index) => (
-      Math.abs(observation.timeSeconds - sourceTimeSeconds) <= observationTolerance(track, index)
-        ? [{ track, observation }]
-        : []
-    )));
+    const active = result.tracks.flatMap(track => {
+      const observation = activeObservation(track, sourceTimeSeconds);
+      return observation ? [{ track, observation }] : [];
+    });
     const paths = result.tracks.map(track => {
       const gapPairs = new Set(track.gaps.map(gap => `${gap.afterFrameIndex}:${gap.beforeFrameIndex}`));
       const segments: Array<[number, number, number, number]> = [];

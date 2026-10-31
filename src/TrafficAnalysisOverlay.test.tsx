@@ -64,6 +64,29 @@ describe('traffic analysis overlay', () => {
     expect(screen.getByTestId('traffic-analysis-overlay').querySelectorAll('[data-overlay-kind="trajectory"]')).toHaveLength(1);
   });
 
+  it('renders only the nearest sample per track at an exact midpoint, preferring the earlier sample on ties', () => {
+    const midpointResult: TrafficAnalysisResult = {
+      ...result,
+      tracks: [{
+        ...result.tracks[0],
+        firstSeenSeconds: 1,
+        lastSeenSeconds: 1.0625,
+        observations: [
+          { ...result.tracks[0].observations[0], timeSeconds: 1 },
+          { ...result.tracks[0].observations[1], timeSeconds: 1.0625 },
+        ],
+        gaps: [],
+      }],
+    };
+    render(<TrafficAnalysisOverlay result={midpointResult} sourceTimeSeconds={1.03125} width={1000} height={500} frame={fullFrame} />);
+
+    const overlay = screen.getByTestId('traffic-analysis-overlay');
+    const observations = overlay.querySelectorAll('g[data-track-id="car-1"][data-overlay-kind="observation"]');
+    expect(observations).toHaveLength(1);
+    expect(observations[0].querySelector('rect')).toHaveAttribute('x', '100');
+    expect(screen.getByText(/1 observed vehicle at 1.03 s/)).toBeInTheDocument();
+  });
+
   it('reveals a trajectory segment only after both actual observations have played', () => {
     const { rerender } = render(<TrafficAnalysisOverlay result={result} sourceTimeSeconds={1.05} width={1000} height={500} frame={fullFrame} />);
     expect(screen.getByTestId('traffic-analysis-overlay').querySelector('[data-overlay-kind="trajectory"]')).not.toBeInTheDocument();
