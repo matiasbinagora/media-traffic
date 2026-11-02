@@ -10,19 +10,58 @@ type Props = {
   frame: PlayerRect;
 };
 
-function nearestObservationTime(result: TrafficAnalysisResult): number {
-  const times = [...new Set(result.tracks.flatMap(track => track.observations.map(observation => observation.timeSeconds)))].sort((a, b) => a - b);
-  const intervals = times.slice(1).map((time, index) => time - times[index]).filter(interval => Number.isFinite(interval) && interval > 0);
-  // Keep a sampled box visible only around its recorded timestamp. This window is
-  // inferred from the actual output cadence, never used to synthesize a box.
-  return intervals.length ? Math.min(0.05, Math.min(...intervals) / 2) : 0.025;
+function activeObservation(track: TrafficAnalysisResult['tracks'][number], sourceTimeSeconds: number) {
+  const gapPairs = new Set(track.gaps.map(gap => `${gap.afterFrameIndex}:${gap.beforeFrameIndex}`));
+  // Partition time between adjacent observations at their midpoint. This avoids
+  // excluding every sample when rounded 30fps timestamps put both distances a
+  // fraction above a separately rounded half-cadence tolerance. The earlier
+  // observation owns an exact midpoint; disconnected gap endpoints retain only
+  // the 50ms endpoint allowance and never gain continuity across the gap.
+  const candidates = track.observations.flatMap((observation, index) => {
+    const previous = track.observations[index - 1];
+    const next = track.observations[index + 1];
+    let lowerBound = observation.timeSeconds - 0.05;
+    let upperBound = observation.timeSeconds + 0.05;
+    let hasConnectedPrevious = false;
+
+    if (previous && !gapPairs.has(`${previous.frameIndex}:${observation.frameIndex}`)) {
+      const interval = observation.timeSeconds - previous.timeSeconds;
+      if (Number.isFinite(interval) && interval > 0) {
+        lowerBound = Math.max(lowerBound, previous.timeSeconds + interval / 2);
+        hasConnectedPrevious = true;
+      }
+    }
+    if (next && !gapPairs.has(`${observation.frameIndex}:${next.frameIndex}`)) {
+      const interval = next.timeSeconds - observation.timeSeconds;
+      if (Number.isFinite(interval) && interval > 0) {
+        upperBound = Math.min(upperBound, observation.timeSeconds + interval / 2);
+      }
+    }
+
+    const afterLowerBound = hasConnectedPrevious
+      ? sourceTimeSeconds > lowerBound
+      : sourceTimeSeconds >= lowerBound;
+    return afterLowerBound && sourceTimeSeconds <= upperBound ? [observation] : [];
+  });
+
+  return candidates.reduce<typeof candidates[number] | undefined>((nearest, observation) => {
+    if (!nearest) return observation;
+    const distance = Math.abs(observation.timeSeconds - sourceTimeSeconds);
+    const nearestDistance = Math.abs(nearest.timeSeconds - sourceTimeSeconds);
+    if (distance < nearestDistance) return observation;
+    if (distance > nearestDistance) return nearest;
+    if (observation.timeSeconds < nearest.timeSeconds) return observation;
+    if (observation.timeSeconds > nearest.timeSeconds) return nearest;
+    return observation.frameIndex < nearest.frameIndex ? observation : nearest;
+  }, undefined);
 }
 
 export function TrafficAnalysisOverlay({ result, sourceTimeSeconds, width, height, frame }: Props) {
   const { active, paths, gapCount } = useMemo(() => {
-    const tolerance = nearestObservationTime(result);
-    const observations = result.tracks.flatMap(track => track.observations.map(observation => ({ track, observation })));
-    const active = observations.filter(({ observation }) => Math.abs(observation.timeSeconds - sourceTimeSeconds) <= tolerance);
+    const active = result.tracks.flatMap(track => {
+      const observation = activeObservation(track, sourceTimeSeconds);
+      return observation ? [{ track, observation }] : [];
+    });
     const paths = result.tracks.map(track => {
       const gapPairs = new Set(track.gaps.map(gap => `${gap.afterFrameIndex}:${gap.beforeFrameIndex}`));
       const segments: Array<[number, number, number, number]> = [];
