@@ -1,0 +1,269 @@
+{
+  "sourceSha256": "0a1d32f82239e18fcbd1ae105a58343eb263e2c4bb48935c4d771270fdd53918",
+  "replaySampledFrames": 300,
+  "replayTrackCounts": [
+    {
+      "trackId": "1",
+      "observations": 76,
+      "gaps": 0
+    },
+    {
+      "trackId": "2",
+      "observations": 284,
+      "gaps": 0
+    },
+    {
+      "trackId": "3",
+      "observations": 112,
+      "gaps": 0
+    }
+  ],
+  "actualUpload": {
+    "id": "349bc7e5-b402-4bf7-b75d-f53e00f8d9bc",
+    "status": "processing",
+    "preview": {
+      "status": "processing",
+      "contentType": "video/mp4",
+      "url": "/api/videos/349bc7e5-b402-4bf7-b75d-f53e00f8d9bc/preview"
+    },
+    "source": {
+      "sizeBytes": 2416868,
+      "sha256": "0a1d32f82239e18fcbd1ae105a58343eb263e2c4bb48935c4d771270fdd53918",
+      "media": {
+        "durationSeconds": 10,
+        "width": 1920,
+        "height": 1080,
+        "formatName": "mov,mp4,m4a,3gp,3g2,mj2",
+        "sourceStartTimeSeconds": 0
+      }
+    },
+    "loadedPreview": {
+      "width": 1920,
+      "height": 1080,
+      "duration": 10,
+      "currentSrc": "http://127.0.0.1:5197/api/videos/349bc7e5-b402-4bf7-b75d-f53e00f8d9bc/preview"
+    }
+  },
+  "savedConfiguration": {
+    "schemaVersion": 1,
+    "id": "1aa7c46c-90d6-4e4c-9a79-67af182511b6",
+    "source": {
+      "videoId": "349bc7e5-b402-4bf7-b75d-f53e00f8d9bc",
+      "sha256": "0a1d32f82239e18fcbd1ae105a58343eb263e2c4bb48935c4d771270fdd53918",
+      "width": 1920,
+      "height": 1080
+    },
+    "geometry": {
+      "vehicleRegion": {
+        "x": 0.1,
+        "y": 0.2,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "stopLine": {
+        "start": {
+          "x": 0.2,
+          "y": 0.6
+        },
+        "end": {
+          "x": 0.8,
+          "y": 0.6
+        }
+      },
+      "crossingDirection": "top-to-bottom",
+      "signalRegion": {
+        "x": 0.155,
+        "y": 0.04,
+        "width": 0.05499999999999999,
+        "height": 0.19
+      },
+      "signalAssociation": "traffic-signal-1"
+    },
+    "createdAt": "2026-11-02T13:00:38.188Z"
+  },
+  "qualifiedReplay": {
+    "runId": "23a3bdf3-7318-4a78-9e33-5efa20a64c06",
+    "seekedTime": 1.19,
+    "nearestFrame": 36,
+    "desktopAlignment": {
+      "observed": {
+        "left": 0.5095885213216146,
+        "top": 0.5188611291956019,
+        "width": 0.16426564534505209,
+        "height": 0.17667598017939815
+      },
+      "expected": {
+        "x": 0.5120885416666667,
+        "y": 0.5233055555555555,
+        "width": 0.159265625,
+        "height": 0.16778703703703707
+      },
+      "error": {
+        "left": 0.002500020345052145,
+        "top": 0.004444426359953568,
+        "width": 0.005000020345052092,
+        "height": 0.008888943142361078
+      },
+      "canvas": {
+        "width": 600,
+        "height": 337.5
+      }
+    },
+    "desktopObservationCount": 2,
+    "beforePlayLabel": "Traffic detections at 1.19 seconds",
+    "afterPlayLabel": "Traffic detections at 1.32 seconds",
+    "midpointLabel": "Traffic detections at 5.25 seconds",
+    "midpointTrack2Count": 1,
+    "midpointExpectedCount": 1,
+    "midpointVerdict": "PASS",
+    "desktopMidpointAlignment": {
+      "observed": {
+        "x": 0.30727604166666667,
+        "y": 0.6481203703703704,
+        "width": 0.17088541666666668,
+        "height": 0.18097222222222215
+      },
+      "selectedFrame": 157,
+      "earlierError": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      },
+      "laterFrame": 158,
+      "laterError": {
+        "x": 0.000057291666666681174,
+        "y": 0.000055555555555586444,
+        "width": 0.0000937499999999758,
+        "height": 0.00012037037037049281
+      },
+      "canvas": {
+        "width": 600,
+        "height": 337.5
+      }
+    },
+    "mobile": {
+      "viewport": {
+        "viewport": 390,
+        "document": 390
+      },
+      "alignment": {
+        "observed": {
+          "left": 0.49840813440992343,
+          "top": 0.4933737108512693,
+          "width": 0.17100666374560222,
+          "height": 0.18697480123827262
+        },
+        "expected": {
+          "x": 0.503375,
+          "y": 0.5022037037037037,
+          "width": 0.16107291666666665,
+          "height": 0.16931481481481483
+        },
+        "error": {
+          "left": 0.004966865590076586,
+          "top": 0.00882999285243441,
+          "width": 0.009933747078935573,
+          "height": 0.017659986423457785
+        },
+        "canvas": {
+          "width": 302,
+          "height": 169.875
+        }
+      },
+      "overlayLabel": "Traffic detections at 1.30 seconds",
+      "midpointTrack2Count": 1,
+      "midpointVerdict": "PASS",
+      "midpointAlignment": {
+        "observed": {
+          "x": 0.30727604166666667,
+          "y": 0.6481203703703704,
+          "width": 0.17088541666666668,
+          "height": 0.18097222222222215
+        },
+        "selectedFrame": 157,
+        "earlierError": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "laterFrame": 158,
+        "laterError": {
+          "x": 0.000057291666666681174,
+          "y": 0.000055555555555586444,
+          "width": 0.0000937499999999758,
+          "height": 0.00012037037037049281
+        },
+        "canvas": {
+          "width": 302,
+          "height": 169.875
+        }
+      }
+    }
+  },
+  "controlledGapReplay": {
+    "runId": "c2f24f02-97b5-4703-bb13-68fef6cf5a8c",
+    "injectedGap": {
+      "afterFrameIndex": 38,
+      "beforeFrameIndex": 40,
+      "missingFrameCount": 1,
+      "midpointSeconds": 1.3
+    },
+    "mobile": {
+      "viewport": 390,
+      "document": 390
+    },
+    "gapText": "Track 1: 1 frame unobserved from 1.27 to 1.33 s; identity continuity unverified.",
+    "linesAtGapMidpoint": 38,
+    "postGapTrajectoryCount": 38,
+    "desktopGapEndpointAlignment": {
+      "observed": {
+        "left": 0.5039583333333333,
+        "top": 0.5054722312644676,
+        "width": 0.1646875,
+        "height": 0.1767685275607639
+      },
+      "expected": {
+        "x": 0.5064583333333333,
+        "y": 0.5099166666666667,
+        "width": 0.1596875,
+        "height": 0.16787962962962957
+      },
+      "error": {
+        "left": 0.0025000000000000577,
+        "top": 0.004444435402199076,
+        "width": 0.004999999999999977,
+        "height": 0.008888897931134315
+      },
+      "canvas": {
+        "width": 600,
+        "height": 337.5
+      }
+    },
+    "mobileGapEndpointAlignment": {
+      "observed": {
+        "left": 0.5014914708421719,
+        "top": 0.5010866862697756,
+        "width": 0.16962129706578538,
+        "height": 0.18553968910963944
+      },
+      "expected": {
+        "x": 0.5064583333333333,
+        "y": 0.5099166666666667,
+        "width": 0.1596875,
+        "height": 0.16787962962962957
+      },
+      "error": {
+        "left": 0.004966862491161406,
+        "top": 0.00882998039689109,
+        "width": 0.009933797065785371,
+        "height": 0.01766005948000987
+      },
+      "canvas": {
+        "width": 302,
+        "height": 169.875
+      }
+    }
+  }
+}
