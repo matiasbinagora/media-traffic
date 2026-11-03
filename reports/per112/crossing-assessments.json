@@ -1,0 +1,612 @@
+{
+  "schemaVersion": 1,
+  "sourceSha256": "981154c80389850d83d8621b43ca638d38737d2179ce1734efac60f7b8267ab3",
+  "groundTruthSha256": "f7d765d540e3010eddef3388de67cbb6c89c909f6c01f08673801225a6a246be",
+  "trackingOutputSha256": "6e5de969ea2b35af3d923ae03b28300fee560d44c489e4e378aa034227e1c307",
+  "configuration": {
+    "schemaVersion": 1,
+    "id": "d8380a44-152c-44dc-9dca-414c48a07d17",
+    "source": {
+      "videoId": "per112-synthetic-demo",
+      "sha256": "981154c80389850d83d8621b43ca638d38737d2179ce1734efac60f7b8267ab3",
+      "width": 1920,
+      "height": 1080
+    },
+    "geometry": {
+      "vehicleRegion": {
+        "x": 0.1,
+        "y": 0.2,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "stopLine": {
+        "start": {
+          "x": 0.2604166666666667,
+          "y": 0.6037037037037037
+        },
+        "end": {
+          "x": 0.8333333333333334,
+          "y": 0.5407407407407407
+        }
+      },
+      "crossingDirection": "bottom-to-top",
+      "signalRegion": {
+        "x": 0.1640625,
+        "y": 0.06481481481481481,
+        "width": 0.036458333333333336,
+        "height": 0.1574074074074074
+      },
+      "signalAssociation": "the visible synthetic roadside signal"
+    },
+    "createdAt": "2026-11-03T17:00:00.000Z"
+  },
+  "detectorTrackingProvenance": {
+    "source": "uploaded-original",
+    "checkpoint": "per112-yolo26n.pt",
+    "checkpointSha256": "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef",
+    "runtime": "Ultralytics",
+    "runtimeVersion": "8.4.190",
+    "pythonVersion": "3.12.13",
+    "pytorchVersion": "2.14.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit",
+    "device": "cpu",
+    "tracker": "ByteTrack",
+    "trackerConfigSha256": "4e4a91e815e198c2ac6e3b1def0cdd7020534e2d228ca638ec4dd87eae6179bc",
+    "trackerConfig": {
+      "tracker_type": "bytetrack",
+      "track_high_thresh": 0.25,
+      "track_low_thresh": 0.1,
+      "new_track_thresh": 0.25,
+      "track_buffer": 30,
+      "match_thresh": 0.8,
+      "fuse_score": true
+    },
+    "sampling": "every decoded frame",
+    "timestampSource": "ffprobe.best_effort_timestamp_time",
+    "confidenceThreshold": 0.25,
+    "imageSize": 640,
+    "classFilter": {
+      "id": 2,
+      "name": "car"
+    },
+    "decodedFrameCount": 300,
+    "inferenceSeconds": 8.406
+  },
+  "signalTimeline": {
+    "stabilityRule": {
+      "method": "consecutive-decoded-frames",
+      "requiredFrames": 3
+    },
+    "intervals": [
+      {
+        "state": "green",
+        "startFrameIndex": 0,
+        "endFrameExclusive": 60,
+        "startSeconds": 0,
+        "endSeconds": 2,
+        "rationale": "stable_for_three_consecutive_frames",
+        "transitionEvidence": {
+          "supportingFrameIndices": [
+            0,
+            1,
+            2
+          ]
+        }
+      },
+      {
+        "state": "yellow",
+        "startFrameIndex": 60,
+        "endFrameExclusive": 90,
+        "startSeconds": 2,
+        "endSeconds": 3,
+        "rationale": "stable_for_three_consecutive_frames",
+        "transitionEvidence": {
+          "supportingFrameIndices": [
+            60,
+            61,
+            62
+          ]
+        }
+      },
+      {
+        "state": "red",
+        "startFrameIndex": 90,
+        "endFrameExclusive": 210,
+        "startSeconds": 3,
+        "endSeconds": 7,
+        "rationale": "stable_for_three_consecutive_frames",
+        "transitionEvidence": {
+          "supportingFrameIndices": [
+            90,
+            91,
+            92
+          ]
+        }
+      },
+      {
+        "state": "green",
+        "startFrameIndex": 210,
+        "endFrameExclusive": 300,
+        "startSeconds": 7,
+        "endSeconds": 10,
+        "rationale": "stable_for_three_consecutive_frames",
+        "transitionEvidence": {
+          "supportingFrameIndices": [
+            210,
+            211,
+            212
+          ]
+        }
+      }
+    ]
+  },
+  "redAnnotation": {
+    "eventId": "red-crossing-red-1",
+    "type": "red_crossing",
+    "startSeconds": 5.9,
+    "endSeconds": 5.966666666666667,
+    "vehicleId": "red-car",
+    "startFrame": 177,
+    "endFrame": 179,
+    "notes": "A blind source-only visual review brackets the axis-aligned vehicle box top-edge midpoint approaching/passing the stop-line centerline between frames 177 (5.900 s, upstream or at the line) and 179 (5.967 s, downstream); frame 178 is at/near the stripe. Both bracket frames show red. The conservative annotation midpoint is 5.9333 s; the rotated sprite makes a more exact single-frame visual judgment uncertain.",
+    "midpointSeconds": 5.933333333333334
+  },
+  "greenControl": {
+    "annotation": {
+      "eventId": "green-crossing-gold-1",
+      "type": "green_crossing",
+      "startSeconds": 0.9,
+      "endSeconds": 1.1,
+      "vehicleId": "gold-car",
+      "notes": "Manual visual review brackets the gold vehicle crossing between decoded frames 27 and 33 (0.900–1.100 s) using the leading-edge midpoint in the bottom-to-top direction. Both observations show green. This control is used only to check that no red event is emitted."
+    },
+    "manuallyMatchedTrackId": "1",
+    "frameObservation": {
+      "frameIndex": 30,
+      "timeSeconds": 1,
+      "frameWidth": 1920,
+      "frameHeight": 1080,
+      "box": {
+        "x": 1015.28,
+        "y": 609.9,
+        "width": 299.3700000000001,
+        "height": 178.40999999999997
+      },
+      "normalizedBox": {
+        "x": 0.5287916666666667,
+        "y": 0.5647222222222222,
+        "width": 0.15592187500000007,
+        "height": 0.16519444444444442
+      },
+      "confidence": 0.866249,
+      "state": "observed"
+    }
+  },
+  "stopControl": {
+    "annotation": {
+      "eventId": "correct-stop-blue-1",
+      "type": "correct_stop",
+      "startSeconds": 3,
+      "endSeconds": 7,
+      "vehicleId": "blue-car",
+      "notes": "The blue car is stationary and visibly behind the stop line during [3, 7) s. This window includes amber through frame 89 and red frames 90–209; green returns at frame 210 (7 s), immediately after the stop interval ends."
+    },
+    "manuallyMatchedTrackId": "2",
+    "frameObservation": {
+      "frameIndex": 105,
+      "timeSeconds": 3.5,
+      "frameWidth": 1920,
+      "frameHeight": 1080,
+      "box": {
+        "x": 589.63,
+        "y": 699.71,
+        "width": 328.1,
+        "height": 195.39
+      },
+      "normalizedBox": {
+        "x": 0.30709895833333334,
+        "y": 0.6478796296296296,
+        "width": 0.17088541666666668,
+        "height": 0.18091666666666664
+      },
+      "confidence": 0.888917,
+      "state": "observed"
+    }
+  },
+  "trackSummary": [
+    {
+      "trackId": "1",
+      "firstSeenSeconds": 0,
+      "lastSeenSeconds": 2.466667,
+      "observations": 75,
+      "gaps": [],
+      "firstObservation": {
+        "frameIndex": 0,
+        "timeSeconds": 0,
+        "frameWidth": 1920,
+        "frameHeight": 1080,
+        "box": {
+          "x": 1146.96,
+          "y": 780.28,
+          "width": 307.27,
+          "height": 215.26999999999998
+        },
+        "normalizedBox": {
+          "x": 0.597375,
+          "y": 0.7224814814814815,
+          "width": 0.16003645833333333,
+          "height": 0.19932407407407407
+        },
+        "confidence": 0.797532,
+        "state": "observed"
+      },
+      "lastObservation": {
+        "frameIndex": 74,
+        "timeSeconds": 2.466667,
+        "frameWidth": 1920,
+        "frameHeight": 1080,
+        "box": {
+          "x": 807.66,
+          "y": 301.31,
+          "width": 313.40999999999997,
+          "height": 183.05
+        },
+        "normalizedBox": {
+          "x": 0.42065625,
+          "y": 0.27899074074074076,
+          "width": 0.163234375,
+          "height": 0.16949074074074075
+        },
+        "confidence": 0.878463,
+        "state": "observed"
+      }
+    },
+    {
+      "trackId": "2",
+      "firstSeenSeconds": 0.533333,
+      "lastSeenSeconds": 9.966667,
+      "observations": 284,
+      "gaps": [],
+      "firstObservation": {
+        "frameIndex": 16,
+        "timeSeconds": 0.533333,
+        "frameWidth": 1920,
+        "frameHeight": 1080,
+        "box": {
+          "x": 591.57,
+          "y": 867.04,
+          "width": 324.2399999999999,
+          "height": 194.27999999999997
+        },
+        "normalizedBox": {
+          "x": 0.308109375,
+          "y": 0.8028148148148148,
+          "width": 0.16887499999999994,
+          "height": 0.17988888888888888
+        },
+        "confidence": 0.879872,
+        "state": "observed"
+      },
+      "lastObservation": {
+        "frameIndex": 299,
+        "timeSeconds": 9.966667,
+        "frameWidth": 1920,
+        "frameHeight": 1080,
+        "box": {
+          "x": 367.26,
+          "y": 507.34,
+          "width": 327.75,
+          "height": 194.38000000000005
+        },
+        "normalizedBox": {
+          "x": 0.19128124999999999,
+          "y": 0.4697592592592592,
+          "width": 0.170703125,
+          "height": 0.17998148148148152
+        },
+        "confidence": 0.87203,
+        "state": "observed"
+      }
+    },
+    {
+      "trackId": "3",
+      "firstSeenSeconds": 3.633333,
+      "lastSeenSeconds": 7.2,
+      "observations": 89,
+      "gaps": [
+        {
+          "afterFrameIndex": 155,
+          "beforeFrameIndex": 157,
+          "missingFrameCount": 1,
+          "startSeconds": 5.166667,
+          "endSeconds": 5.233333,
+          "reason": "not_observed",
+          "identityContinuity": "unverified"
+        },
+        {
+          "afterFrameIndex": 179,
+          "beforeFrameIndex": 187,
+          "missingFrameCount": 7,
+          "startSeconds": 5.966667,
+          "endSeconds": 6.233333,
+          "reason": "not_observed",
+          "identityContinuity": "unverified"
+        },
+        {
+          "afterFrameIndex": 200,
+          "beforeFrameIndex": 202,
+          "missingFrameCount": 1,
+          "startSeconds": 6.666667,
+          "endSeconds": 6.733333,
+          "reason": "not_observed",
+          "identityContinuity": "unverified"
+        },
+        {
+          "afterFrameIndex": 205,
+          "beforeFrameIndex": 216,
+          "missingFrameCount": 10,
+          "startSeconds": 6.833333,
+          "endSeconds": 7.2,
+          "reason": "not_observed",
+          "identityContinuity": "unverified"
+        }
+      ],
+      "firstObservation": {
+        "frameIndex": 109,
+        "timeSeconds": 3.633333,
+        "frameWidth": 1920,
+        "frameHeight": 1080,
+        "box": {
+          "x": 1542.66,
+          "y": 805.74,
+          "width": 178.69999999999982,
+          "height": 272.81999999999994
+        },
+        "normalizedBox": {
+          "x": 0.8034687500000001,
+          "y": 0.7460555555555556,
+          "width": 0.09307291666666657,
+          "height": 0.25261111111111106
+        },
+        "confidence": 0.392494,
+        "state": "observed"
+      },
+      "lastObservation": {
+        "frameIndex": 216,
+        "timeSeconds": 7.2,
+        "frameWidth": 1920,
+        "frameHeight": 1080,
+        "box": {
+          "x": 1354.22,
+          "y": 473.75,
+          "width": 176.63999999999987,
+          "height": 296.26
+        },
+        "normalizedBox": {
+          "x": 0.7053229166666667,
+          "y": 0.4386574074074074,
+          "width": 0.09199999999999993,
+          "height": 0.2743148148148148
+        },
+        "confidence": 0.276245,
+        "state": "observed"
+      }
+    }
+  ],
+  "crossingAssessments": [
+    {
+      "configurationId": "d8380a44-152c-44dc-9dca-414c48a07d17",
+      "trackId": "1",
+      "outcome": "not_candidate",
+      "reason": "signal_not_red",
+      "crossingTimeSeconds": 1,
+      "timeRange": {
+        "startSeconds": 1,
+        "endSeconds": 1.033333
+      },
+      "frameRange": {
+        "startFrameIndex": 30,
+        "endFrameIndex": 31
+      },
+      "observations": [
+        {
+          "frameIndex": 30,
+          "timeSeconds": 1,
+          "confidence": 0.866249,
+          "box": {
+            "x": 1015.28,
+            "y": 609.9,
+            "width": 299.3700000000001,
+            "height": 178.40999999999997
+          },
+          "referencePoint": {
+            "x": 1164.9650000000001,
+            "y": 609.9
+          }
+        },
+        {
+          "frameIndex": 31,
+          "timeSeconds": 1.033333,
+          "confidence": 0.873274,
+          "box": {
+            "x": 1007,
+            "y": 600.01,
+            "width": 305.1400000000001,
+            "height": 181.68000000000006
+          },
+          "referencePoint": {
+            "x": 1159.5700000000002,
+            "y": 600.01
+          }
+        }
+      ],
+      "signalEvidence": {
+        "state": "green",
+        "interval": {
+          "state": "green",
+          "startFrameIndex": 0,
+          "endFrameExclusive": 60,
+          "startSeconds": 0,
+          "endSeconds": 2,
+          "rationale": "stable_for_three_consecutive_frames",
+          "transitionEvidence": {
+            "supportingFrameIndices": [
+              0,
+              1,
+              2
+            ]
+          }
+        }
+      }
+    },
+    {
+      "configurationId": "d8380a44-152c-44dc-9dca-414c48a07d17",
+      "trackId": "3",
+      "outcome": "candidate",
+      "reason": "confirmed_red_crossing",
+      "crossingTimeSeconds": 5.945557184113456,
+      "timeRange": {
+        "startSeconds": 5.933333,
+        "endSeconds": 5.966667
+      },
+      "frameRange": {
+        "startFrameIndex": 178,
+        "endFrameIndex": 179
+      },
+      "observations": [
+        {
+          "frameIndex": 178,
+          "timeSeconds": 5.933333,
+          "confidence": 0.483644,
+          "box": {
+            "x": 1420.7,
+            "y": 590.63,
+            "width": 179.12999999999988,
+            "height": 297.90999999999997
+          },
+          "referencePoint": {
+            "x": 1510.2649999999999,
+            "y": 590.63
+          }
+        },
+        {
+          "frameIndex": 179,
+          "timeSeconds": 5.966667,
+          "confidence": 0.314443,
+          "box": {
+            "x": 1419.21,
+            "y": 587.76,
+            "width": 179.44000000000005,
+            "height": 298.62
+          },
+          "referencePoint": {
+            "x": 1508.93,
+            "y": 587.76
+          }
+        }
+      ],
+      "signalEvidence": {
+        "state": "red",
+        "interval": {
+          "startFrameIndex": 90,
+          "endFrameExclusive": 210,
+          "startSeconds": 3,
+          "endSeconds": 7,
+          "rationale": "stable_for_three_consecutive_frames",
+          "transitionEvidence": {
+            "supportingFrameIndices": [
+              90,
+              91,
+              92
+            ]
+          }
+        }
+      }
+    },
+    {
+      "configurationId": "d8380a44-152c-44dc-9dca-414c48a07d17",
+      "trackId": "2",
+      "outcome": "not_candidate",
+      "reason": "signal_not_red",
+      "crossingTimeSeconds": 7.816669755610844,
+      "timeRange": {
+        "startSeconds": 7.8,
+        "endSeconds": 7.833333
+      },
+      "frameRange": {
+        "startFrameIndex": 234,
+        "endFrameIndex": 235
+      },
+      "observations": [
+        {
+          "frameIndex": 234,
+          "timeSeconds": 7.8,
+          "confidence": 0.87104,
+          "box": {
+            "x": 523.54,
+            "y": 642.16,
+            "width": 328.5,
+            "height": 195.2800000000001
+          },
+          "referencePoint": {
+            "x": 687.79,
+            "y": 642.16
+          }
+        },
+        {
+          "frameIndex": 235,
+          "timeSeconds": 7.833333,
+          "confidence": 0.867042,
+          "box": {
+            "x": 519.23,
+            "y": 638.84,
+            "width": 330.1,
+            "height": 196.37
+          },
+          "referencePoint": {
+            "x": 684.28,
+            "y": 638.84
+          }
+        }
+      ],
+      "signalEvidence": {
+        "state": "green",
+        "interval": {
+          "state": "green",
+          "startFrameIndex": 210,
+          "endFrameExclusive": 300,
+          "startSeconds": 7,
+          "endSeconds": 10,
+          "rationale": "stable_for_three_consecutive_frames",
+          "transitionEvidence": {
+            "supportingFrameIndices": [
+              210,
+              211,
+              212
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "acceptanceSummary": {
+    "redCandidatesWithinOneFrameOfAnnotation": 1,
+    "redCandidateTimingErrorSeconds": [
+      0.012223850780122447
+    ],
+    "annotationSignalTimelineMatches": true,
+    "candidatesDuringGreenAnnotationWindow": 0,
+    "greenTrackControlAssessments": [
+      {
+        "outcome": "not_candidate",
+        "reason": "signal_not_red",
+        "crossingTimeSeconds": 1
+      }
+    ],
+    "stopTrackAssessmentsDuringRedStopWindow": [],
+    "stopControlObservationsDuringRed": 120,
+    "stopControlMaximumDisplacementPixels": 0.5921148537234227,
+    "stopControlMaximumSignedDistancePixels": -62.761919675395504,
+    "additionalCandidateCountOutsideRedAnnotation": 0
+  }
+}

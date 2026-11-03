@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "d8380a44-152c-44dc-9dca-414c48a07d17",
+  "source": {
+    "videoId": "per112-synthetic-demo",
+    "sha256": "981154c80389850d83d8621b43ca638d38737d2179ce1734efac60f7b8267ab3",
+    "width": 1920,
+    "height": 1080
+  },
+  "geometry": {
+    "vehicleRegion": { "x": 0.1, "y": 0.2, "width": 0.8, "height": 0.7 },
+    "stopLine": {
+      "start": { "x": 0.2604166666666667, "y": 0.6037037037037037 },
+      "end": { "x": 0.8333333333333334, "y": 0.5407407407407407 }
+    },
+    "crossingDirection": "bottom-to-top",
+    "signalRegion": { "x": 0.1640625, "y": 0.06481481481481481, "width": 0.036458333333333336, "height": 0.1574074074074074 },
+    "signalAssociation": "the visible synthetic roadside signal"
+  },
+  "createdAt": "2026-11-03T17:00:00.000Z"
+}
