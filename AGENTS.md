@@ -16,7 +16,7 @@ Write new stories, project documentation, specs, and acceptance criteria in Engl
 
 The MVP analyzes uploaded fixed-camera video for one configured movement and visible signal. Retain temporal car tracks; infer signal state from video; preserve uncertainty and evidence. Report candidate red-light crossings separately from human review decisions. Never substitute fixtures after inference failure. Keep synthetic-video ground truth independent of inference.
 
-Use TestSprite for broad web journeys, deterministic tests for crossing rules, and real inference evaluated against annotations for detection quality. No accuracy or coverage threshold is agreed yet. Record run evidence and failures. Upload and preview tests do not certify traffic detection; do not report analysis as complete when only upload/transcoding ran.
+Use TestSprite for broad web journeys, deterministic tests for crossing rules, and real inference evaluated against annotations for detection quality. OpenSpec decision 1.3 records a synthetic-demo gate and a future 95% precision/recall objective on a broader annotated set; the broader objective and the 10-second p95 performance target are not yet demonstrated. Record run evidence and failures. Upload and preview tests do not certify traffic detection; do not report analysis as complete when only upload/transcoding ran.
 
 ## Agent, Commit & Pull Request Guidelines
 

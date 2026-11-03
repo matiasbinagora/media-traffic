@@ -51,7 +51,9 @@ Linear: [PER-104](https://linear.app/matias-personal/issue/PER-104).
 <a id="us-06"></a>
 US-06: As a reviewer, I want candidate red-light crossings so that I can inspect potentially unsafe events.
 
-The system SHALL classify a candidate only when a tracked car crosses the configured stop-line segment in the allowed direction with sufficient observed red evidence at the crossing time, preserving documented geometry and temporal tolerances.
+The system SHALL classify a candidate only when a tracked car crosses the configured stop-line segment in the allowed direction with sufficient observed red evidence at the crossing time, preserving documented geometry and temporal tolerances. The product-owner-approved geometry, confidence/gap rules, demo acceptance measures, future quality objective and performance target are recorded in [Decision 1.3](../../decision-1.3-crossing-acceptance.md).
+
+For this prototype, the crossing reference point is the midpoint of the vehicle box's leading edge in its direction of travel. The crossing must be supported by the same track identity in adjacent 30-fps source frames (at most 33.3 ms apart), with both car detections meeting confidence 0.25. The full crossing-time bracket must lie within a stable red interval supported by three consecutive frames; missing frames, changed identity, or a transition/unknown signal makes the result indeterminate. The configured finite segment includes its endpoints with 1-pixel source-image tolerance. These rules do not constitute general accuracy or latency certification.
 
 Linear: [PER-91](https://linear.app/matias-personal/issue/PER-91/identify-candidate-red-light-crossing-events).
 
