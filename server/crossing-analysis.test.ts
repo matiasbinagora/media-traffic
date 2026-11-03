@@ -117,3 +117,22 @@ test('suppresses 1px jitter, preserves line-contact uncertainty, and marks likel
   ] });
   assert.ok(switched.some(item => item.reason === 'possible_identity_switch' && item.outcome === 'indeterminate'));
 });
+
+test('deduplicates a shallow oscillation and rearms after a clearly separated true recross', () => {
+  const framesAt = (referenceYs: number[]) => referenceYs.map((referenceY, frameIndex) => ({
+    frameIndex,
+    timeSeconds: frameIndex / 30,
+    detections: [{ trackId: 'car-1', box: [40, referenceY - 10, 50, referenceY] as [number, number, number, number], confidence: 0.8 }],
+  }));
+
+  const oscillation = assess({ frames: framesAt([48, 52, 48, 52]) });
+  assert.equal(oscillation.filter(item => item.outcome === 'candidate').length, 1);
+  assert.equal(oscillation.filter(item => item.reason === 'opposite_direction').length, 1);
+
+  const recross = assess({ frames: framesAt([40, 52, 48, 46, 46, 52]) });
+  assert.equal(recross.filter(item => item.outcome === 'candidate').length, 2);
+  assert.deepEqual(recross.filter(item => item.outcome === 'candidate').map(item => item.frameRange), [
+    { startFrameIndex: 0, endFrameIndex: 1 },
+    { startFrameIndex: 4, endFrameIndex: 5 },
+  ]);
+});

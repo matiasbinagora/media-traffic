@@ -5,6 +5,8 @@ import type { SignalInterval, SignalState, SignalTimeline } from './signal-analy
 const MIN_CAR_CONFIDENCE = 0.25;
 const MAX_FRAME_INTERVAL_SECONDS = 1 / 30 + 0.000001;
 const GEOMETRY_TOLERANCE_PIXELS = 1;
+const RECROSS_REARM_DISTANCE_PIXELS = 3;
+const RECROSS_REARM_REQUIRED_FRAMES = 2;
 
 export type CrossingAssessmentOutcome = 'candidate' | 'indeterminate' | 'not_candidate';
 export type CrossingAssessmentReason =
@@ -330,12 +332,29 @@ function findTrackCrossings(input: {
   const validProjections = projections as Projection[];
   const assessments: CrossingAssessment[] = [];
   let armed = validProjections[0].signedDistancePixels < -GEOMETRY_TOLERANCE_PIXELS;
+  let awaitingClearUpstream = false;
+  let clearUpstreamFrameCount = 0;
 
   for (let index = 1; index < observations.length; index += 1) {
     const before = observations[index - 1];
     const after = observations[index];
     const beforeProjection = validProjections[index - 1];
     const afterProjection = validProjections[index];
+    if (awaitingClearUpstream) {
+      if (afterProjection.signedDistancePixels <= -RECROSS_REARM_DISTANCE_PIXELS) {
+        clearUpstreamFrameCount += 1;
+        if (clearUpstreamFrameCount >= RECROSS_REARM_REQUIRED_FRAMES) {
+          awaitingClearUpstream = false;
+          clearUpstreamFrameCount = 0;
+          armed = true;
+        }
+      } else {
+        clearUpstreamFrameCount = 0;
+      }
+    } else if (beforeProjection.signedDistancePixels < -GEOMETRY_TOLERANCE_PIXELS) {
+      armed = true;
+    }
+
     if (reverseCrossingPotential(beforeProjection, afterProjection)) {
       assessments.push(assessPair({
         configuration,
@@ -350,10 +369,9 @@ function findTrackCrossings(input: {
         frameHeight: trackResult.frameHeight,
         oppositeDirection: true,
       }));
-      armed = false;
+      if (!awaitingClearUpstream) armed = false;
       continue;
     }
-    if (beforeProjection.signedDistancePixels < -GEOMETRY_TOLERANCE_PIXELS) armed = true;
     if (armed && crossingPotential(beforeProjection, afterProjection)) {
       const assessment = assessPair({
         configuration,
@@ -369,6 +387,11 @@ function findTrackCrossings(input: {
       });
       assessments.push(assessment);
       armed = false;
+      // A crossing bracket consumes this approach. To distinguish real travel
+      // back from small oscillations at the line, require two observed frames
+      // at least 3 source pixels upstream before the same track can rearm.
+      awaitingClearUpstream = true;
+      clearUpstreamFrameCount = 0;
       continue;
     }
     if (!armed || afterProjection.signedDistancePixels <= GEOMETRY_TOLERANCE_PIXELS) continue;
