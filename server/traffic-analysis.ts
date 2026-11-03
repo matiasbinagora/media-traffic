@@ -89,7 +89,10 @@ export type AnalysisRun = {
   analysisStarted: boolean;
   configurationSnapshot: import('./scene-configuration.js').SceneConfigurationSnapshot;
   provenance: AnalysisProvenance;
-  result?: TrackResult & { signalTimeline: import('./signal-analysis.js').SignalTimeline };
+  result?: TrackResult & {
+    signalTimeline: import('./signal-analysis.js').SignalTimeline;
+    crossingAssessments: import('./crossing-analysis.js').CrossingAssessment[];
+  };
   error?: AnalysisRunError;
   createdAt: string;
   updatedAt: string;

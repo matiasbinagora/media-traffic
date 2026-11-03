@@ -7,6 +7,7 @@ import { MediaError, sha256File, type UploadJob } from './media.js';
 import { invalidGeometryFields, type SceneConfigurationSnapshot } from './scene-configuration.js';
 import { assembleSignalTimeline, classifySignalObservation, type RawSignalPixelObservation } from './signal-analysis.js';
 import { assembleTrackResult, type AnalysisProvenance, type AnalysisRun, type AnalysisRunPhase, type RawTrackingFrame } from './traffic-analysis.js';
+import { assessCrossingEvents } from './crossing-analysis.js';
 
 const EXPECTED_CHECKPOINT_SHA256 = '9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef';
 export const DEFAULT_ANALYSIS_TIMEOUT_MS = 15 * 60 * 1000;
@@ -267,9 +268,15 @@ export async function executeAnalysisRun(options: ExecuteOptions): Promise<Analy
       )),
     });
     await reportProgress('result_generation');
+    const trackResult = assembleTrackResult({ width: output.width, height: output.height, frames: output.frames });
     run.result = {
-      ...assembleTrackResult({ width: output.width, height: output.height, frames: output.frames }),
+      ...trackResult,
       signalTimeline,
+      crossingAssessments: assessCrossingEvents({
+        trackResult,
+        configuration: run.configurationSnapshot,
+        signalTimeline,
+      }),
     };
     run.provenance.detector = {
       ...run.provenance.detector,
