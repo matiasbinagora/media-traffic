@@ -14,16 +14,16 @@
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="10" data-width="1920" data-height="1080">
-      <img id="intersection" src="assets/intersection.png" alt="" />
-      <img id="signal-red" class="signal-state clip" data-start="3" data-duration="4" src="assets/signal-red.png" alt="" />
-      <img id="signal-amber" class="signal-state clip" data-start="2" data-duration="1" src="assets/signal-amber.png" alt="" />
-      <img id="signal-green-first" class="signal-state clip" data-start="0" data-duration="2" src="assets/signal-green.png" alt="" />
-      <img id="signal-green-last" class="signal-state clip" data-start="7" data-duration="3" src="assets/signal-green.png" alt="" />
+    <div data-hf-id="hf-199x" id="root" data-composition-id="main" data-start="0" data-duration="10" data-width="1920" data-height="1080">
+      <img data-hf-id="hf-8isx" id="intersection" src="assets/intersection.png" alt="" />
+      <img data-hf-id="hf-m2wb" id="signal-red" class="signal-state clip" data-start="3" data-duration="4" src="assets/signal-red.png" alt="" />
+      <img data-hf-id="hf-61ft" id="signal-amber" class="signal-state clip" data-start="2" data-duration="1" src="assets/signal-amber.png" alt="" />
+      <img data-hf-id="hf-iyf3" id="signal-green-first" class="signal-state clip" data-start="0" data-duration="2" src="assets/signal-green.png" alt="" />
+      <img data-hf-id="hf-un1j" id="signal-green-last" class="signal-state clip" data-start="7" data-duration="3" src="assets/signal-green.png" alt="" />
 
-      <img id="green-car" class="vehicle clip" data-start="0" data-duration="2.5" src="assets/gold-sedan.png" alt="" style="left:1120px;top:790px" />
-      <img id="stop-car" class="vehicle clip" data-start="0.5" data-duration="9.5" src="assets/blue-sedan.png" alt="" style="left:570px;top:850px" />
-      <img id="red-car" class="vehicle clip" data-start="3.55" data-duration="3.75" src="assets/red-sedan.png" alt="" style="left:1450px;top:720px" />
+      <img data-hf-id="hf-65rc" id="green-car" class="vehicle clip" data-start="0" data-duration="2.5" src="assets/gold-sedan.png" alt="" style="left:1120px;top:790px" />
+      <img data-hf-id="hf-z83i" id="stop-car" class="vehicle clip" data-start="0.5" data-duration="9.5" src="assets/blue-sedan.png" alt="" style="left:570px;top:850px" />
+      <img data-hf-id="hf-debe" id="red-car" class="vehicle clip" data-layout-allow-overflow data-start="3.55" data-duration="3.75" src="assets/red-sedan.png" alt="" style="left:1450px;top:840px;rotate:56deg" />
     </div>
     <script>
       const timeline = gsap.timeline({ paused: true });
@@ -34,7 +34,9 @@
       timeline.to("#green-car", { x: -340, y: -520, duration: 2.5, ease: "none" }, 0);
       timeline.to("#stop-car", { y: -170, duration: 2.2, ease: "none" }, .5);
       timeline.to("#stop-car", { x: -220, y: -360, duration: 2.5, ease: "none" }, 7.05);
-      timeline.to("#red-car", { x: -330, y: -300, duration: 3.75, ease: "none" }, 3.55);
+      // The uphill car faces the direction of travel, so its box's top-edge
+      // midpoint stays close to the visible front as it passes the stripe.
+      timeline.to("#red-car", { x: -200, y: -350, duration: 3.75, ease: "none" }, 3.55);
       timeline.seek(0);
     </script>
   </body>

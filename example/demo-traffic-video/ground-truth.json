@@ -3,22 +3,22 @@
   "signalTimeline": [
     {
       "startFrame": 0,
-      "endFrameExclusive": 61,
+      "endFrameExclusive": 60,
       "startSeconds": 0,
-      "endSeconds": 2.033333333333333,
+      "endSeconds": 2,
       "state": "green"
     },
     {
-      "startFrame": 61,
-      "endFrameExclusive": 91,
-      "startSeconds": 2.033333333333333,
-      "endSeconds": 3.033333333333333,
+      "startFrame": 60,
+      "endFrameExclusive": 90,
+      "startSeconds": 2,
+      "endSeconds": 3,
       "state": "amber"
     },
     {
-      "startFrame": 91,
+      "startFrame": 90,
       "endFrameExclusive": 210,
-      "startSeconds": 3.033333333333333,
+      "startSeconds": 3,
       "endSeconds": 7,
       "state": "red"
     },
@@ -35,32 +35,46 @@
     "intervals": [],
     "reviewedBoundaryFrames": [
       0,
+      59,
       60,
       61,
+      89,
       90,
       91,
       209,
       210,
+      211,
       299
     ],
-    "basis": "Manual review of decoded source frames, independent of detector output. The renderer uses inclusive transition endpoints with red, then amber, then green overlay priority, so frames 60, 90, and 210 show green, amber, and green respectively. No signal-state intervals were ambiguous; the red-crossing boundary judgement is documented with its event annotation."
+    "basis": "A blind manual review of decoded source frames, independent of inference output, verified boundary colors: frame 59 green; frames 60 and 89 amber; frames 90 and 209 red; frame 210 green. No signal-state intervals were ambiguous; the red-crossing boundary judgement is documented with its event annotation."
+  },
+  "crossingReference": {
+    "type": "leading_edge_midpoint_of_axis_aligned_vehicle_box",
+    "direction": "bottom-to-top",
+    "annotationBasis": "Manual review of decoded rendered frames before YOLO inference; no detector output or model-derived boxes were used.",
+    "stopLinePixels": {
+      "start": { "x": 500, "y": 652 },
+      "end": { "x": 1600, "y": 584 }
+    }
   },
   "events": [
     {
       "eventId": "green-crossing-gold-1",
       "type": "green_crossing",
-      "startSeconds": 1.1,
-      "endSeconds": 1.2,
+      "startSeconds": 0.9,
+      "endSeconds": 1.1,
       "vehicleId": "gold-car",
-      "notes": "At decoded frame 33 (1.100 s) the gold car nose remains before the stop line; by decoded frame 36 (1.200 s) it has crossed. Both boundary frames show green."
+      "notes": "Manual visual review brackets the gold vehicle crossing between decoded frames 27 and 33 (0.900–1.100 s) using the leading-edge midpoint in the bottom-to-top direction. Both observations show green. This control is used only to check that no red event is emitted."
     },
     {
       "eventId": "red-crossing-red-1",
       "type": "red_crossing",
-      "startSeconds": 5.933,
-      "endSeconds": 5.967,
+      "startSeconds": 5.9,
+      "endSeconds": 5.966666666666667,
       "vehicleId": "red-car",
-      "notes": "Use the leading front-bumper/headlight tip as the nose reference against the diagonal stop-stripe centerline. At decoded frame 178 (5.933 s) the tip reaches the stripe; by frame 179 (5.967 s) it is approximately 2 px beyond it. Both boundary frames show red. Earlier proposed brackets 167/168 and 174/175 were before the crossing and are invalid."
+      "startFrame": 177,
+      "endFrame": 179,
+      "notes": "A blind source-only visual review brackets the axis-aligned vehicle box top-edge midpoint approaching/passing the stop-line centerline between frames 177 (5.900 s, upstream or at the line) and 179 (5.967 s, downstream); frame 178 is at/near the stripe. Both bracket frames show red. The conservative annotation midpoint is 5.9333 s; the rotated sprite makes a more exact single-frame visual judgment uncertain."
     },
     {
       "eventId": "correct-stop-blue-1",

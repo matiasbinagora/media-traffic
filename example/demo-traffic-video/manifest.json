@@ -4,7 +4,7 @@
   "qualificationStatus": "qualified",
   "video": {
     "path": "source.mp4",
-    "sha256": "0a1d32f82239e18fcbd1ae105a58343eb263e2c4bb48935c4d771270fdd53918",
+    "sha256": "981154c80389850d83d8621b43ca638d38737d2179ce1734efac60f7b8267ab3",
     "mimeType": "video/mp4",
     "codec": "h264",
     "width": 1920,
@@ -14,6 +14,47 @@
   },
   "groundTruth": {
     "path": "ground-truth.json",
-    "sha256": "e1854684c36a5d0d3dda99df3ffc33bb9651a93c18efac7ca0c90d8afff957ed"
+    "sha256": "de3f821a37a99b8e6d0e2a3e0963a2d43c37597b90b1943cfaa8c2c569cad2ed"
+  },
+  "generation": {
+    "tool": "HyperFrames",
+    "composition": "video/demo-traffic/index.html",
+    "toolVersionRequested": "0.8.206",
+    "durationSeconds": 10,
+    "frameRate": 30,
+    "decodedFrameCount": 300,
+    "annotationFrozenBeforeInference": true,
+    "qualificationNote": "The single-clip demo gate passes using real YOLO/ByteTrack outputs and the repository signal/crossing-analysis modules. This does not establish broad accuracy or p95 latency."
+  },
+  "inferenceQualification": {
+    "status": "passed_single_clip_gate",
+    "checkpoint": "yolo26n.pt",
+    "checkpointSource": "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26n.pt",
+    "checkpointSha256": "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef",
+    "runtime": "Ultralytics 8.4.190",
+    "pytorchVersion": "2.14.1",
+    "pythonVersion": "3.12.13",
+    "device": "macOS arm64 CPU",
+    "tracker": "ByteTrack",
+    "trackerConfig": "server/inference/bytetrack.yaml",
+    "trackerConfigSha256": "4e4a91e815e198c2ac6e3b1def0cdd7020534e2d228ca638ec4dd87eae6179bc",
+    "sampling": "every decoded frame",
+    "confidenceThreshold": 0.25,
+    "imageSize": 640,
+    "classFilter": { "id": 2, "name": "car" },
+    "signalRegionPixels": { "x": 315, "y": 70, "width": 70, "height": 170 },
+    "sceneConfiguration": "reports/per112/scene-configuration.json",
+    "sceneConfigurationSha256": "e62dcba7f9443f6b3c2b9dda69a25625eadb30ef90aca64e3224fe6ec46ed4ac",
+    "trackingOutput": "../../reports/per112/yolo-tracking.json",
+    "trackingOutputSha256": "6e5de969ea2b35af3d923ae03b28300fee560d44c489e4e378aa034227e1c307",
+    "crossingAssessments": "../../reports/per112/crossing-assessments.json",
+    "crossingAssessmentsSha256": "d9483a737678b1d449bf9bfc4d1872f3f4089824168cec30144b4a41a83f4b8e",
+    "redCandidateCount": 1,
+    "redCrossingTimeSeconds": 5.945557,
+    "annotationMidpointSeconds": 5.933333,
+    "timingErrorMilliseconds": 12.224,
+    "greenFalseCandidateCount": 0,
+    "stopFalseCandidateCount": 0,
+    "inferenceSecondsIncludingModelLoad": 8.406
   }
 }
