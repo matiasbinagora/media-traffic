@@ -2,7 +2,7 @@
 
 ## Asset and provenance
 
-The regenerated synthetic clip is `example/demo-traffic-video/source.mp4`. It is H.264, 1920×1080, 30 fps, 10.000 seconds, and 300 decoded frames. Its SHA-256 is `981154c80389850d83d8621b43ca638d38737d2179ce1734efac60f7b8267ab3`. It was rendered from the HyperFrames composition `video/demo-traffic/index.html` with HyperFrames 0.8.206 using `npx hyperframes render --quality looks --output example/demo-traffic-video/source.mp4`. The FFmpeg `video/demo-traffic/render.sh` is an older alternate whose red-car orientation and path differ; it was not used for this source.
+The regenerated synthetic clip is `example/demo-traffic-video/source.mp4`. It is H.264, 1920×1080, 30 fps, 10.000 seconds, and 300 decoded frames. Its SHA-256 is `981154c80389850d83d8621b43ca638d38737d2179ce1734efac60f7b8267ab3`. It was rendered from the HyperFrames composition `video/demo-traffic/index.html` with HyperFrames 0.8.206 using `npx --yes --package=hyperframes@0.8.206 hyperframes render --quality looks --output example/demo-traffic-video/source.mp4`. The FFmpeg `video/demo-traffic/render.sh` is an older alternate whose red-car orientation and path differ; it was not used for this source.
 
 The source composition uses a fixed intersection view, configured diagonal stop stripe `(500,652)–(1600,584)`, visible signal phases, a moving gold control during green, a stationary blue stop control during red, and a red vehicle crossing during red. The vehicle path is oriented uphill so the leading edge for bottom-to-top travel is observable near the configured stripe.
 

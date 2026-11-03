@@ -64,6 +64,39 @@ const greenTrackAssessments = assessments.filter((item) => item.trackId === gree
 const stopTrackRedWindowAssessments = assessments.filter((item) => item.trackId === stopObservation.trackId
   && item.timeRange.endSeconds > stopAnnotation.startSeconds
   && item.timeRange.startSeconds < stopAnnotation.endSeconds);
+const stopTrack = trackResult.tracks.find((track) => track.trackId === stopObservation.trackId);
+const stopStartFrame = Math.round(stopAnnotation.startSeconds * manifest.video.frameRate);
+const stopEndFrame = Math.round(stopAnnotation.endSeconds * manifest.video.frameRate);
+const stopWindowObservations = stopTrack.observations.filter((observation) => observation.frameIndex >= stopStartFrame
+  && observation.frameIndex < stopEndFrame);
+const stopLineStart = {
+  x: configuration.geometry.stopLine.start.x * tracking.width,
+  y: configuration.geometry.stopLine.start.y * tracking.height,
+};
+const stopLineEnd = {
+  x: configuration.geometry.stopLine.end.x * tracking.width,
+  y: configuration.geometry.stopLine.end.y * tracking.height,
+};
+const stopLineVector = { x: stopLineEnd.x - stopLineStart.x, y: stopLineEnd.y - stopLineStart.y };
+const stopLineLength = Math.hypot(stopLineVector.x, stopLineVector.y);
+const stopLineNormal = { x: -stopLineVector.y / stopLineLength, y: stopLineVector.x / stopLineLength };
+const travelDirection = configuration.geometry.crossingDirection === 'bottom-to-top' ? { x: 0, y: -1 }
+  : configuration.geometry.crossingDirection === 'top-to-bottom' ? { x: 0, y: 1 }
+    : configuration.geometry.crossingDirection === 'left-to-right' ? { x: 1, y: 0 }
+      : { x: -1, y: 0 };
+const upstreamSign = Math.sign(travelDirection.x * stopLineNormal.x + travelDirection.y * stopLineNormal.y);
+const stopReferencePoints = stopWindowObservations.map((observation) => ({
+  frameIndex: observation.frameIndex,
+  x: observation.box.x + observation.box.width / 2,
+  y: observation.box.y,
+}));
+const stopSignedDistances = stopReferencePoints.map((point) => ((point.x - stopLineStart.x) * stopLineNormal.x
+  + (point.y - stopLineStart.y) * stopLineNormal.y) * upstreamSign);
+const stopReferenceOrigin = stopReferencePoints[0];
+const stopMaximumDisplacementPixels = Math.max(...stopReferencePoints.map((point) => Math.hypot(
+  point.x - stopReferenceOrigin.x,
+  point.y - stopReferenceOrigin.y,
+)));
 const annotationSignalTimelineMatches = groundTruth.signalTimeline.length === signalTimeline.intervals.length
   && groundTruth.signalTimeline.every((expected, index) => {
     const observed = signalTimeline.intervals[index];
@@ -87,6 +120,12 @@ if (greenWindowCandidates.length !== 0
 }
 if (stopTrackRedWindowAssessments.length !== 0 || otherRedCandidates.length !== 0) {
   throw new Error('The stopped vehicle or another track produced an unexpected red candidate during the red interval.');
+}
+if (stopWindowObservations.length !== stopEndFrame - stopStartFrame
+  || stopWindowObservations.some((observation, index) => observation.frameIndex !== stopStartFrame + index)
+  || stopSignedDistances.some((distance) => distance >= -1)
+  || stopMaximumDisplacementPixels > 5) {
+  throw new Error('The stop control must be detected in every red frame, remain upstream of the line, and stay within 5px of its starting point.');
 }
 
 const output = {
@@ -120,6 +159,9 @@ const output = {
     candidatesDuringGreenAnnotationWindow: greenWindowCandidates.length,
     greenTrackControlAssessments: greenTrackAssessments.map((item) => ({ outcome: item.outcome, reason: item.reason, crossingTimeSeconds: item.crossingTimeSeconds })),
     stopTrackAssessmentsDuringRedStopWindow: stopTrackRedWindowAssessments.map((item) => ({ outcome: item.outcome, reason: item.reason, crossingTimeSeconds: item.crossingTimeSeconds })),
+    stopControlObservationsDuringRed: stopWindowObservations.length,
+    stopControlMaximumDisplacementPixels: stopMaximumDisplacementPixels,
+    stopControlMaximumSignedDistancePixels: Math.max(...stopSignedDistances),
     additionalCandidateCountOutsideRedAnnotation: otherRedCandidates.length,
   },
 };

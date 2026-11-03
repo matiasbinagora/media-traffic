@@ -604,6 +604,9 @@
       }
     ],
     "stopTrackAssessmentsDuringRedStopWindow": [],
+    "stopControlObservationsDuringRed": 120,
+    "stopControlMaximumDisplacementPixels": 0.5921148537234227,
+    "stopControlMaximumSignedDistancePixels": -62.761919675395504,
     "additionalCandidateCountOutsideRedAnnotation": 0
   }
 }
