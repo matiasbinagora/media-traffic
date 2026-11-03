@@ -64,6 +64,30 @@ const greenTrackAssessments = assessments.filter((item) => item.trackId === gree
 const stopTrackRedWindowAssessments = assessments.filter((item) => item.trackId === stopObservation.trackId
   && item.timeRange.endSeconds > stopAnnotation.startSeconds
   && item.timeRange.startSeconds < stopAnnotation.endSeconds);
+const annotationSignalTimelineMatches = groundTruth.signalTimeline.length === signalTimeline.intervals.length
+  && groundTruth.signalTimeline.every((expected, index) => {
+    const observed = signalTimeline.intervals[index];
+    const expectedState = expected.state === 'amber' ? 'yellow' : expected.state;
+    return observed.state === expectedState
+      && observed.startFrameIndex === expected.startFrame
+      && observed.endFrameExclusive === expected.endFrameExclusive;
+  });
+const redCandidateTimingErrors = withinAnnotation.map((item) => Math.abs(item.crossingTimeSeconds - redMidpoint));
+
+if (!annotationSignalTimelineMatches) {
+  throw new Error('Pixel-derived signal intervals do not match the independently annotated timeline.');
+}
+if (withinAnnotation.length !== 1 || redCandidateTimingErrors[0] > 1 / 30) {
+  throw new Error(`Expected exactly one red candidate within one frame of its annotation; got ${withinAnnotation.length}.`);
+}
+if (greenWindowCandidates.length !== 0
+  || greenTrackAssessments.length === 0
+  || greenTrackAssessments.some((item) => item.outcome !== 'not_candidate' || item.reason !== 'signal_not_red')) {
+  throw new Error('The green crossing control must produce no red candidate and be classified as signal_not_red.');
+}
+if (stopTrackRedWindowAssessments.length !== 0 || otherRedCandidates.length !== 0) {
+  throw new Error('The stopped vehicle or another track produced an unexpected red candidate during the red interval.');
+}
 
 const output = {
   schemaVersion: 1,
@@ -91,7 +115,8 @@ const output = {
   crossingAssessments: assessments,
   acceptanceSummary: {
     redCandidatesWithinOneFrameOfAnnotation: withinAnnotation.length,
-    redCandidateTimingErrorSeconds: withinAnnotation.map((item) => Math.abs(item.crossingTimeSeconds - redMidpoint)),
+    redCandidateTimingErrorSeconds: redCandidateTimingErrors,
+    annotationSignalTimelineMatches,
     candidatesDuringGreenAnnotationWindow: greenWindowCandidates.length,
     greenTrackControlAssessments: greenTrackAssessments.map((item) => ({ outcome: item.outcome, reason: item.reason, crossingTimeSeconds: item.crossingTimeSeconds })),
     stopTrackAssessmentsDuringRedStopWindow: stopTrackRedWindowAssessments.map((item) => ({ outcome: item.outcome, reason: item.reason, crossingTimeSeconds: item.crossingTimeSeconds })),

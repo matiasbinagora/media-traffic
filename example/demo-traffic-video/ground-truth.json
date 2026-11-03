@@ -82,7 +82,7 @@
       "startSeconds": 3,
       "endSeconds": 7,
       "vehicleId": "blue-car",
-      "notes": "The blue car is stationary and visibly behind the stop line during [3, 7) s. This window includes amber at frame 90 and red frames 91–209; green returns at frame 210 (7 s), immediately after the stop interval ends."
+      "notes": "The blue car is stationary and visibly behind the stop line during [3, 7) s. This window includes amber through frame 89 and red frames 90–209; green returns at frame 210 (7 s), immediately after the stop interval ends."
     }
   ]
 }

@@ -2,13 +2,13 @@
 
 ## Asset and provenance
 
-The regenerated synthetic clip is `example/demo-traffic-video/source.mp4`. It is H.264, 1920×1080, 30 fps, 10.000 seconds, and 300 decoded frames. Its SHA-256 is `981154c80389850d83d8621b43ca638d38737d2179ce1734efac60f7b8267ab3`. HyperFrames composition source: `video/demo-traffic/index.html`; requested package version: `0.8.206`.
+The regenerated synthetic clip is `example/demo-traffic-video/source.mp4`. It is H.264, 1920×1080, 30 fps, 10.000 seconds, and 300 decoded frames. Its SHA-256 is `981154c80389850d83d8621b43ca638d38737d2179ce1734efac60f7b8267ab3`. It was rendered from the HyperFrames composition `video/demo-traffic/index.html` with HyperFrames 0.8.206 using `npx hyperframes render --quality looks --output example/demo-traffic-video/source.mp4`. The FFmpeg `video/demo-traffic/render.sh` is an older alternate whose red-car orientation and path differ; it was not used for this source.
 
 The source composition uses a fixed intersection view, configured diagonal stop stripe `(500,652)–(1600,584)`, visible signal phases, a moving gold control during green, a stationary blue stop control during red, and a red vehicle crossing during red. The vehicle path is oriented uphill so the leading edge for bottom-to-top travel is observable near the configured stripe.
 
 ## Independent annotations
 
-Annotations were manually reviewed from decoded frames before the final qualification inference. A blind manual source review (without access to ground truth or inference results) corrected the initial signal boundary metadata and set a conservative bracket for the rotated red vehicle; these final annotations were frozen before the final run. No detector output, model boxes, or inference metrics were used to choose labels. The final ground-truth file is `example/demo-traffic-video/ground-truth.json` (SHA-256 `de3f821a37a99b8e6d0e2a3e0963a2d43c37597b90b1943cfaa8c2c569cad2ed`). The reference is the midpoint of the axis-aligned vehicle box's leading edge for `bottom-to-top`; red signal frames are 90–209.
+Annotations were manually reviewed from decoded frames before the final qualification inference. A blind manual source review (without access to ground truth or inference results) corrected the initial signal boundary metadata and set a conservative bracket for the rotated red vehicle; these final annotations were frozen before the final run. No detector output, model boxes, or inference metrics were used to choose labels. The final ground-truth file is `example/demo-traffic-video/ground-truth.json` (SHA-256 `f7d765d540e3010eddef3388de67cbb6c89c909f6c01f08673801225a6a246be`). The reference is the midpoint of the axis-aligned vehicle box's leading edge for `bottom-to-top`; red signal frames are 90–209.
 
 - **Red crossing:** conservative source-only bracket from frame 177 (5.900 s, upstream or at the line) to frame 179 (5.967 s, downstream); frame 178 is at or near the stripe. Both bracket frames show red. Because the sprite is rotated almost vertically, the blind reviewer did not claim a more exact single-frame visual time. The bracket midpoint is 5.9333 s.
 - **Green control:** manually bracketed between frames 27 and 33 (0.900–1.100 s); both show green. It is a negative control for red-event emission, not a timing-accuracy target.
@@ -22,7 +22,7 @@ Frame evidence: [red crossing frames 178–179](evidence/red-crossing-frames-178
 - `hyperframes check --json`: passed, 0 errors and 0 warnings (audio-less visual composition reported informationally).
 - Persisted check result: [HyperFrames check JSON](evidence/hyperframes-check.json), check ID `89bf28df-c08e-4344-80e4-0e8ba3f26a11`.
 - Preview server returned HTTP 200 at `http://localhost:3014/#project/demo-traffic`.
-- `ffprobe`: H.264, 1920×1080, 30/1 fps, 300 frames, 10 seconds.
+- `ffprobe`: H.264, 1920×1080, 30/1 fps, 300 frames, 10 seconds. The checked-in HyperFrames composition is the source used for rendering; the legacy FFmpeg script is not a matching alternate renderer.
 
 ## Qualification status and limits
 

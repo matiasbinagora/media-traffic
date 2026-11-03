@@ -14,12 +14,14 @@
   },
   "groundTruth": {
     "path": "ground-truth.json",
-    "sha256": "de3f821a37a99b8e6d0e2a3e0963a2d43c37597b90b1943cfaa8c2c569cad2ed"
+    "sha256": "f7d765d540e3010eddef3388de67cbb6c89c909f6c01f08673801225a6a246be"
   },
   "generation": {
     "tool": "HyperFrames",
     "composition": "video/demo-traffic/index.html",
     "toolVersionRequested": "0.8.206",
+    "renderCommand": "npx hyperframes render --quality looks --output example/demo-traffic-video/source.mp4",
+    "legacyAlternateRenderer": "video/demo-traffic/render.sh (not used for this asset; its motion differs from the HyperFrames composition)",
     "durationSeconds": 10,
     "frameRate": 30,
     "decodedFrameCount": 300,
@@ -48,7 +50,7 @@
     "trackingOutput": "../../reports/per112/yolo-tracking.json",
     "trackingOutputSha256": "6e5de969ea2b35af3d923ae03b28300fee560d44c489e4e378aa034227e1c307",
     "crossingAssessments": "../../reports/per112/crossing-assessments.json",
-    "crossingAssessmentsSha256": "d9483a737678b1d449bf9bfc4d1872f3f4089824168cec30144b4a41a83f4b8e",
+    "crossingAssessmentsSha256": "5b9e43fbb0d0eca29ad0615c722f807d9d4f8e68b84703f2ac27c2e181ab9778",
     "redCandidateCount": 1,
     "redCrossingTimeSeconds": 5.945557,
     "annotationMidpointSeconds": 5.933333,
