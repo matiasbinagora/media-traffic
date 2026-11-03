@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceSha256": "981154c80389850d83d8621b43ca638d38737d2179ce1734efac60f7b8267ab3",
-  "groundTruthSha256": "de3f821a37a99b8e6d0e2a3e0963a2d43c37597b90b1943cfaa8c2c569cad2ed",
+  "groundTruthSha256": "f7d765d540e3010eddef3388de67cbb6c89c909f6c01f08673801225a6a246be",
   "trackingOutputSha256": "6e5de969ea2b35af3d923ae03b28300fee560d44c489e4e378aa034227e1c307",
   "configuration": {
     "schemaVersion": 1,
@@ -189,7 +189,7 @@
       "startSeconds": 3,
       "endSeconds": 7,
       "vehicleId": "blue-car",
-      "notes": "The blue car is stationary and visibly behind the stop line during [3, 7) s. This window includes amber at frame 90 and red frames 91–209; green returns at frame 210 (7 s), immediately after the stop interval ends."
+      "notes": "The blue car is stationary and visibly behind the stop line during [3, 7) s. This window includes amber through frame 89 and red frames 90–209; green returns at frame 210 (7 s), immediately after the stop interval ends."
     },
     "manuallyMatchedTrackId": "2",
     "frameObservation": {
@@ -594,6 +594,7 @@
     "redCandidateTimingErrorSeconds": [
       0.012223850780122447
     ],
+    "annotationSignalTimelineMatches": true,
     "candidatesDuringGreenAnnotationWindow": 0,
     "greenTrackControlAssessments": [
       {
