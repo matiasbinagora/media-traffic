@@ -198,6 +198,7 @@ test('captures immutable configuration snapshots per run when later scene edits 
   assert.equal(completedFirstRun.provenance.detector.inferenceSeconds, deterministicTrackingOutput.provenance.inferenceSeconds);
   assert.equal(completedFirstRun.provenance.sampling.decodedFrameCount, deterministicTrackingOutput.provenance.decodedFrameCount);
   assert.equal(completedFirstRun.result.signalTimeline.intervals[0].state, 'green');
+  assert.deepEqual(completedFirstRun.result.crossingAssessments, []);
   assert.deepEqual(completedFirstRun.result.signalTimeline.intervals[0].transitionEvidence?.supportingFrameIndices, [0, 1, 2]);
   assert.deepEqual(completedFirstRun.result.signalTimeline.observations.map((observation: any) => observation.frameIndex), [0, 1, 2]);
   assert.deepEqual(completedFirstRun.provenance.signalRecognition, {
